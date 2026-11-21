@@ -151,6 +151,6 @@ scripts/  local.mjs(운영과 같은 경로 게이트웨이) · bundle.mjs(이�
 - [ ] web: client.tsx · ConfigPanel · Game · Demo · guide · game.css(토큰 3곳) · index.html · vite.config.ts(`gameViteConfig('<id>')`)
 - [ ] meta.ts (포털에 자동 표시)
 - [ ] `npm test && npm run typecheck && npm run build && npm run local` 로 한 판 + QA 크기·테마
-- [ ] deploy/ · release-<id>.yml · `npm run media`(포털 표지 `apps/portal/public/covers/<id>.webp`, 게임 방법 영상)
+- [ ] deploy/ · release-<id>.yml · `npm run media`(포털 표지 `apps/portal/public/covers/<id>.jpg`, 게임 방법 영상)
 - [ ] oh-my-homelab PR (ArgoCD 앱 + 네트워크 정책) → merge 후 확인
 - [ ] 쓸 만한 새 UI는 packages/ui로 올리고 /design에 예시 추가, 새 함정은 이 문서 10절에 추가

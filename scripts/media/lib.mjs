@@ -27,6 +27,10 @@ export function clipPath(target, name) {
   return join(dir, `${name}.mp4`);
 }
 
+function withTimeout(p, ms) {
+  return Promise.race([p, new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), ms))]);
+}
+
 export function run(cmd, args) {
   return new Promise((resolve, reject) => {
     const child = spawn(cmd, args, { stdio: ['ignore', 'inherit', 'inherit'] });
@@ -73,12 +77,13 @@ export async function recorder(page, target, name, { width }) {
     while (running && !page.isClosed()) {
       const t = Date.now() / 1000;
       try {
-        const { data } = await cdp.send('Page.captureScreenshot', {
+        // 가끔 응답이 오지 않는 캡처가 있어(특히 모바일 에뮬레이션) 3초 넘으면 버린다
+        const { data } = await withTimeout(cdp.send('Page.captureScreenshot', {
           format: 'jpeg',
           quality: 92,
           optimizeForSpeed: true,
           clip: { x: 0, y: 0, width: vp.width, height: vp.height, scale },
-        });
+        }), 3000);
         const file = join(dir, `${String(frames.length).padStart(5, '0')}.jpg`);
         writeFileSync(file, Buffer.from(data, 'base64'));
         frames.push({ file, t });
@@ -92,7 +97,7 @@ export async function recorder(page, target, name, { width }) {
     async stop() {
       const end = Date.now() / 1000;
       running = false;
-      await loop;
+      await withTimeout(loop, 4000).catch(() => {});
       await cdp.detach();
       if (!frames.length) throw new Error(`no frames for ${name}`);
       // ffconcat: 각 프레임을 다음 프레임 시각까지 유지

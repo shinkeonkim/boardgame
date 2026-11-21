@@ -1,4 +1,5 @@
-import { CURSOR_SCRIPT, ORIGIN, clickAt, glide, recorder, sleep, typeSlow } from '../lib.mjs';
+import { join } from 'node:path';
+import { CURSOR_SCRIPT, MEDIA, ORIGIN, clickAt, glide, recorder, sleep, typeSlow } from '../lib.mjs';
 
 export const T = 'portal';
 
@@ -37,7 +38,7 @@ export async function desktop(browser, only) {
   // README 표지
   await page.goto(`${ORIGIN}/`);
   await sleep(1200);
-  await page.screenshot({ path: new URL('../../docs/media/portal/home.png', import.meta.url).pathname });
+  await page.screenshot({ path: join(MEDIA, 'portal', 'home.png') });
   await ctx.close();
 }
 export async function mobile() {}

@@ -10,7 +10,7 @@ export function GameArt({ game, className = '' }: { game: GameMeta; className?: 
   return (
     <div className={`game-art ${className}`} style={{ ['--accent-game' as string]: game.accent }}>
       {!failed ? (
-        <img src={`/covers/${game.id}.webp`} alt={`${game.title} 게임 화면`} loading="lazy" onError={() => setFailed(true)} />
+        <img src={`/covers/${game.id}.jpg`} alt={`${game.title} 게임 화면`} loading="lazy" onError={() => setFailed(true)} />
       ) : (
         <svg viewBox="0 0 64 64" className="game-art-icon" aria-hidden dangerouslySetInnerHTML={{ __html: game.icon }} />
       )}

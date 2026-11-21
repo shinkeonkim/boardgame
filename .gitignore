@@ -4,3 +4,5 @@ dist
 .DS_Store
 .claude/settings.local.json
 out
+# 녹화 원본(MP4)은 다시 만들 수 있으므로 저장소에 넣지 않는다 (GIF·표지·게임 방법 영상만)
+docs/media/*/clips/
