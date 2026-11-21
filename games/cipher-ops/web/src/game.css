@@ -1,0 +1,346 @@
+/* ---------- Cipher Ops 전용 토큰 (라이트 / 다크 / 시스템 다크) ---------- */
+:root {
+  --co-red: #d0533f;
+  --co-blue: #3a7bd5;
+  --co-neutral: #e6dbc3;
+  --co-neutral-ink: #4a4230;
+  --co-card: #fbf6ea;
+  --co-card-ink: #2a241a;
+  --co-assassin: #1b1b1f;
+}
+:root[data-theme='dark'] {
+  --co-neutral: #6e6553;
+  --co-neutral-ink: #f3ead6;
+  --co-card: #2f2b26;
+  --co-card-ink: #f2ecdf;
+  --co-assassin: #050506;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --co-neutral: #6e6553;
+    --co-neutral-ink: #f3ead6;
+    --co-card: #2f2b26;
+    --co-card-ink: #f2ecdf;
+    --co-assassin: #050506;
+  }
+}
+
+.co .turn-banner.mine {
+  background: var(--team);
+}
+
+/* ---------- 점수 ---------- */
+.co-score {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: 900;
+  font-size: 1.2rem;
+}
+.co-score .red,
+.co-preview .red {
+  color: var(--co-red);
+}
+.co-score .blue,
+.co-preview .blue {
+  color: var(--co-blue);
+}
+
+/* ---------- 보드 ---------- */
+.co-board {
+  --n: 5;
+  width: min(100cqw, 100cqh * 1.55);
+  display: grid;
+  grid-template-columns: repeat(var(--n), minmax(0, 1fr));
+  gap: clamp(4px, 1cqw, 10px);
+}
+.co-card {
+  position: relative;
+  aspect-ratio: 1.55 / 1;
+  border-radius: 10px;
+  border: 2px solid color-mix(in srgb, var(--co-card-ink) 18%, transparent);
+  background: var(--co-card);
+  color: var(--co-card-ink);
+  display: grid;
+  place-items: center;
+  font: inherit;
+  padding: 4px;
+  min-width: 0;
+  box-shadow: 0 2px 0 color-mix(in srgb, var(--co-card-ink) 15%, transparent);
+  transition: transform 0.15s, background 0.3s, border-color 0.2s;
+}
+.co-word {
+  font-weight: 800;
+  font-size: clamp(0.7rem, 2.6cqw, 1.15rem);
+  word-break: keep-all;
+  text-align: center;
+  line-height: 1.15;
+}
+button.co-card.can {
+  cursor: pointer;
+}
+button.co-card.can:hover {
+  transform: translateY(-2px);
+  border-color: var(--info);
+}
+.co-card.armed {
+  outline: 3px solid var(--gold);
+  outline-offset: 1px;
+  transform: translateY(-3px);
+}
+.co-card:disabled {
+  cursor: default;
+}
+/* 팀장 화면: 정답 지도 (옅은 색) */
+.co-card.hinted.red {
+  background: color-mix(in srgb, var(--co-red) 22%, var(--co-card));
+  border-color: var(--co-red);
+}
+.co-card.hinted.blue {
+  background: color-mix(in srgb, var(--co-blue) 22%, var(--co-card));
+  border-color: var(--co-blue);
+}
+.co-card.hinted.neutral {
+  background: color-mix(in srgb, var(--co-neutral) 45%, var(--co-card));
+}
+.co-card.hinted.assassin {
+  background: color-mix(in srgb, var(--co-assassin) 75%, var(--co-card));
+  color: #fff;
+  border-color: #000;
+}
+/* 공개된 카드 */
+.co-card.open {
+  animation: co-flip 0.45s ease-out;
+}
+.co-card.open.red {
+  background: var(--co-red);
+  color: #fff;
+  border-color: color-mix(in srgb, var(--co-red) 70%, black);
+}
+.co-card.open.blue {
+  background: var(--co-blue);
+  color: #fff;
+  border-color: color-mix(in srgb, var(--co-blue) 70%, black);
+}
+.co-card.open.neutral {
+  background: var(--co-neutral);
+  color: var(--co-neutral-ink);
+}
+.co-card.open.assassin {
+  background: var(--co-assassin);
+  color: #fff;
+}
+.co-board.spy .co-card.open .co-word {
+  opacity: 0.55;
+}
+@keyframes co-flip {
+  0% {
+    transform: rotateX(80deg);
+  }
+}
+.co-skull {
+  position: absolute;
+  top: 2px;
+  right: 4px;
+  font-size: 0.8rem;
+}
+.co-marks {
+  position: absolute;
+  bottom: 3px;
+  left: 4px;
+  display: flex;
+  gap: 2px;
+}
+.co-marks i {
+  font-style: normal;
+  font-size: 0.65rem;
+  font-weight: 800;
+  background: var(--gold);
+  color: #3a2a00;
+  border-radius: 50%;
+  width: 16px;
+  height: 16px;
+  display: grid;
+  place-items: center;
+}
+.co-confirm {
+  position: absolute;
+  bottom: 2px;
+  left: 2px;
+  right: 2px;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 0.65rem;
+  font-weight: 700;
+  background: var(--gold);
+  color: #3a2a00;
+  border-radius: 999px;
+  padding: 1px 6px;
+  z-index: 2;
+}
+
+/* ---------- 힌트 입력 ---------- */
+.co-clue-form .row {
+  display: flex;
+  gap: 8px;
+}
+.co-clue-form input {
+  min-width: 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+.co-clue-form select {
+  font: inherit;
+  font-weight: 800;
+  border-radius: 8px;
+  border: 1px solid var(--line);
+  background: var(--panel);
+  color: var(--ink);
+  padding: 0 8px;
+}
+.warn {
+  color: var(--danger);
+}
+
+/* ---------- 팀 패널 ---------- */
+.co-team {
+  border-left: 5px solid var(--co-red);
+  display: grid;
+  gap: 4px;
+}
+.co-team.blue {
+  border-left-color: var(--co-blue);
+}
+.co-team.active {
+  box-shadow: 0 0 0 2px var(--gold);
+}
+.co-team-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+.co-left {
+  font-size: 1.4rem;
+  font-weight: 900;
+}
+.co-left small {
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+.co-member {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.88rem;
+}
+.co-member.acting::before {
+  content: '';
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--accent);
+  animation: pulse 1.2s infinite;
+}
+.co-member .emote-bubble {
+  left: auto;
+  right: 0;
+  bottom: auto;
+  top: -6px;
+}
+.co-role {
+  font-size: 0.75rem;
+  color: var(--muted);
+  min-width: 46px;
+}
+.co-clues {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 2px;
+}
+.co-clue {
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 0 8px;
+}
+.co-clue em {
+  font-style: normal;
+  color: var(--ok);
+  margin-left: 3px;
+}
+.log-list {
+  display: grid;
+  gap: 4px;
+  max-height: 240px;
+  overflow: auto;
+}
+.co-seat {
+  font-size: 1rem;
+}
+.co-words textarea {
+  width: 100%;
+  margin-top: 6px;
+  font: inherit;
+  border-radius: 8px;
+  border: 1px solid var(--line);
+  background: var(--bg);
+  color: var(--ink);
+  padding: 6px 8px;
+  resize: vertical;
+}
+.co-preview {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin: 8px 0;
+  font-weight: 700;
+}
+
+/* ---------- 시연·게임 방법 ---------- */
+.co-demo {
+  display: grid;
+  gap: 10px;
+  width: min(100%, 360px);
+}
+.co-demo-clue {
+  font-weight: 800;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+.co-demo-clue.show {
+  opacity: 1;
+}
+.co-demo-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+  container-type: inline-size;
+}
+.co-demo .co-word,
+.co-g-row .co-word {
+  font-size: 0.85rem;
+}
+.co-g-row .co-card {
+  width: 84px;
+}
+
+@media (max-width: 759px), (max-aspect-ratio: 1/1) {
+  .co-board {
+    width: 100%;
+    gap: 4px;
+  }
+  .co-card {
+    border-radius: 7px;
+    padding: 2px;
+  }
+  .co-word {
+    font-size: clamp(0.62rem, 3.1vw, 0.9rem);
+  }
+  .co-score {
+    font-size: 1rem;
+  }
+}

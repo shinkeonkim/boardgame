@@ -35,6 +35,11 @@ export interface BotContext<View> {
 export interface Bot<View, Move> {
   /** 두기 전 기다리는 시간 [최소, 최대] ms (기본 [700, 1600]) — 사람이 따라갈 수 있게 */
   thinkMs?: [number, number];
+  /**
+   * 같은 때에 둘 수 있는 사람(봇 아닌 좌석)이 함께 있으면 봇은 기다린다.
+   * (예: 단어 맞히기에서 같은 팀 사람들이 의논하는 동안 봇이 먼저 찍지 않게. 사람끼리 정하면 봇은 안 둔다)
+   */
+  deferToHumans?: boolean;
   choose(ctx: BotContext<View>): Move;
 }
 

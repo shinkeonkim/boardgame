@@ -1,0 +1,18 @@
+{
+  "name": "@bg/cipher-ops-server",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "PORT=3006 STATIC_DIR=../web/dist tsx watch src/main.ts",
+    "build": "esbuild src/main.ts --bundle --platform=node --format=cjs --target=node20 --outfile=dist/server.cjs --external:bufferutil --external:utf-8-validate"
+  },
+  "dependencies": {
+    "@bg/cipher-ops-engine": "*",
+    "@bg/server": "*"
+  },
+  "devDependencies": {
+    "esbuild": "^0.24.0",
+    "tsx": "^4.19.2"
+  }
+}

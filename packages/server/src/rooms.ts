@@ -300,7 +300,7 @@ export class Rooms {
     if (room.botTimer || this.frozen || !this.rooms.has(room.code)) return;
     const match = room.match;
     if (!match || this.game.status(match) !== 'playing') return;
-    if (!this.actors(match).some((seat) => this.botAt(room, seat))) return;
+    if (!this.botActors(room, match).length) return;
     const [lo, hi] = this.game.bot?.thinkMs ?? [700, 1600];
     const wait = this.opts.botDelayMs ?? lo + rng() * (hi - lo);
     room.botTimer = setTimeout(() => {
@@ -309,6 +309,14 @@ export class Rooms {
       this.onChange(room);
     }, wait);
     room.botTimer.unref?.();
+  }
+
+  /** 지금 둘 봇 좌석 (deferToHumans면 사람 좌석이 함께 있을 때 제외) */
+  private botActors(room: Room, match: unknown): number[] {
+    const actors = this.actors(match);
+    const bots = actors.filter((seat) => this.botAt(room, seat));
+    if (this.game.bot?.deferToHumans && actors.some((seat) => !this.botAt(room, seat))) return [];
+    return bots;
   }
 
   private clearBotTimer(room: Room) {
@@ -321,7 +329,9 @@ export class Rooms {
     const match = room.match;
     if (!match || this.game.status(match) !== 'playing') return;
     const before = this.snap(match);
+    const botSeats = new Set(this.botActors(room, match));
     for (const seat of before.actors) {
+      if (!botSeats.has(seat)) continue;
       const bot = this.botAt(room, seat);
       if (!bot?.bot || this.game.status(match) !== 'playing' || !this.actors(match).includes(seat)) continue;
       let fallback = false;

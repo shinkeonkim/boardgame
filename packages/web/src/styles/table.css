@@ -173,6 +173,11 @@
     max-height: 66dvh;
     gap: 6px;
   }
+  /* 좁은 화면: 테이블은 너비 기준 (높이 컨테이너는 내용 높이가 0이 되어 겹침) */
+  .table-fit {
+    flex: none;
+    container-type: inline-size;
+  }
   .table-side {
     gap: 8px;
     border-top: 1px solid var(--line);
