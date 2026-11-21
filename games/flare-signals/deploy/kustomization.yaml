@@ -14,4 +14,4 @@ labels:
 images:
 - name: ghcr.io/shinkeonkim/boardgame-flare-signals
   newName: ghcr.io/shinkeonkim/boardgame-flare-signals
-  newTag: sha-57c1653
+  newTag: sha-3ddf9c7
