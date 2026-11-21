@@ -1,4 +1,5 @@
 // 운영과 같은 모양으로 로컬에서 띄우기 (빌드 후):
+//   지표: 포털 http://localhost:9460/metrics, 게임 http://localhost:9461/metrics …
 //   npm run build && npm run local   → http://localhost:8080
 // 포털과 게임 서버를 각각 띄우고, 운영의 Traefik처럼 경로로 나눠 주는 작은 게이트웨이를 앞에 둔다.
 //   /<게임id>/... → 그 게임 서버 (웹소켓 포함),  나머지 → 포털
@@ -19,11 +20,11 @@ function start(name, script, env) {
   children.push(p);
 }
 
-start('portal', 'apps/portal/dist-server/server.cjs', { PORT: '3000', STATIC_DIR: 'apps/portal/dist' });
+start('portal', 'apps/portal/dist-server/server.cjs', { PORT: '3000', STATIC_DIR: 'apps/portal/dist', METRICS_PORT: '9460' });
 games.forEach((id, i) => {
   const port = 3101 + i;
   routes.set(id, port);
-  start(id, `games/${id}/server/dist/server.cjs`, { PORT: String(port), STATIC_DIR: `games/${id}/web/dist`, MAX_ROOMS: '50' });
+  start(id, `games/${id}/server/dist/server.cjs`, { PORT: String(port), STATIC_DIR: `games/${id}/web/dist`, MAX_ROOMS: '50', METRICS_PORT: String(9461 + i) });
 });
 
 const target = (url) => {

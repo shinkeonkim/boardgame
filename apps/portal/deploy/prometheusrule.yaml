@@ -1,0 +1,40 @@
+# 보드게임 알림 (kube-prometheus-stack이 라벨 제한 없이 수집 → Alertmanager). 지표: docs/monitoring.md
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: boardgame
+spec:
+  groups:
+    - name: boardgame
+      rules:
+        - alert: BoardgameServerNotReady
+          expr: min by (game) (bg_ready) == 0
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "보드게임 {{ $labels.game }} 서버가 5분 넘게 준비되지 않았어요"
+            description: "kubectl -n boardgame-{{ $labels.game }} get pods,events 와 로그(handoff·시작 오류)를 보세요."
+        - alert: BoardgameRoomsFull
+          expr: sum by (game) (bg_rooms) >= sum by (game) (bg_room_capacity)
+          for: 15m
+          labels:
+            severity: info
+          annotations:
+            summary: "보드게임 {{ $labels.game }} 방이 15분 넘게 가득 찼어요"
+            description: "새 방을 만들 수 없는 상태예요. MAX_ROOMS(deploy/deployment.yaml)를 늘릴지 보세요."
+        - alert: BoardgameServerErrors
+          expr: sum by (game) (increase(bg_server_errors_total[10m])) > 5
+          labels:
+            severity: warning
+          annotations:
+            summary: "보드게임 {{ $labels.game }} 서버 오류가 10분 동안 {{ $value | humanize }}번 났어요"
+            description: "kubectl -n boardgame-{{ $labels.game }} logs deploy/{{ $labels.game }} 로 오류를 확인하세요."
+        - alert: BoardgameHandoffLost
+          expr: sum by (game) (increase(bg_handoff_rooms_total{direction="out"}[15m])) > sum by (game) (increase(bg_handoff_rooms_total{direction="in"}[15m]))
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "보드게임 {{ $labels.game }} 배포 때 넘겨준 방보다 받은 방이 적어요"
+            description: "무중단 배포 중 진행 중인 게임이 사라졌을 수 있어요. 9090 네트워크 정책과 새 파드 로그(handoff)를 보세요."

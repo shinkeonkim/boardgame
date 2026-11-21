@@ -33,6 +33,8 @@ spec:
           ports:
             - name: http
               containerPort: 8080
+            - name: metrics # 내부 전용 Prometheus 지표 (/metrics)
+              containerPort: 9464
             - name: handoff # 내부 전용 (무중단 배포 시 방 상태 넘겨주기)
               containerPort: 9090
           env:

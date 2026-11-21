@@ -7,6 +7,17 @@ resources:
 - deployment.yaml
 - service.yaml
 - ingress.yaml
+- servicemonitor.yaml
+# 보드게임 전체 대시보드·알림은 포털과 함께 배포 (게임 서버 지표도 여기서 본다)
+- prometheusrule.yaml
+configMapGenerator:
+- name: boardgame-grafana-dashboard
+  files:
+  - boardgame.json=monitoring/boardgame-dashboard.json
+  options:
+    disableNameSuffixHash: true
+    labels:
+      grafana_dashboard: "1"
 labels:
 - pairs:
     app.kubernetes.io/part-of: boardgame

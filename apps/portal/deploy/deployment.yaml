@@ -29,6 +29,8 @@ spec:
           ports:
             - name: http
               containerPort: 8080
+            - name: metrics # 내부 전용 Prometheus 지표 (/metrics)
+              containerPort: 9464
           readinessProbe:
             httpGet: { path: /readyz, port: http }
             periodSeconds: 5

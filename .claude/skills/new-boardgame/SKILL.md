@@ -116,6 +116,12 @@ scripts/  local.mjs(운영과 같은 경로 게이트웨이) · bundle.mjs(이�
 5. 확인: `curl https://boardgame.shinkeonkim.com/<id>/readyz`, 포털 목록에 나타나는지, 실제 브라우저로 한 판.
 - 이 세션 환경에서는 main push가 자동 모드 분류기에 막힐 수 있다 → 사용자에게 `! git push` 를 부탁한다.
 
+## 7-1. 모니터링 (docs/monitoring.md)
+
+- 공통 지표(방·사람·게임 시작/완료·수·입장 실패·감정 표현·무중단 배포·프로세스)는 플랫폼이 이미 낸다 — 새 게임은 아무것도 안 해도 Grafana「보드게임 테이블」 대시보드의 `game` 변수에 나타난다.
+- 새 게임 deploy/에 `servicemonitor.yaml`(포트 `metrics` 9464)을 복사하고, oh-my-homelab 네트워크 정책에 `monitoring` 네임스페이스 → 9464 허용을 넣는다.
+- 게임만의 지표가 필요하면(예: 기사 사용 수) 게임 서버 쪽에서 `metrics.counter`를 더하고 dashboard.mjs에 패널을 추가한다.
+
 ## 8. QA 체크리스트 (자동화 스크립트로 반복)
 
 - `npm test`(엔진·퍼즈·방 흐름) · `npm run typecheck` · `npm run build`.
@@ -168,6 +174,6 @@ scripts/  local.mjs(운영과 같은 경로 게이트웨이) · bundle.mjs(이�
 - [ ] 모든 문구를 docs/ux-writing.md 체크리스트로 확인 (해요체·동사 버튼·용어표)
 - [ ] meta.ts (포털에 자동 표시)
 - [ ] `npm test && npm run typecheck && npm run build && npm run local` 로 한 판 + QA 크기·테마
-- [ ] deploy/ · release-<id>.yml · `npm run media`(포털 표지 `apps/portal/public/covers/<id>.jpg`, 게임 방법 영상)
+- [ ] deploy/(servicemonitor 포함) · release-<id>.yml · `npm run media`(포털 표지 `apps/portal/public/covers/<id>.jpg`, 게임 방법 영상)
 - [ ] oh-my-homelab PR (ArgoCD 앱 + 네트워크 정책) → merge 후 확인
 - [ ] 쓸 만한 새 UI는 packages/ui로 올리고 /design에 예시 추가, 새 함정은 이 문서 10절에 추가

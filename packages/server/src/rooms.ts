@@ -1,5 +1,6 @@
 import { randomBytes, randomInt, scryptSync, timingSafeEqual } from 'node:crypto';
 import { AnyGameModule, BASE_EMOTES, EmoteDef, EmoteEvent, PausedInfo, RoomView, isRuleError } from '@bg/core';
+import { Metrics, noMetrics } from './metrics';
 
 const CODE_ALPHABET = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
 /** 모두 나간(접속자 0) 상태로 이만큼 아무 일도 없으면 방을 해제한다 (ROOM_IDLE_MINUTES, 기본 60분) */
@@ -40,6 +41,8 @@ export interface Room<Config = unknown, Match = unknown> {
   timer: NodeJS.Timeout | null;
   lastActive: number;
   failedPasswords: number[];
+  /** 지금 매치를 시작한 시각 (지표: 게임 길이) */
+  startedAt?: number;
 }
 
 /** 무중단 배포 때 이전 파드 → 새 파드로 넘기는 방 하나 (JSON) */
@@ -73,12 +76,37 @@ export class Rooms {
   constructor(
     readonly game: AnyGameModule,
     private onChange: Listener = () => {},
-    private opts: { maxRooms?: number; extraEmotes?: EmoteDef[] } = {},
+    private opts: { maxRooms?: number; extraEmotes?: EmoteDef[]; metrics?: Metrics } = {},
   ) {
     this.emotes = [...BASE_EMOTES, ...(opts.extraEmotes ?? [])];
+    this.m = opts.metrics ?? noMetrics;
+    const m = this.m;
+    this.c = {
+      created: m.counter('bg_rooms_created_total', '만들어진 방'),
+      removed: m.counter('bg_rooms_removed_total', '없어진 방 (reason: closed=방장이 닫음, empty=모두 나감, idle=1시간 유휴)'),
+      joins: m.counter('bg_joins_total', '방 입장 (kind: player|spectator|rejoin)'),
+      joinFail: m.counter('bg_join_failures_total', '입장 실패 (reason: not_found|password|password_limit|full)'),
+      started: m.counter('bg_matches_started_total', '시작한 게임 (players: 인원)'),
+      finished: m.counter('bg_matches_finished_total', '끝까지 마친 게임 (players: 인원)'),
+      rounds: m.counter('bg_rounds_finished_total', '끝난 판'),
+      moves: m.counter('bg_moves_total', '둔 수'),
+      rejected: m.counter('bg_moves_rejected_total', '규칙에 맞지 않아 거절된 수'),
+      timeouts: m.counter('bg_auto_moves_total', '자동으로 둔 차례 (cause: timer=시간 초과, nudge=대신 진행)'),
+      kicks: m.counter('bg_kicks_total', '방장이 내보낸 사람'),
+      paused: m.counter('bg_matches_paused_total', '방장이 멈춘 게임'),
+      resumed: m.counter('bg_matches_resumed_total', '이어서 한 게임'),
+      emotes: m.counter('bg_emotes_total', '보낸 감정 표현 (emote: id)'),
+      createRejected: m.counter('bg_room_create_rejected_total', '방이 가득 차서 만들지 못한 횟수'),
+    };
+    // 라벨 없는 카운터는 0으로 미리 내보내 Grafana에 "데이터 없음" 대신 0이 보이게
+    for (const k of ['created', 'rounds', 'moves', 'rejected', 'kicks', 'paused', 'resumed', 'createRejected']) this.c[k]({}, 0);
+    this.duration = m.histogram('bg_match_duration_seconds', '게임 하나(모든 판) 걸린 시간', [120, 300, 600, 900, 1200, 1800, 2700, 3600, 5400]);
   }
+  private m: Metrics;
+  private c: Record<string, (labels?: Record<string, string | number>, by?: number) => void>;
+  private duration: (v: number, labels?: Record<string, string | number>) => void;
 
-  private get maxRooms() {
+  get maxRooms() {
     return this.opts.maxRooms ?? MAX_ROOMS;
   }
 
@@ -95,13 +123,17 @@ export class Rooms {
 
   get(code: string): Room {
     const room = this.rooms.get(normalizeCode(code));
-    if (!room) throw new RoomError('방을 찾을 수 없어요. 방 코드를 다시 확인해 주세요');
+    if (!room) {
+      this.c.joinFail({ reason: 'not_found' });
+      throw new RoomError('방을 찾을 수 없어요. 방 코드를 다시 확인해 주세요');
+    }
     return room;
   }
 
   create(name: string, password?: string): { room: Room; member: Member } {
     if (this.rooms.size >= this.maxRooms) this.sweep();
     if (this.rooms.size >= this.maxRooms) {
+      this.c.createRejected();
       throw new RoomError(`지금은 방이 모두 찼어요(최대 ${this.maxRooms}개). 친구 방에 들어가거나 조금 뒤 다시 만들어 주세요`);
     }
     const member = makeMember(name, 'player');
@@ -119,6 +151,8 @@ export class Rooms {
       failedPasswords: [],
     };
     this.rooms.set(room.code, room);
+    this.c.created();
+    this.c.joins({ kind: 'player' });
     return { room, member };
   }
 
@@ -127,14 +161,19 @@ export class Rooms {
     const room = this.get(code);
     if (opts.token) {
       const existing = room.members.find((m) => m.token === opts.token);
-      if (existing) return { room, member: existing };
+      if (existing) {
+        this.c.joins({ kind: 'rejoin' });
+        return { room, member: existing };
+      }
     }
     if (room.password) {
       const now = Date.now();
       room.failedPasswords = room.failedPasswords.filter((t) => now - t < PW_FAIL_WINDOW_MS);
+      if (room.failedPasswords.length >= PW_FAIL_LIMIT) this.c.joinFail({ reason: 'password_limit' });
       if (room.failedPasswords.length >= PW_FAIL_LIMIT) throw new RoomError('암호를 여러 번 틀렸어요. 몇 분 뒤 다시 시도해 주세요');
       if (!checkPassword(room.password, opts.password ?? '')) {
         room.failedPasswords.push(now);
+        this.c.joinFail({ reason: 'password' });
         throw new RoomError('암호가 달라요. 방장에게 암호를 다시 물어봐 주세요');
       }
     }
@@ -143,6 +182,7 @@ export class Rooms {
     const member = makeMember(uniqueName(room, opts.name), asPlayer ? 'player' : 'spectator');
     member.backInLobby = true; // 끝난 매치 결과를 볼 필요 없이 바로 대기 로비로
     room.members.push(member);
+    this.c.joins({ kind: member.role });
     this.touch(room);
     return { room, member };
   }
@@ -167,7 +207,7 @@ export class Rooms {
       throw new RoomError('게임이 끝나면 나갈 수 있어요. 창을 닫아도 다시 열면 이어서 할 수 있어요');
     }
     room.members = room.members.filter((m) => m !== member);
-    if (room.members.length === 0) return this.remove(room);
+    if (room.members.length === 0) return this.remove(room, 'empty');
     this.ensureHost(room);
     this.touch(room);
   }
@@ -189,6 +229,7 @@ export class Rooms {
     if (!this.lobbyOpen(room)) throw new RoomError('게임이 끝난 뒤에 내보낼 수 있어요');
     if (targetId === by.id) throw new RoomError('나 자신은 내보낼 수 없어요');
     room.members = room.members.filter((m) => m.id !== targetId);
+    this.c.kicks();
     this.touch(room);
   }
 
@@ -243,6 +284,8 @@ export class Rooms {
     });
     players.forEach((m, i) => (m.seat = i));
     room.match = this.rule(() => this.game.newMatch(room.config, players.length, rng));
+    room.startedAt = Date.now();
+    this.c.started({ players: players.length });
     room.paused = null; // 새 게임을 시작하면 중지했던 게임은 버린다
     this.resetTimer(room);
     this.touch(room);
@@ -261,10 +304,31 @@ export class Rooms {
     if (member.seat === null) throw new RoomError('관전 중에는 둘 수 없어요');
     if (!this.game.isMove(move)) throw new RoomError('처리할 수 없는 동작이에요. 화면을 새로고침해 주세요');
     const before = [this.game.turn(match), this.game.round(match), this.game.status(match)].join();
-    this.rule(() => this.game.applyMove(match, member.seat!, move));
+    try {
+      this.rule(() => this.game.applyMove(match, member.seat!, move));
+    } catch (e) {
+      this.c.rejected();
+      throw e;
+    }
+    this.c.moves();
+    this.afterProgress(room, before);
     const after = [this.game.turn(match), this.game.round(match), this.game.status(match)].join();
     if (after !== before) this.resetTimer(room);
     this.touch(room);
+  }
+
+  /** 판·게임이 끝났는지 보고 지표를 남긴다 */
+  private afterProgress(room: Room, before: string) {
+    const match = room.match;
+    if (!match) return;
+    const status = this.game.status(match);
+    if (before.endsWith(status)) return;
+    if (status === 'round-over' || status === 'match-over') this.c.rounds();
+    if (status === 'match-over') {
+      const players = room.members.filter((m) => m.seat !== null).length;
+      this.c.finished({ players });
+      if (room.startedAt) this.duration((Date.now() - room.startedAt) / 1000);
+    }
   }
 
   /** 다음 판 시작 또는 (매치 종료 후) 로비로. expect: 클라이언트가 본 판 번호(1부터)/상태 — 이미 진행됐으면 조용히 무시 */
@@ -314,6 +378,7 @@ export class Rooms {
     for (const m of room.members) if (m.seat !== null) seatIds[m.seat] = m.id;
     room.paused = { match, seatIds };
     room.match = null;
+    this.c.paused();
     room.members.forEach((m) => {
       m.seat = null;
       m.backInLobby = false;
@@ -336,6 +401,7 @@ export class Rooms {
       m.backInLobby = false;
     });
     room.paused = null;
+    this.c.resumed();
     this.resetTimer(room);
     this.touch(room);
   }
@@ -382,6 +448,7 @@ export class Rooms {
     const last = member.emoteTimes[member.emoteTimes.length - 1];
     if ((last !== undefined && now - last < 1000) || member.emoteTimes.length >= 5) throw new RoomError('감정 표현은 조금 천천히 보내 주세요');
     member.emoteTimes.push(now);
+    this.c.emotes({ emote: e.id });
     this.emoteSeq = (this.emoteSeq + 1) % 1_000_000;
     return { from: member.id, name: member.name, seat: room.match ? member.seat : null, id: e.id, n: this.emoteSeq };
   }
@@ -389,7 +456,7 @@ export class Rooms {
   /** 방장이 방을 닫는다 — 모두 내보내고 방 해제 */
   close(room: Room, by: Member) {
     this.requireHost(room, by);
-    this.remove(room);
+    this.remove(room, 'closed');
   }
 
   /** 끊긴 플레이어의 차례를 다른 플레이어가 대신 진행 */
@@ -400,7 +467,7 @@ export class Rooms {
     const wait = this.nudgeInMs(room);
     if (wait === null) throw new RoomError('차례인 사람이 접속해 있어요. 조금만 기다려 주세요');
     if (wait > 0) throw new RoomError(`${Math.ceil(wait / 1000)}초 뒤에 대신 진행할 수 있어요`);
-    this.timeout(room);
+    this.timeout(room, 'nudge');
   }
 
   nudgeInMs(room: Room, now = Date.now()): number | null {
@@ -412,13 +479,16 @@ export class Rooms {
   }
 
   /** 시간 초과·대신 진행: 지금 차례인 사람의 차례가 넘어갈 때까지 자동으로 둔다 */
-  timeout(room: Room) {
+  timeout(room: Room, cause: 'timer' | 'nudge' = 'timer') {
     const match = room.match;
     if (!match || this.game.status(match) !== 'playing') return;
+    this.c.timeouts({ cause });
+    const before = [this.game.turn(match), this.game.round(match), this.game.status(match)].join();
     const turn = this.game.turn(match);
     for (let guard = 0; guard < 4 && this.game.status(match) === 'playing' && this.game.turn(match) === turn; guard++) {
       this.game.applyMove(match, turn, this.game.autoMove(match));
     }
+    this.afterProgress(room, before);
     this.resetTimer(room);
     this.touch(room);
   }
@@ -536,16 +606,16 @@ export class Rooms {
     }
   }
 
-  remove(room: Room) {
+  remove(room: Room, reason: 'closed' | 'empty' | 'idle' = 'closed') {
     this.clearTimer(room);
-    this.rooms.delete(room.code);
+    if (this.rooms.delete(room.code)) this.c.removed({ reason });
   }
 
   /** 모두 나간 채(접속자 0) IDLE_ROOM_MS 동안 활동이 없는 방 해제 — 1분마다 + 방 생성 시 호출 */
   sweep(now = Date.now(), idleMs = IDLE_ROOM_MS) {
     for (const room of this.rooms.values()) {
       const anyone = room.members.some((m) => m.connections > 0);
-      if (!anyone && now - room.lastActive > idleMs) this.remove(room);
+      if (!anyone && now - room.lastActive > idleMs) this.remove(room, 'idle');
     }
   }
 

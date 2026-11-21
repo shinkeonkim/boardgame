@@ -4,6 +4,7 @@ import { join, resolve } from 'node:path';
 import { Server, Socket } from 'socket.io';
 import { AnyGameModule, DRAIN_MESSAGE, EmoteDef } from '@bg/core';
 import { pullFromPeer, serveHandoff } from './handoff';
+import { Metrics } from './metrics';
 import { Member, Room, RoomError, Rooms, normalizeCode } from './rooms';
 import { serveStatic } from './static';
 
@@ -75,7 +76,43 @@ export function createGameServer(opts: GameServerOptions) {
     }
   });
   const io = new Server(http, { path: `${BASE}/socket.io`, cors: { origin: process.env.CORS_ORIGIN ?? false } });
-  const rooms = new Rooms(opts.game, (room) => broadcast(room), { extraEmotes: opts.extraEmotes });
+  const metrics = new Metrics({ game: opts.game.id });
+  const rooms = new Rooms(opts.game, (room) => broadcast(room), { extraEmotes: opts.extraEmotes, metrics });
+  const serverErrors = metrics.counter('bg_server_errors_total', '처리하지 못한 서버 오류');
+  const handoffRooms = metrics.counter('bg_handoff_rooms_total', '무중단 배포로 넘겨준(out)/넘겨받은(in) 방');
+  serverErrors({}, 0);
+  handoffRooms({ direction: 'out' }, 0);
+  handoffRooms({ direction: 'in' }, 0);
+  metrics.onCollect(() => {
+    const state = { lobby: 0, playing: 0, round_over: 0, match_over: 0, paused: 0 };
+    const people = { player: { true: 0, false: 0 }, spectator: { true: 0, false: 0 } };
+    const bySize: Record<number, number> = {};
+    let withPassword = 0;
+    let longest = 0;
+    for (const room of rooms.rooms.values()) {
+      if (room.paused && !room.match) state.paused++;
+      else if (!room.match) state.lobby++;
+      else state[opts.game.status(room.match).replace('-', '_') as 'playing'] += 1;
+      if (room.password) withPassword++;
+      const players = room.members.filter((m) => m.role === 'player').length;
+      bySize[players] = (bySize[players] ?? 0) + 1;
+      for (const m of room.members) people[m.role][String(m.connections > 0) as 'true']++;
+      if (room.match && room.startedAt) longest = Math.max(longest, (Date.now() - room.startedAt) / 1000);
+    }
+    metrics.set('bg_rooms', '지금 있는 방 수', rooms.rooms.size);
+    for (const [k, v] of Object.entries(state)) metrics.set('bg_rooms_by_state', '방 상태별 수 (lobby=대기실, playing=게임 중, round_over=판 결과, match_over=게임 결과, paused=멈춤)', v, { state: k });
+    for (const [k, v] of Object.entries(bySize)) metrics.set('bg_rooms_by_players', '플레이어 수별 방 수', v, { players: k });
+    for (const role of ['player', 'spectator'] as const)
+      for (const c of ['true', 'false'] as const) metrics.set('bg_members', '방에 있는 사람 (role, connected)', people[role][c], { role, connected: c });
+    metrics.set('bg_rooms_with_password', '암호가 걸린 방', withPassword);
+    metrics.set('bg_room_capacity', '동시에 열 수 있는 방 수(MAX_ROOMS)', rooms.maxRooms);
+    metrics.set('bg_longest_match_seconds', '지금 진행 중인 가장 긴 게임의 시간', longest);
+    metrics.set('bg_sockets', '열린 소켓 연결', io.engine.clientsCount);
+    metrics.set('bg_ready', '트래픽을 받을 준비가 됨(1)', ready && !draining ? 1 : 0);
+    metrics.set('bg_draining', '무중단 배포로 방을 넘겨준 뒤 종료 대기 중(1)', draining ? 1 : 0);
+  });
+  const METRICS_PORT = Number(process.env.METRICS_PORT ?? 9464) || 0;
+  if (METRICS_PORT) metrics.serve(METRICS_PORT);
 
   function broadcast(room: Room) {
     for (const m of room.members) io.to(`m:${room.code}:${m.id}`).emit('room', rooms.view(room, m));
@@ -102,7 +139,10 @@ export function createGameServer(opts: GameServerOptions) {
         if (typeof ack === 'function') ack({ ok: true, ...(r ?? {}) });
       } catch (e) {
         const msg = e instanceof RoomError ? e.message : '문제가 생겼어요. 잠시 뒤 다시 시도해 주세요';
-        if (!(e instanceof RoomError)) console.error(e);
+        if (!(e instanceof RoomError)) {
+          console.error(e);
+          serverErrors();
+        }
         if (typeof ack === 'function') ack({ ok: false, error: msg });
         else socket.emit('error-message', msg);
       }
@@ -263,6 +303,7 @@ export function createGameServer(opts: GameServerOptions) {
       draining = true;
       rooms.freezeTimers();
       const snap = rooms.exportAll();
+      handoffRooms({ direction: 'out' }, snap.length);
       console.log(`handoff: 방 ${snap.length}개를 새 파드로 넘김 — 종료 대기`);
       // 보통은 곧 SIGTERM이 온다. 새 파드가 뜨지 못해 안 오면 다시 진행을 받는다
       setTimeout(() => {
@@ -293,7 +334,11 @@ export function createGameServer(opts: GameServerOptions) {
     if (HANDOFF_PEER) {
       const body = await pullFromPeer<{ game?: string; rooms: unknown }>(HANDOFF_PEER, HANDOFF_SECRET);
       if (body && body.game && body.game !== opts.game.id) console.log(`handoff: 다른 게임(${body.game})의 상태라 무시`);
-      else if (body) console.log(`handoff: 이전 파드에서 방 ${rooms.importAll(body.rooms).imported}개를 넘겨받음`);
+      else if (body) {
+        const { imported } = rooms.importAll(body.rooms);
+        handoffRooms({ direction: 'in' }, imported);
+        console.log(`handoff: 이전 파드에서 방 ${imported}개를 넘겨받음`);
+      }
     }
     ready = true;
   });
