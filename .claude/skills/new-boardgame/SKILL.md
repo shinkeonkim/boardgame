@@ -72,6 +72,8 @@ scripts/  local.mjs(운영과 같은 경로 게이트웨이) · bundle.mjs(이�
 - 한 명씩 두는 게임은 `turn`만 있으면 된다. **여럿이 동시에 고르는 게임**(모두 카드 한 장씩)이나 **끼어들기**(도전·막기 대기)는 `actors(match)`로 지금 둘 수 있는 좌석 목록을 돌려준다.
 - 플랫폼이 `actors` 기준으로 타이머(시간 초과 → 남은 사람만 `autoMove(match, seat)`), 대신 진행(끊긴 사람만), 봇 차례를 처리한다. 한 명이 골라 남은 사람이 줄기만 하면 타이머는 이어진다.
 - 동시 선택은 공개 전까지 `viewFor`에서 남의 선택을 `true`(골랐음)로만 보낸다.
+- **끼어들기 창**(도전·막기)은 단계(phase)로 만들고 `actors`에 반응할 사람들을 넣는다. `timerSec(match)`로 그 창에만 짧은 제한시간(예: 12초)을 두면, 설정에 턴 타이머가 없어도 시간이 지나 `autoMove`(=통과)로 넘어간다 (Court Intrigue).
+- 같은 팀 사람이 의논해야 하는 단계면 봇에 `deferToHumans: true` (Cipher Ops).
 
 ## 3-2. 봇 (`games/<id>/engine/src/bot.ts`, 공통: `packages/core/src/bot.ts`)
 

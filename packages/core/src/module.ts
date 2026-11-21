@@ -44,6 +44,11 @@ export interface GameModule<Config extends object, Match, Move, View> {
   lobbySummary(config: Config, players: number): LobbySummary;
   /** 0이면 턴 제한 없음 */
   turnTimerSec(config: Config): number;
+  /**
+   * 지금 단계의 제한시간(초). 없으면 turnTimerSec. 끼어들기 게임에서 "도전할 사람?" 같은 짧은 대기 창에
+   * 설정과 상관없이 시간을 두어 사람이 버튼을 안 눌러도 게임이 멈추지 않게 한다 (시간이 지나면 autoMove = 통과).
+   */
+  timerSec?(match: Match): number;
 
   newMatch(config: Config, players: number, rng: Rng): Match;
   /** 서버로 들어온 임의의 값이 이 게임의 수인지 (모양만 검사, 규칙 검사는 applyMove) */

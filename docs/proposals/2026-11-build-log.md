@@ -12,8 +12,8 @@
 | 4 | 허풍 주사위 (Liar's Dice) | `bluff-dice` | ✅ |
 | 5 | 숫자 금고 (다빈치 코드) | `number-vault` | ✅ |
 | 6 | 비밀 편지 (Love Letter) | `sealed-letter` | ✅ |
-| 7 | 궁정 음모 (Coup) | `court-intrigue` | 진행 중 |
-| 8 | 접시 돌리기 (Sushi Go!) | `pass-the-plate` | |
+| 7 | 궁정 음모 (Coup) | `court-intrigue` | ✅ |
+| 8 | 접시 돌리기 (Sushi Go!) | `pass-the-plate` | 진행 중 |
 | 9 | 숨은 가시 (Skull) | `hidden-thorn` | |
 | 10 | 깃발 전선 (Battle Line) | `flag-line` | |
 | 11 | 보석 상단 (Splendor) | `gem-guild` | |

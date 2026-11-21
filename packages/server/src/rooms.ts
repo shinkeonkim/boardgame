@@ -704,7 +704,7 @@ export class Rooms {
   /** ms를 주면 그만큼 남은 타이머로 (무중단 배포 때 이어받기) */
   private resetTimer(room: Room, ms?: number) {
     this.clearTimer(room);
-    const sec = this.game.turnTimerSec(room.match ? this.game.config(room.match) : room.config);
+    const sec = room.match && this.game.timerSec ? this.game.timerSec(room.match) : this.game.turnTimerSec(room.match ? this.game.config(room.match) : room.config);
     if (!room.match || this.game.status(room.match) !== 'playing' || sec <= 0) return;
     const wait = Math.max(0, ms ?? sec * 1000);
     room.turnDeadline = Date.now() + wait;

@@ -1,0 +1,259 @@
+/* ---------- Court Intrigue 전용 ---------- */
+:root {
+  --court: #efe7f6;
+  --gold-coin: #e3b04a;
+}
+:root[data-theme='dark'] {
+  --court: #231c2e;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --court: #231c2e;
+  }
+}
+.rcard {
+  --w: 104px;
+  position: relative;
+  width: var(--w);
+  aspect-ratio: 5 / 7;
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--tone) 14%, var(--panel));
+  border: 2px solid var(--tone);
+  color: var(--ink);
+  display: grid;
+  grid-template-rows: auto auto 1fr;
+  justify-items: center;
+  align-content: start;
+  gap: 3px;
+  padding: 8px 6px;
+  font: inherit;
+  text-align: center;
+  flex: none;
+  transition: transform 0.15s, opacity 0.2s;
+}
+.rcard.sm {
+  --w: 46px;
+  padding: 4px 2px;
+  gap: 0;
+}
+.rcard.xs {
+  --w: 30px;
+  padding: 2px;
+}
+.rcard-icon {
+  font-size: calc(var(--w) * 0.32);
+}
+.rcard-name {
+  font-weight: 800;
+  font-size: calc(var(--w) * 0.14);
+}
+.rcard.sm .rcard-name {
+  font-size: 0.6rem;
+}
+.rcard.xs .rcard-name {
+  display: none;
+}
+.rcard-text {
+  font-size: 0.68rem;
+  line-height: 1.3;
+  display: grid;
+  gap: 2px;
+}
+.rcard.back {
+  background: repeating-linear-gradient(45deg, #3a2f4d, #3a2f4d 5px, #45385c 5px, #45385c 10px);
+  border-color: #2a2238;
+}
+.rcard.lost {
+  opacity: 0.45;
+  filter: grayscale(0.6);
+}
+.rcard.lost::after {
+  content: '';
+  position: absolute;
+  left: 10%;
+  right: 10%;
+  top: 50%;
+  height: 3px;
+  background: var(--danger);
+  transform: rotate(-30deg);
+}
+button.rcard {
+  cursor: pointer;
+}
+button.rcard:hover {
+  transform: translateY(-4px);
+}
+.rcard.selected {
+  outline: 3px solid var(--gold);
+  outline-offset: 2px;
+  transform: translateY(-8px);
+}
+.coins {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-weight: 800;
+}
+.coins i {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #fff2c4, var(--gold-coin) 60%, #a77a1e);
+}
+.ci-court {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 8px;
+}
+.ci-seat {
+  position: relative;
+  padding: 8px;
+  border-radius: 12px;
+  background: var(--court);
+  border: 1px solid var(--line);
+  border-top: 4px solid var(--seat);
+}
+.ci-seat.acting {
+  box-shadow: 0 0 0 2px var(--gold);
+}
+.ci-seat.targeted {
+  box-shadow: 0 0 0 2px var(--danger);
+}
+.ci-seat.out {
+  opacity: 0.5;
+}
+.ci-seat-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+.ci-seat .seat-name {
+  position: relative;
+  display: inline-flex;
+  gap: 4px;
+  align-items: center;
+}
+.ci-seat .emote-bubble {
+  left: 0;
+  bottom: calc(100% + 4px);
+}
+.ci-cards {
+  display: flex;
+  gap: 5px;
+}
+.ci-pass {
+  position: absolute;
+  bottom: 6px;
+  right: 8px;
+  font-size: 0.7rem;
+  font-weight: 800;
+  color: var(--ok);
+}
+.ci-actions {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+  gap: 6px;
+}
+.ci-act {
+  display: grid;
+  gap: 1px;
+  padding: 6px 4px;
+  border-radius: 10px;
+  border: 2px solid var(--line);
+  background: var(--panel);
+  color: var(--ink);
+  font: inherit;
+  cursor: pointer;
+}
+.ci-act small {
+  font-size: 0.68rem;
+  color: var(--muted);
+}
+.ci-act.bluff {
+  border-style: dashed;
+}
+.ci-act.on,
+.ci-act:hover:not(:disabled) {
+  border-color: var(--accent);
+}
+.ci-act:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+.ci-react .btn {
+  min-width: 110px;
+}
+.danger-btn {
+  background: var(--danger);
+  color: #fff;
+  border-color: var(--danger);
+}
+.ci-ref {
+  display: grid;
+  gap: 4px;
+}
+.ci-ref-row {
+  display: grid;
+  gap: 0;
+}
+.log-list {
+  display: grid;
+  gap: 4px;
+  max-height: 260px;
+  overflow: auto;
+}
+.center {
+  text-align: center;
+}
+.sl-step {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+}
+.sl-guide-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 8px;
+}
+.sl-guide-card {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.ci-preview {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  margin: 8px 0 4px;
+}
+.ci-demo {
+  display: grid;
+  gap: 10px;
+  padding: 14px;
+  border-radius: 16px;
+  background: var(--court);
+  width: min(100%, 320px);
+}
+.ci-demo-row {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+.ci-demo-say {
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+@media (max-width: 759px), (max-aspect-ratio: 1/1) {
+  .ci-court {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 6px;
+  }
+  .rcard {
+    --w: 92px;
+  }
+  .rcard.sm {
+    --w: 38px;
+  }
+}

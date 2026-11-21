@@ -1,0 +1,42 @@
+import { ROLE_DEFS, Role } from '@bg/court-intrigue-engine';
+
+export function RoleCard({ role, lost, size = 'md', selected, onClick, hidden }: { role: Role | null; lost?: boolean; size?: 'xs' | 'sm' | 'md'; selected?: boolean; onClick?: () => void; hidden?: boolean }) {
+  const Tag = onClick ? 'button' : 'div';
+  if (!role || hidden) return <Tag className={`rcard back ${size} ${lost ? 'lost' : ''}`} onClick={onClick} aria-label="가려진 카드" />;
+  const d = ROLE_DEFS[role];
+  return (
+    <Tag className={`rcard ${size} ${lost ? 'lost' : ''} ${selected ? 'selected' : ''}`} style={{ ['--tone' as string]: d.color }} onClick={onClick} aria-label={`${d.name}${lost ? ' (잃음)' : ''}`}>
+      <span className="rcard-icon" aria-hidden>
+        {d.icon}
+      </span>
+      <span className="rcard-name">{d.name}</span>
+      {size === 'md' && (
+        <span className="rcard-text">
+          {d.action !== '—' && <span>{d.action}</span>}
+          {d.block !== '—' && <span>🚫 {d.block}</span>}
+        </span>
+      )}
+    </Tag>
+  );
+}
+
+export function Coins({ n }: { n: number }) {
+  return (
+    <span className="coins" title={`금화 ${n}개`}>
+      <i aria-hidden />
+      {n}
+    </span>
+  );
+}
+
+export function Logo({ size = 48 }: { size?: number }) {
+  return (
+    <svg viewBox="0 0 64 64" width={size} height={size} aria-hidden>
+      <rect width="64" height="64" rx="14" fill="#231c2e" />
+      <path d="M20 44 L22 24 L28 32 L32 20 L36 32 L42 24 L44 44 Z" fill="#d79a1e" />
+      <rect x="18" y="46" width="28" height="5" rx="2" fill="#d79a1e" />
+      <circle cx="47" cy="18" r="7" fill="#8a5cd0" />
+      <text x="47" y="22" textAnchor="middle" fontSize="10" fontWeight="900" fill="#fff" fontFamily="system-ui">?</text>
+    </svg>
+  );
+}
