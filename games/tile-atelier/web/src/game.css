@@ -1,0 +1,219 @@
+/* ---------- Tile Atelier 전용 ---------- */
+:root {
+  --plaza: #f3ead8;
+  --slot: #e4d8bf;
+}
+:root[data-theme='dark'] {
+  --plaza: #2a2620;
+  --slot: #3d362c;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --plaza: #2a2620;
+    --slot: #3d362c;
+  }
+}
+.tile {
+  display: inline-grid;
+  place-items: center;
+  border-radius: 5px;
+  background: var(--tile);
+  border: 0;
+  padding: 0;
+  flex: none;
+  box-shadow: inset 0 -2px 0 rgb(0 0 0 / 0.25), 0 1px 2px rgb(0 0 0 / 0.2);
+  color: rgb(255 255 255 / 0.75);
+  font-size: 0.7em;
+  transition: transform 0.15s;
+}
+.tile i {
+  font-style: normal;
+}
+.tile.first {
+  background: #fff;
+  color: #222;
+  font-weight: 900;
+  border: 2px solid #222;
+}
+button.tile {
+  cursor: pointer;
+}
+button.tile:hover {
+  transform: translateY(-2px);
+}
+.tile.selected {
+  outline: 3px solid var(--accent);
+  outline-offset: 1px;
+}
+.tile.ghost {
+  opacity: 0.25;
+}
+.ta-factories {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+  padding: 10px;
+  border-radius: 16px;
+  background: var(--plaza);
+}
+.ta-factory {
+  display: grid;
+  grid-template-columns: repeat(2, auto);
+  gap: 3px;
+  padding: 8px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--panel) 70%, var(--plaza));
+  border: 2px solid var(--slot);
+  min-width: 70px;
+  min-height: 70px;
+  place-content: center;
+}
+.ta-factory.empty {
+  opacity: 0.35;
+}
+.ta-center {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+  padding: 8px;
+  min-width: 120px;
+  min-height: 70px;
+  border-radius: 14px;
+  border: 2px dashed var(--slot);
+  align-content: center;
+  justify-content: center;
+}
+.ta-board {
+  display: grid;
+  grid-template-columns: auto auto;
+  grid-template-areas: 'lines wall' 'floor floor';
+  gap: 6px 10px;
+  justify-content: center;
+}
+.ta-lines {
+  grid-area: lines;
+  display: grid;
+  gap: 2px;
+}
+.ta-line {
+  display: flex;
+  justify-content: flex-end;
+  gap: 2px;
+  border-radius: 4px;
+}
+.ta-line.can {
+  cursor: pointer;
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+}
+.ta-slot,
+.ta-cell {
+  display: inline-grid;
+  place-items: center;
+  border-radius: 5px;
+  background: var(--slot);
+  flex: none;
+}
+.ta-cell {
+  background: color-mix(in srgb, var(--tile) 22%, var(--slot));
+  color: color-mix(in srgb, var(--tile) 60%, transparent);
+  font-size: 0.65em;
+}
+.ta-cell i {
+  font-style: normal;
+}
+.ta-cell.can {
+  cursor: pointer;
+  outline: 2px solid var(--accent);
+}
+.ta-wall {
+  grid-area: wall;
+  display: grid;
+  gap: 2px;
+}
+.ta-floor {
+  grid-area: floor;
+  display: flex;
+  gap: 2px;
+  justify-content: center;
+  padding: 2px;
+  border-radius: 6px;
+}
+.ta-floor.can {
+  cursor: pointer;
+  outline: 2px dashed var(--danger);
+}
+.ta-floor-slot {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  border-radius: 5px;
+  background: color-mix(in srgb, var(--danger) 12%, var(--slot));
+}
+.ta-floor-slot small {
+  position: absolute;
+  bottom: -1px;
+  right: 2px;
+  font-size: 0.55rem;
+  color: var(--danger);
+  font-weight: 800;
+}
+.ta-mine {
+  justify-items: center;
+}
+.ta-ref {
+  display: grid;
+  gap: 3px;
+}
+.ta-preview {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  margin: 8px 0 4px;
+}
+.ta-demo {
+  display: grid;
+  justify-items: center;
+  gap: 10px;
+  padding: 16px;
+  border-radius: 16px;
+  background: var(--plaza);
+  width: min(100%, 320px);
+}
+.ta-demo-line {
+  display: flex;
+  gap: 3px;
+  align-items: center;
+}
+.ta-demo-arrow {
+  margin: 0 8px;
+  font-weight: 900;
+}
+.ta-demo-say {
+  font-weight: 700;
+  font-size: 0.85rem;
+}
+@media (max-width: 759px), (max-aspect-ratio: 1/1) {
+  .ta-factories {
+    gap: 6px;
+    padding: 6px;
+  }
+  .ta-factory {
+    min-width: 58px;
+    min-height: 58px;
+    padding: 5px;
+  }
+  .ta-factory .tile,
+  .ta-center .tile {
+    width: 22px !important;
+    height: 22px !important;
+  }
+  .ta-mine .ta-board {
+    --ts: 24px;
+  }
+}
+.ta-mine .hand-panel-head {
+  justify-self: stretch;
+}
