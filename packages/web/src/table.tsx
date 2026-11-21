@@ -145,7 +145,8 @@ export function TableTopBar({ view, act, round, rounds, over, children }: { view
       <div className="small">
         {round !== undefined && (
           <b>
-            {round}/{rounds ?? 1}판
+            {round}
+            {rounds ? `/${rounds}` : ''}판
           </b>
         )}
         <span className="muted"> · {view.code}</span>

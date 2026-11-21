@@ -1,0 +1,63 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sealed-letter
+spec:
+  # 방/게임 상태는 메모리에 있으므로 준비된 파드는 언제나 1개. 무중단 배포:
+  # 새 파드를 먼저 띄우고(maxSurge 1), 새 파드는 sealed-letter-handoff Service(= Ready인 이전 파드)에서 방 상태를
+  # 받아온 뒤에야 Ready가 된다. 이전 파드는 넘겨준 순간 Ready를 내리고(진행 요청은 잠깐 거절),
+  # SIGTERM에 연결을 끊어 클라이언트가 새 파드로 자동 재접속한다. (packages/server/src/handoff.ts)
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels: &labels
+      app.kubernetes.io/name: sealed-letter
+  template:
+    metadata:
+      labels: *labels
+    spec:
+      terminationGracePeriodSeconds: 15
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        runAsGroup: 10001
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: app
+          image: ghcr.io/shinkeonkim/boardgame-sealed-letter:latest
+          ports:
+            - name: http
+              containerPort: 8080
+            - name: metrics # 내부 전용 Prometheus 지표 (/metrics)
+              containerPort: 9464
+            - name: handoff # 내부 전용 (무중단 배포 시 방 상태 넘겨주기)
+              containerPort: 9090
+          env:
+            - { name: BASE_PATH, value: "/sealed-letter" }
+            # QR/공유 링크에 쓰는 주소
+            - { name: PUBLIC_URL, value: "https://boardgame.shinkeonkim.com/sealed-letter" }
+            - { name: MAX_ROOMS, value: "5" } # 동시에 열 수 있는 방 개수
+            - { name: ROOM_IDLE_MINUTES, value: "60" } # 모두 나간 뒤 이 시간 동안 유휴면 방 해제
+            - { name: HANDOFF_PORT, value: "9090" }
+            - { name: HANDOFF_PEER, value: "http://sealed-letter-handoff:9090" }
+          # Ready = 방 상태를 넘겨받았고 아직 넘겨주지 않음. 짧은 주기로 봐서 교체 공백을 줄인다
+          readinessProbe:
+            httpGet: { path: /readyz, port: http }
+            periodSeconds: 1
+            failureThreshold: 1
+          livenessProbe:
+            httpGet: { path: /healthz, port: http }
+            periodSeconds: 30
+          resources:
+            requests: { cpu: 20m, memory: 64Mi }
+            limits: { cpu: 500m, memory: 256Mi }
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: [ALL]

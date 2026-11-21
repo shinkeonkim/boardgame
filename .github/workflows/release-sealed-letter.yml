@@ -1,0 +1,21 @@
+name: release sealed-letter
+on:
+  push:
+    branches: [main]
+    paths:
+      - "games/sealed-letter/**"
+      - "!games/sealed-letter/deploy/**"
+      - "packages/**"
+      - "Dockerfile"
+      - "package-lock.json"
+      - "scripts/bundle.mjs"
+  workflow_dispatch:
+permissions:
+  contents: write
+  packages: write
+jobs:
+  release:
+    uses: ./.github/workflows/_release.yml
+    with:
+      target: sealed-letter
+      deploy-dir: games/sealed-letter/deploy
