@@ -1,0 +1,18 @@
+# 공개: Cloudflare Tunnel boardgame.shinkeonkim.com → Traefik → 경로로 나눔 (/corner-claim → 이 게임, / → 포털)
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: corner-claim
+spec:
+  ingressClassName: traefik
+  rules:
+    - host: boardgame.shinkeonkim.com
+      http:
+        paths:
+          - path: /corner-claim
+            pathType: Prefix
+            backend:
+              service:
+                name: corner-claim
+                port:
+                  name: http

@@ -1,0 +1,142 @@
+/* ---------- Corner Claim 전용 ---------- */
+:root {
+  --grid-bg: #e9ecf1;
+  --grid-line: #cfd5de;
+}
+:root[data-theme='dark'] {
+  --grid-bg: #20242c;
+  --grid-line: #343a45;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --grid-bg: #20242c;
+    --grid-line: #343a45;
+  }
+}
+.cc-board {
+  --n: 20;
+  width: min(100cqw, 100cqh);
+  aspect-ratio: 1;
+  display: grid;
+  grid-template-columns: repeat(var(--n), 1fr);
+  gap: 1px;
+  padding: 2px;
+  background: var(--grid-line);
+  border-radius: 8px;
+}
+.cc-board.demo {
+  width: 100%;
+  max-width: 260px;
+}
+.cc-cell {
+  position: relative;
+  background: var(--grid-bg);
+  border-radius: 2px;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+}
+.cc-cell.filled {
+  box-shadow: inset 0 -2px 0 rgb(0 0 0 / 0.2);
+}
+.cc-cell.last {
+  outline: 2px solid var(--gold);
+  z-index: 1;
+}
+.cc-cell.pv-ok {
+  background: color-mix(in srgb, var(--pv) 65%, white);
+}
+.cc-cell.pv-bad {
+  background: color-mix(in srgb, var(--danger) 55%, var(--grid-bg));
+}
+.cc-star {
+  font-size: 0.7rem;
+  line-height: 1;
+}
+.cc-swatch {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
+  vertical-align: middle;
+}
+.piece {
+  display: inline-grid;
+  place-items: center;
+  padding: 4px;
+  border-radius: 8px;
+  border: 2px solid transparent;
+  background: none;
+  cursor: pointer;
+}
+.piece:hover {
+  border-color: var(--line);
+}
+.piece.selected {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+}
+.piece:disabled {
+  cursor: default;
+}
+.cc-pieces {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  align-items: center;
+  justify-content: center;
+}
+.cc-colors,
+.cc-players,
+.cc-ref {
+  display: grid;
+  gap: 4px;
+}
+.cc-color,
+.cc-player {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.cc-color.active {
+  font-weight: 700;
+}
+.cc-color.stuck {
+  opacity: 0.55;
+}
+.grow {
+  flex: 1;
+}
+.warn {
+  color: var(--danger);
+}
+.cc-preview {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+  margin: 8px 0 4px;
+}
+.cc-demo {
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+  padding: 14px;
+  border-radius: 16px;
+  background: var(--grid-bg);
+  width: min(100%, 300px);
+}
+.cc-demo-say {
+  font-weight: 700;
+  font-size: 0.85rem;
+}
+.cc-g-pieces {
+  gap: 4px;
+}
+@media (max-width: 759px), (max-aspect-ratio: 1/1) {
+  .cc-board {
+    width: 100%;
+  }
+  .cc-star {
+    font-size: 0.5rem;
+  }
+}
