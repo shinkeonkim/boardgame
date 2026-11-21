@@ -1,0 +1,210 @@
+/* ---------- 테이블 키트 (table.tsx): 새 게임 공통 화면 틀 ---------- */
+.page.game.table-game {
+  max-width: 1280px;
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding: 10px 16px calc(10px + env(safe-area-inset-bottom));
+}
+.table-game .topbar.compact {
+  position: static;
+  flex: none;
+  margin-bottom: 6px;
+  padding: 0;
+}
+.table-game .turn-banner {
+  position: static;
+  flex: none;
+  margin: 0 0 10px;
+}
+.table-layout {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  gap: 16px;
+  grid-template-columns: minmax(0, 1fr) clamp(280px, 28vw, 360px);
+  grid-template-rows: minmax(0, 1fr);
+}
+.table-main {
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+.table-side {
+  min-height: 0;
+  height: 100%;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+  padding: 2px 4px 12px 2px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.table-side > * {
+  flex: none;
+}
+.table-main .ticker {
+  margin: 0;
+}
+/* 가운데 영역 안에서 남은 공간에 맞춰 크게 (보드·테이블) */
+.table-fit {
+  flex: 1;
+  min-height: 0;
+  container-type: size;
+  display: grid;
+  place-items: center;
+}
+/* 손패 영역 (테이블 아래 또는 패널 위) */
+.hand-panel {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md, 12px);
+  padding: 10px 12px;
+  display: grid;
+  gap: 8px;
+}
+.hand-panel-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+.hand-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+  min-height: 64px;
+  align-items: flex-end;
+}
+.action-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+}
+
+/* 좌석 목록 */
+.seat-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.seat-row {
+  position: relative;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-left: 5px solid var(--seat, var(--line));
+  border-radius: 10px;
+  padding: 7px 10px;
+  transition: box-shadow 0.25s, opacity 0.25s;
+}
+.seat-row.active {
+  box-shadow: 0 0 0 2px var(--gold), var(--shadow);
+}
+.seat-row.mine {
+  background: color-mix(in srgb, var(--accent) 6%, var(--panel));
+}
+.seat-row.dim {
+  opacity: 0.55;
+}
+.seat-row.clickable {
+  cursor: pointer;
+}
+.seat-row.clickable:hover {
+  border-color: var(--info);
+}
+.seat-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.9rem;
+}
+.seat-name {
+  position: relative;
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 5px;
+  min-width: 0;
+}
+.seat-score {
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.seat-body {
+  margin-top: 6px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+  font-size: 0.85rem;
+}
+.seat-list.dense .seat-row {
+  padding: 5px 8px;
+}
+.seat-list.dense .seat-body {
+  margin-top: 3px;
+}
+
+/* 좁거나 세로 화면: 테이블 위, 정보 아래 */
+@media (max-width: 759px), (max-aspect-ratio: 1/1) {
+  .page.game.table-game {
+    padding: 8px 12px calc(8px + env(safe-area-inset-bottom));
+  }
+  .table-game .turn-banner {
+    margin-bottom: 8px;
+  }
+  .table-layout {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto minmax(0, 1fr);
+    gap: 8px;
+  }
+  /* 테이블은 내용만큼(최대 화면의 66%), 넘치면 그 안에서만 스크롤. 나머지는 정보 패널 */
+  .table-main {
+    max-height: 66dvh;
+    gap: 6px;
+  }
+  .table-side {
+    gap: 8px;
+    border-top: 1px solid var(--line);
+    padding-top: 8px;
+  }
+  .table-side .side-alert {
+    order: -2;
+  }
+  .table-side .hand-panel {
+    order: -1;
+  }
+  /* 5명 이상이면 좌석을 두 줄 격자로 */
+  .seat-list.dense {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-height: 520px) and (orientation: landscape) {
+  .table-game .turn-banner .tb-hint {
+    display: none;
+  }
+}
+/* 좌석 줄의 감정 표현: 이름을 가리지 않게 줄 오른쪽(점수 왼쪽)에 */
+.seat-row .emote-bubble {
+  left: auto;
+  right: 0;
+  bottom: auto;
+  top: -8px;
+}
+.seat-row .seat-name {
+  position: static;
+}
+.seat-row .emote-bubble::after {
+  display: none;
+}

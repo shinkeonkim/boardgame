@@ -160,3 +160,18 @@ export function TurnSteps({ steps, current }: { steps: string[]; current: number
     </ol>
   );
 }
+
+// ---------- 좌석 색 (최대 10명) ----------
+
+/** 2~10명 게임 공용 좌석 색: 라이트·다크 모두에서 구분되는 중간 채도 */
+export const SEAT_COLORS = ['#d0533f', '#3a7bd5', '#2f9e6a', '#d79a1e', '#8a5cd0', '#d0478f', '#1fa3b4', '#7a8a2a', '#c0703a', '#5b6b84'];
+export const seatColor = (seat: number) => SEAT_COLORS[((seat % SEAT_COLORS.length) + SEAT_COLORS.length) % SEAT_COLORS.length];
+
+/** 좌석 색 동그라미 (+ 번호) */
+export function SeatDot({ seat, size = 18, label }: { seat: number; size?: number; label?: boolean }) {
+  return (
+    <span className="seat-dot" style={{ width: size, height: size, background: seatColor(seat), fontSize: size * 0.58 }} aria-hidden>
+      {label ? seat + 1 : null}
+    </span>
+  );
+}

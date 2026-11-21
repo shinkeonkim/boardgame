@@ -7,3 +7,5 @@ export { Clip, GuideSections, AssetBaseContext } from './guide-kit';
 export { CloseRoomButton, StopGameButton } from './Lobby';
 export { Brand, GameNav } from './Home';
 
+export { useTable, emotesBySeat, TableTopBar, TableBanner, SeatList, TableEmotes, ResultSheet, usePeek, rankOf, winnerHeadline, TableLayout, Ticker, waitingText } from './table';
+export type { Table, SeatRow, ResultRow, TableOptions } from './table';

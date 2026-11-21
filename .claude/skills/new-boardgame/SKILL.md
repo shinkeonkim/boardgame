@@ -87,7 +87,15 @@ scripts/  local.mjs(운영과 같은 경로 게이트웨이) · bundle.mjs(이�
 방 코드·QR용 `PUBLIC_URL`·암호(scrypt, 방 단위 5분 10회)·토큰 재접속·관전·방장 승계/강퇴/순서·설정·시작(결과 보는 사람 기다리기/force)·다음 판(중복 요청 무시)·각자 로비 복귀·중지/이어하기·턴 타이머(남은 ms로 전송)·끊긴 차례 20초 뒤 대신 진행·감정 표현(허용 목록·도배 방지)·방 최대 개수/1시간 유휴 정리·봇 좌석·첫 화면 방 목록(`/api/rooms`, 방장이 숨기기 가능)·`/healthz` `/readyz` `/api/info`·무중단 배포 handoff.
 새 게임 때문에 플랫폼을 고쳐야 하면 `packages/server/src/rooms.test.ts`(Crown March)·`rooms.expedition.test.ts`(Expedition Lines) 둘 다 통과시킨다.
 
+## 4-1. 뼈대 만들기
+
+`npm run new-game -- <id> "<Title>" "<한국어 이름>"` → 패키지·서버·vite·deploy·release 워크플로를 한 번에 (셸 `$id:latest` 함정 없음). 그다음 `npm install`.
+
 ## 5. 웹 (games/<id>/web)
+
+**새 게임은 테이블 키트(`@bg/web`의 table.tsx)로 화면 틀을 만든다** — `useTable`(차례 알림·타이머·대신 진행·흔들기) · `TableLayout`(화면 고정, 좁으면 위아래, 테이블은 최대 66dvh) · `TableTopBar` · `TableBanner` · `SeatList`(2~10명, 봇·끊김·차례·말풍선) · `ResultSheet` · `usePeek` · `rankOf`. 좌석 색은 `@bg/ui`의 `SeatDot`/`seatColor`(10색). 설정의 여러 값 중 하나는 `f.choice`.
+게임은 가운데 테이블·손패·게임 전용 표시만 그린다 (Row Six가 예시).
+
 
 `client.tsx`에서 `GameClient`를 채우고 `main.tsx`에서 `mountGame(client)`. 슬롯:
 `logo · lead · chips · Demo(첫 화면 시연 애니메이션) · ConfigPanel · Game · seatBadge/seatLabel · teamsEnabled · Globals(SVG defs 등) · guide(sections)`.

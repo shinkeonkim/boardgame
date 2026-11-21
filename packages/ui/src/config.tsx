@@ -1,5 +1,5 @@
 import { ReactNode } from 'react';
-import { Stepper, Toggle } from './components';
+import { SegmentedControl, Stepper, Toggle } from './components';
 
 /**
  * 로비 규칙 설정 패널을 짧게 쓰기 위한 도우미.
@@ -36,6 +36,23 @@ export function configFields<C extends object>({
           disabled={!isHost}
           onChange={(v) => set({ [key]: v } as Partial<C>)}
         />
+      );
+    },
+    /** 여러 값 중 하나 (예: 벌점 방식) — 짧은 이름이면 가로 버튼, 설명은 아래 */
+    choice<K extends keyof C>(key: K, label: ReactNode, options: { value: C[K] & string; label: ReactNode; hint?: ReactNode }[], hint?: ReactNode) {
+      const cur = options.find((o) => o.value === config[key]);
+      return (
+        <div key={String(key)} className={`cfg-row choice ${!isHost ? 'disabled' : ''}`}>
+          <div className="grow">
+            <div>{label}</div>
+            {(cur?.hint ?? hint) && <div className="muted small">{cur?.hint ?? hint}</div>}
+          </div>
+          {isHost ? (
+            <SegmentedControl value={config[key] as C[K] & string} options={options} onChange={(v) => set({ [key]: v } as Partial<C>)} label={typeof label === 'string' ? label : undefined} />
+          ) : (
+            <b className="small">{cur?.label}</b>
+          )}
+        </div>
       );
     },
     bool(key: BoolKey<C>, label: ReactNode, hint?: ReactNode, disabled = false) {
