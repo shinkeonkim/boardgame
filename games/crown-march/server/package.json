@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "STATIC_DIR=../web/dist tsx watch src/main.ts",
+    "dev": "PORT=3002 STATIC_DIR=../web/dist tsx watch src/main.ts",
     "build": "esbuild src/main.ts --bundle --platform=node --format=cjs --target=node20 --outfile=dist/server.cjs --external:bufferutil --external:utf-8-validate"
   },
   "dependencies": {
