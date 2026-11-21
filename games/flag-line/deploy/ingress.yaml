@@ -1,0 +1,18 @@
+# 공개: Cloudflare Tunnel boardgame.shinkeonkim.com → Traefik → 경로로 나눔 (/flag-line → 이 게임, / → 포털)
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: flag-line
+spec:
+  ingressClassName: traefik
+  rules:
+    - host: boardgame.shinkeonkim.com
+      http:
+        paths:
+          - path: /flag-line
+            pathType: Prefix
+            backend:
+              service:
+                name: flag-line
+                port:
+                  name: http
