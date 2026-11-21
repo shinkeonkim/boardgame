@@ -1,0 +1,18 @@
+# 공개: Cloudflare Tunnel boardgame.shinkeonkim.com → Traefik → 경로로 나눔 (/gem-guild → 이 게임, / → 포털)
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: gem-guild
+spec:
+  ingressClassName: traefik
+  rules:
+    - host: boardgame.shinkeonkim.com
+      http:
+        paths:
+          - path: /gem-guild
+            pathType: Prefix
+            backend:
+              service:
+                name: gem-guild
+                port:
+                  name: http

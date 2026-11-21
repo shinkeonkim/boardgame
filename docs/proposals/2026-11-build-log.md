@@ -16,7 +16,7 @@
 | 8 | 접시 돌리기 (Sushi Go!) | `pass-the-plate` | ✅ |
 | 9 | 숨은 가시 (Skull) | `hidden-thorn` | ✅ |
 | 10 | 깃발 전선 (Battle Line) | `flag-line` | ✅ |
-| 11 | 보석 상단 (Splendor) | `gem-guild` | 진행 중 |
-| 12 | 타일 공방 (Azul) | `tile-atelier` | |
+| 11 | 보석 상단 (Splendor) | `gem-guild` | ✅ |
+| 12 | 타일 공방 (Azul) | `tile-atelier` | 진행 중 |
 | 13 | 모서리 땅따먹기 (Blokus) | `corner-claim` | |
 | 14 | 숫자 잇기 (Rummikub) | `number-runs` | |

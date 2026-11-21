@@ -1,0 +1,21 @@
+name: release gem-guild
+on:
+  push:
+    branches: [main]
+    paths:
+      - "games/gem-guild/**"
+      - "!games/gem-guild/deploy/**"
+      - "packages/**"
+      - "Dockerfile"
+      - "package-lock.json"
+      - "scripts/bundle.mjs"
+  workflow_dispatch:
+permissions:
+  contents: write
+  packages: write
+jobs:
+  release:
+    uses: ./.github/workflows/_release.yml
+    with:
+      target: gem-guild
+      deploy-dir: games/gem-guild/deploy

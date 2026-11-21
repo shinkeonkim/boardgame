@@ -1,0 +1,284 @@
+/* ---------- Gem Guild 전용 ---------- */
+:root {
+  --vault-bg: #f1eef8;
+  --card-bg: #fffdf7;
+}
+:root[data-theme='dark'] {
+  --vault-bg: #232035;
+  --card-bg: #2c2938;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --vault-bg: #232035;
+    --card-bg: #2c2938;
+  }
+}
+.gem {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  border: 0;
+  background: none;
+  padding: 0;
+  flex: none;
+  border-radius: 50%;
+  transition: transform 0.15s;
+}
+.gem b {
+  position: absolute;
+  font-size: 0.85rem;
+  font-weight: 900;
+}
+button.gem {
+  cursor: pointer;
+}
+button.gem:hover:not(:disabled) {
+  transform: translateY(-3px);
+}
+button.gem:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+.gem.selected {
+  outline: 3px solid var(--accent);
+  outline-offset: 2px;
+  transform: translateY(-4px);
+}
+.cost {
+  display: flex;
+  flex-direction: column-reverse;
+  gap: 2px;
+  align-items: flex-start;
+}
+.cost-dot {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 1.5px solid;
+  font-size: 0.7rem;
+  font-weight: 900;
+  display: grid;
+  place-items: center;
+}
+.devcard {
+  position: relative;
+  width: 82px;
+  aspect-ratio: 4 / 5;
+  border-radius: 10px;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--bonus) 30%, var(--card-bg)) 0 30%, var(--card-bg) 30%);
+  border: 2px solid color-mix(in srgb, var(--bonus) 60%, var(--line));
+  color: var(--ink);
+  padding: 5px;
+  display: grid;
+  grid-template-rows: auto 1fr;
+  font: inherit;
+  text-align: left;
+  flex: none;
+  transition: transform 0.15s;
+}
+.devcard.sm {
+  width: 58px;
+}
+.devcard.sm .cost-dot {
+  width: 14px;
+  height: 14px;
+  font-size: 0.6rem;
+}
+.devcard-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.devcard-pts {
+  font-size: 1.3rem;
+  font-weight: 900;
+  min-width: 10px;
+}
+.devcard .cost {
+  align-self: end;
+}
+.devcard.affordable {
+  border-color: var(--ok);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--ok) 35%, transparent);
+}
+.devcard-ok {
+  position: absolute;
+  right: 4px;
+  bottom: 4px;
+  font-size: 0.55rem;
+  font-weight: 800;
+  color: var(--ok);
+}
+button.devcard {
+  cursor: pointer;
+}
+button.devcard:hover {
+  transform: translateY(-3px);
+}
+.devcard.selected {
+  outline: 3px solid var(--accent);
+  outline-offset: 2px;
+}
+.noble {
+  display: grid;
+  grid-template-columns: auto auto;
+  align-items: center;
+  gap: 2px 6px;
+  padding: 5px 8px;
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--gold) 18%, var(--card-bg));
+  border: 2px solid var(--gold);
+  font: inherit;
+  color: var(--ink);
+}
+.noble b {
+  font-size: 1.1rem;
+}
+.noble-need {
+  grid-column: span 2;
+  display: flex;
+  gap: 2px;
+}
+.need-bar {
+  min-width: 16px;
+  height: 18px;
+  border-radius: 4px;
+  border: 1.5px solid;
+  font-size: 0.7rem;
+  font-weight: 900;
+  display: grid;
+  place-items: center;
+}
+button.noble {
+  cursor: pointer;
+}
+.gg-nobles {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.gg-market {
+  display: grid;
+  gap: 6px;
+  padding: 8px;
+  border-radius: 14px;
+  background: var(--vault-bg);
+}
+.gg-tier {
+  display: flex;
+  gap: 6px;
+  align-items: stretch;
+  flex-wrap: wrap;
+}
+.gg-deck {
+  width: 58px;
+  border-radius: 10px;
+  border: 2px dashed var(--line);
+  background: var(--panel);
+  color: var(--ink);
+  display: grid;
+  place-content: center;
+  text-align: center;
+  font: inherit;
+  cursor: pointer;
+}
+.gg-deck.t1 {
+  border-color: #2f9e6a;
+}
+.gg-deck.t2 {
+  border-color: #d79a1e;
+}
+.gg-deck.t3 {
+  border-color: #3a7bd5;
+}
+.gg-deck:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+.gg-bank-row,
+.gg-mine-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.gg-mine-cell {
+  display: grid;
+  justify-items: center;
+  gap: 2px;
+}
+.gg-bonus {
+  font-size: 0.7rem;
+  font-weight: 900;
+  border-radius: 4px;
+  padding: 0 5px;
+}
+.gg-drop {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+.gg-reserved {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.gg-seat {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 6px;
+  align-items: center;
+}
+.gg-seat-gem {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  font-weight: 700;
+}
+.gg-seat-gem i {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 1px solid rgb(0 0 0 / 0.3);
+}
+.gg-seat-gem small {
+  color: var(--muted);
+  font-weight: 600;
+}
+.gg-preview {
+  display: flex;
+  gap: 4px;
+  margin: 8px 0 4px;
+}
+.gg-demo {
+  display: grid;
+  justify-items: center;
+  gap: 10px;
+  padding: 14px;
+  border-radius: 16px;
+  background: var(--vault-bg);
+  width: min(100%, 320px);
+}
+.gg-demo-say {
+  font-weight: 700;
+  font-size: 0.85rem;
+  text-align: center;
+}
+@media (max-width: 759px), (max-aspect-ratio: 1/1) {
+  .devcard {
+    width: 64px;
+  }
+  .gg-deck {
+    width: 44px;
+    font-size: 0.75rem;
+  }
+  .cost-dot {
+    width: 15px;
+    height: 15px;
+    font-size: 0.62rem;
+  }
+  .gg-tier {
+    gap: 4px;
+  }
+}
