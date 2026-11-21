@@ -26,7 +26,7 @@ export async function desktop(browser, only) {
   await sleep(300);
   await clickAt(page, '.hero-search button');
   await sleep(1500);
-  await clickAt(page, '.filters .segmented button:has-text("4인")');
+  await clickAt(page, '.filters .segmented button:has-text("4명")');
   await sleep(1200);
   await clickAt(page, '.game-card .gc-title h3 a');
   await sleep(2200);
