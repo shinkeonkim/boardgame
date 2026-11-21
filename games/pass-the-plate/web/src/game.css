@@ -1,0 +1,206 @@
+/* ---------- Pass the Plate 전용 ---------- */
+:root {
+  --plate: #fffaf2;
+  --belt: #f1e3cc;
+}
+:root[data-theme='dark'] {
+  --plate: #2f2a24;
+  --belt: #3a3027;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --plate: #2f2a24;
+    --belt: #3a3027;
+  }
+}
+.dcard {
+  --w: 96px;
+  position: relative;
+  width: var(--w);
+  aspect-ratio: 4 / 5;
+  border-radius: 50% 50% 14px 14px / 40% 40% 14px 14px;
+  background: var(--plate);
+  border: 3px solid var(--tone);
+  color: var(--ink);
+  display: grid;
+  justify-items: center;
+  align-content: center;
+  gap: 2px;
+  padding: 6px 4px;
+  font: inherit;
+  text-align: center;
+  flex: none;
+  box-shadow: 0 2px 0 color-mix(in srgb, var(--tone) 50%, black);
+  transition: transform 0.15s;
+}
+.dcard.sm {
+  --w: 58px;
+  padding: 3px;
+}
+.dcard.xs {
+  --w: 26px;
+  border-width: 2px;
+  padding: 0;
+  box-shadow: none;
+}
+.dcard-icon {
+  font-size: calc(var(--w) * 0.32);
+  line-height: 1;
+}
+.dcard.xs .dcard-icon {
+  font-size: 13px;
+  letter-spacing: -6px;
+}
+.dcard-name {
+  font-weight: 800;
+  font-size: 0.75rem;
+}
+.dcard.sm .dcard-name {
+  font-size: 0.6rem;
+}
+.dcard-hint {
+  font-size: 0.62rem;
+  color: var(--muted);
+  line-height: 1.25;
+}
+.dcard-badge {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: #fff;
+  font-size: 0.7rem;
+  font-weight: 800;
+  display: grid;
+  place-items: center;
+}
+button.dcard {
+  cursor: pointer;
+}
+button.dcard:hover {
+  transform: translateY(-4px);
+}
+.dcard.selected {
+  transform: translateY(-10px);
+  outline: 3px solid var(--accent);
+  outline-offset: 2px;
+}
+.dcard.on-wasabi {
+  outline: 2px solid #7a8a2a;
+  outline-offset: 1px;
+}
+.dcard.used {
+  opacity: 0.5;
+}
+.dcard.dim {
+  opacity: 0.4;
+}
+.tableau {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 10px;
+  align-items: center;
+}
+.tab-group {
+  display: inline-flex;
+  gap: 2px;
+  padding: 2px 4px;
+  border-radius: 8px;
+  background: var(--belt);
+}
+.tableau.xs .tab-group {
+  padding: 1px 2px;
+}
+.pp-mine {
+  display: grid;
+  gap: 6px;
+}
+.pp-preview b {
+  font-size: 1.05rem;
+}
+.pp-reveal {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 12px;
+  align-items: center;
+  padding: 6px 10px;
+  border-radius: 12px;
+  background: var(--belt);
+}
+.pp-reveal-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 0.78rem;
+}
+.pp-ref {
+  display: grid;
+  gap: 3px;
+}
+.pp-menu {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 4px 10px;
+}
+.pp-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.pp-menu-item .cfg-row {
+  flex: 1;
+  border-bottom: 0;
+  padding: 4px 0;
+}
+.pp-menu-item.off .dcard {
+  opacity: 0.35;
+}
+.sl-guide-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 8px;
+}
+.sl-guide-card {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.pp-demo {
+  display: grid;
+  gap: 8px;
+  padding: 14px;
+  border-radius: 16px;
+  background: var(--belt);
+  width: min(100%, 340px);
+}
+.pp-demo-pass {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--muted);
+}
+.pp-demo-score {
+  margin-left: 6px;
+  color: var(--ok);
+}
+@media (max-width: 759px), (max-aspect-ratio: 1/1) {
+  .dcard {
+    --w: 70px;
+  }
+  .dcard-hint {
+    display: none;
+  }
+  .hand-row {
+    gap: 5px;
+  }
+}
+@media (max-height: 520px) {
+  .dcard {
+    --w: 58px;
+  }
+  .dcard-hint {
+    display: none;
+  }
+}
