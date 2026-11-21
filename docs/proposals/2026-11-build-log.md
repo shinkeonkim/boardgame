@@ -9,8 +9,8 @@
 | 1 | 여섯째 줄 (6 nimmt!) | `row-six` | ✅ 엔진·봇·웹·문서 (미디어는 마지막에 일괄) |
 | 2 | 불꽃 신호 (Hanabi) | `flare-signals` | ✅ |
 | 3 | 암호 작전 (Codenames) | `cipher-ops` | ✅ |
-| 4 | 허풍 주사위 (Liar's Dice) | `bluff-dice` | 진행 중 |
-| 5 | 숫자 금고 (다빈치 코드) | `number-vault` | |
+| 4 | 허풍 주사위 (Liar's Dice) | `bluff-dice` | ✅ |
+| 5 | 숫자 금고 (다빈치 코드) | `number-vault` | 진행 중 |
 | 6 | 비밀 편지 (Love Letter) | `sealed-letter` | |
 | 7 | 궁정 음모 (Coup) | `court-intrigue` | |
 | 8 | 접시 돌리기 (Sushi Go!) | `pass-the-plate` | |

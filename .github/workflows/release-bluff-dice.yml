@@ -1,0 +1,21 @@
+name: release bluff-dice
+on:
+  push:
+    branches: [main]
+    paths:
+      - "games/bluff-dice/**"
+      - "!games/bluff-dice/deploy/**"
+      - "packages/**"
+      - "Dockerfile"
+      - "package-lock.json"
+      - "scripts/bundle.mjs"
+  workflow_dispatch:
+permissions:
+  contents: write
+  packages: write
+jobs:
+  release:
+    uses: ./.github/workflows/_release.yml
+    with:
+      target: bluff-dice
+      deploy-dir: games/bluff-dice/deploy

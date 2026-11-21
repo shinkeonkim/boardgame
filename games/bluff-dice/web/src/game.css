@@ -1,0 +1,222 @@
+/* ---------- Bluff Dice 전용 토큰 ---------- */
+:root {
+  --die-face: #fffaf0;
+  --die-pip: #2a241a;
+  --felt: #2f6b4f;
+  --felt-ink: #f1f7f2;
+}
+:root[data-theme='dark'] {
+  --die-face: #ece4d2;
+  --die-pip: #1d1a16;
+  --felt: #1f4a37;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --die-face: #ece4d2;
+    --die-pip: #1d1a16;
+    --felt: #1f4a37;
+  }
+}
+.die {
+  flex: none;
+  transition: transform 0.2s;
+}
+.die.hit {
+  filter: drop-shadow(0 0 4px var(--gold));
+  transform: translateY(-2px);
+}
+.die.hit rect {
+  stroke: var(--gold);
+}
+.cup {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+}
+.cup b {
+  position: absolute;
+  top: 46%;
+  color: #fff;
+  font-size: 0.85rem;
+  text-shadow: 0 1px 2px rgb(0 0 0 / 0.5);
+}
+.bd-table {
+  border-radius: 18px;
+  background: radial-gradient(ellipse at center, color-mix(in srgb, var(--felt) 85%, white), var(--felt));
+  color: var(--felt-ink);
+  padding: 16px;
+  display: grid;
+  gap: 12px;
+  justify-items: center;
+}
+.bd-center {
+  display: grid;
+  justify-items: center;
+  gap: 6px;
+}
+.bd-center .muted {
+  color: color-mix(in srgb, var(--felt-ink) 70%, transparent);
+}
+.bd-bid {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgb(0 0 0 / 0.22);
+  border: 2px solid var(--seat);
+  border-radius: 999px;
+  padding: 6px 16px;
+}
+.bd-bid b {
+  font-size: 1.8rem;
+}
+.bd-history {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  justify-content: center;
+}
+.bd-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  border-bottom: 3px solid var(--seat);
+  padding: 0 4px;
+}
+.bd-reveal {
+  display: grid;
+  gap: 6px;
+  width: 100%;
+  background: rgb(0 0 0 / 0.18);
+  border-radius: 12px;
+  padding: 10px;
+  animation: status-in 0.4s ease-out;
+}
+.bd-reveal-row {
+  display: flex;
+  gap: 5px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.bd-reveal-row > .small {
+  min-width: 80px;
+  display: inline-flex;
+  gap: 4px;
+  align-items: center;
+}
+.bd-reveal-row.loser {
+  outline: 2px dashed #ffb4a8;
+  border-radius: 8px;
+}
+.bd-reveal-sum {
+  font-weight: 700;
+  text-align: center;
+}
+.bd-faces {
+  display: flex;
+  gap: 6px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+.bd-face {
+  display: grid;
+  justify-items: center;
+  gap: 1px;
+  padding: 4px;
+  border-radius: 10px;
+  border: 2px solid transparent;
+  background: none;
+  cursor: pointer;
+  font: inherit;
+  color: var(--ink);
+}
+.bd-face.on {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+}
+.bd-face:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+.bd-face small {
+  font-size: 0.7rem;
+  font-weight: 700;
+}
+.bd-count {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.bd-count b {
+  min-width: 44px;
+  text-align: center;
+  font-size: 1.1rem;
+}
+.danger-btn {
+  background: var(--danger);
+  color: #fff;
+  border-color: var(--danger);
+}
+.danger-btn:disabled {
+  opacity: 0.5;
+}
+.bd-preview {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin: 8px 0 4px;
+}
+.rule-note {
+  margin: 0;
+  line-height: 1.5;
+}
+.center {
+  text-align: center;
+}
+.bd-demo {
+  display: grid;
+  gap: 8px;
+  padding: 14px;
+  border-radius: 16px;
+  background: var(--felt);
+  color: var(--felt-ink);
+  width: min(100%, 340px);
+}
+.bd-demo-row {
+  display: flex;
+  gap: 5px;
+  align-items: center;
+  min-height: 30px;
+}
+.bd-demo-say {
+  margin-left: 8px;
+  font-size: 0.8rem;
+  font-weight: 800;
+  background: #fff;
+  color: #222;
+  border-radius: 10px;
+  padding: 2px 8px;
+}
+.bd-demo-sum {
+  font-size: 0.8rem;
+  font-weight: 700;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+.bd-demo-sum.show {
+  opacity: 1;
+}
+@media (max-width: 759px), (max-aspect-ratio: 1/1) {
+  .bd-table {
+    padding: 10px;
+    gap: 8px;
+  }
+  .bd-bid b {
+    font-size: 1.3rem;
+  }
+  .bd-actions {
+    gap: 6px;
+  }
+}
