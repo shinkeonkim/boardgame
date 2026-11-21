@@ -14,4 +14,4 @@ labels:
 images:
 - name: ghcr.io/shinkeonkim/boardgame-bluff-dice
   newName: ghcr.io/shinkeonkim/boardgame-bluff-dice
-  newTag: sha-d8882f7
+  newTag: sha-44a34b7
