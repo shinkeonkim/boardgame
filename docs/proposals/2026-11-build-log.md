@@ -14,8 +14,8 @@
 | 6 | 비밀 편지 (Love Letter) | `sealed-letter` | ✅ |
 | 7 | 궁정 음모 (Coup) | `court-intrigue` | ✅ |
 | 8 | 접시 돌리기 (Sushi Go!) | `pass-the-plate` | ✅ |
-| 9 | 숨은 가시 (Skull) | `hidden-thorn` | 진행 중 |
-| 10 | 깃발 전선 (Battle Line) | `flag-line` | |
+| 9 | 숨은 가시 (Skull) | `hidden-thorn` | ✅ |
+| 10 | 깃발 전선 (Battle Line) | `flag-line` | 진행 중 |
 | 11 | 보석 상단 (Splendor) | `gem-guild` | |
 | 12 | 타일 공방 (Azul) | `tile-atelier` | |
 | 13 | 모서리 땅따먹기 (Blokus) | `corner-claim` | |

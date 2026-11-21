@@ -1,0 +1,184 @@
+/* ---------- Hidden Thorn 전용 ---------- */
+:root {
+  --disc-face: #fff7ea;
+  --garden: #eef3e4;
+}
+:root[data-theme='dark'] {
+  --disc-face: #efe6d4;
+  --garden: #1f2a1e;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --disc-face: #efe6d4;
+    --garden: #1f2a1e;
+  }
+}
+.disc {
+  display: inline-grid;
+  place-items: center;
+  border: 0;
+  background: none;
+  padding: 0;
+  border-radius: 50%;
+  flex: none;
+}
+button.disc {
+  cursor: pointer;
+}
+.disc.selected {
+  outline: 3px solid var(--accent);
+  outline-offset: 2px;
+}
+.ht-table {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 10px;
+}
+.ht-mat {
+  position: relative;
+  border-radius: 14px;
+  padding: 8px 10px;
+  background: var(--garden);
+  border: 2px solid transparent;
+  border-top: 4px solid var(--seat);
+  display: grid;
+  gap: 6px;
+}
+.ht-mat.acting {
+  box-shadow: 0 0 0 2px var(--gold);
+}
+.ht-mat.out {
+  opacity: 0.45;
+}
+.ht-mat.can-flip {
+  cursor: pointer;
+  border-color: var(--accent);
+  animation: ht-pulse 1.4s ease-in-out infinite;
+}
+@keyframes ht-pulse {
+  50% {
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 35%, transparent);
+  }
+}
+.ht-mat-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.ht-mat .seat-name {
+  position: relative;
+  display: inline-flex;
+  gap: 4px;
+  align-items: center;
+}
+.ht-mat .emote-bubble {
+  left: 0;
+  bottom: calc(100% + 6px);
+}
+.ht-points {
+  display: inline-flex;
+  gap: 3px;
+}
+.ht-points i {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 2px solid #d84a5c;
+}
+.ht-points i.on {
+  background: #d84a5c;
+}
+.ht-stack {
+  display: flex;
+  flex-direction: column-reverse;
+  align-items: center;
+  min-height: 44px;
+}
+.ht-slot {
+  position: relative;
+  margin-top: -22px;
+}
+.ht-slot:last-child {
+  margin-top: 0;
+}
+.ht-stack .ht-slot:first-child {
+  margin-top: 0;
+}
+.ht-peek {
+  position: absolute;
+  right: -10px;
+  bottom: -2px;
+  font-size: 0.8rem;
+}
+.ht-choice {
+  display: grid;
+  justify-items: center;
+  gap: 4px;
+  padding: 8px 12px;
+  border-radius: 14px;
+  border: 2px solid var(--line);
+  background: var(--panel);
+  color: var(--ink);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+.ht-choice:hover:not(:disabled) {
+  border-color: var(--accent);
+}
+.ht-choice:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+.bd-count {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.bd-count b {
+  min-width: 44px;
+  text-align: center;
+  font-size: 1.1rem;
+}
+.ht-ref {
+  display: grid;
+  gap: 3px;
+}
+.log-list {
+  display: grid;
+  gap: 4px;
+  max-height: 240px;
+  overflow: auto;
+}
+.ht-preview {
+  display: flex;
+  gap: 4px;
+  margin: 8px 0 4px;
+}
+.ht-demo {
+  display: grid;
+  gap: 10px;
+  padding: 16px;
+  border-radius: 16px;
+  background: var(--garden);
+  width: min(100%, 320px);
+}
+.ht-demo-row {
+  display: flex;
+  gap: 18px;
+  justify-content: center;
+}
+.ht-demo-say {
+  font-weight: 700;
+  font-size: 0.9rem;
+  text-align: center;
+}
+@media (max-width: 759px), (max-aspect-ratio: 1/1) {
+  .ht-table {
+    grid-template-columns: repeat(auto-fill, minmax(104px, 1fr));
+    gap: 6px;
+  }
+  .ht-mat {
+    padding: 6px;
+  }
+}
