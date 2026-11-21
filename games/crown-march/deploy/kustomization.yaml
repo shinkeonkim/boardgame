@@ -1,0 +1,16 @@
+# ArgoCD(oh-my-homelab 의 helm-charts/apps/boardgame-crown-march.yaml)가 이 디렉터리를 kustomize 로 렌더한다.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: boardgame-crown-march
+resources:
+- namespace.yaml
+- deployment.yaml
+- service.yaml
+- ingress.yaml
+labels:
+- pairs:
+    app.kubernetes.io/part-of: boardgame
+images:
+- name: ghcr.io/shinkeonkim/boardgame-crown-march
+  newName: ghcr.io/shinkeonkim/boardgame-crown-march
+  newTag: latest

@@ -1,0 +1,55 @@
+# 서브 프로젝트 하나를 배포한다 (release-*.yml 이 부른다):
+#   이미지 ghcr.io/shinkeonkim/boardgame-<target>:sha-xxxxxxx 빌드·푸시 →
+#   <deploy-dir>/kustomization.yaml 태그 갱신 커밋 → ArgoCD가 감지해 롤아웃 (게임은 무중단)
+name: release (reusable)
+on:
+  workflow_call:
+    inputs:
+      target:
+        description: "portal 또는 게임 id"
+        required: true
+        type: string
+      deploy-dir:
+        required: true
+        type: string
+permissions:
+  contents: write
+  packages: write
+jobs:
+  publish:
+    runs-on: ubuntu-latest # 홈랩 ARC 러너엔 Docker 데몬이 없다
+    concurrency:
+      group: release-${{ inputs.target }}
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - id: tag
+        run: echo "tag=sha-${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          platforms: linux/amd64
+          build-args: TARGET=${{ inputs.target }}
+          cache-from: type=gha,scope=${{ inputs.target }}
+          cache-to: type=gha,mode=max,scope=${{ inputs.target }}
+          tags: |
+            ghcr.io/${{ github.repository_owner }}/boardgame-${{ inputs.target }}:${{ steps.tag.outputs.tag }}
+            ghcr.io/${{ github.repository_owner }}/boardgame-${{ inputs.target }}:latest
+      - name: Bump image tag
+        run: |
+          cd "${{ inputs.deploy-dir }}"
+          img="ghcr.io/${{ github.repository_owner }}/boardgame-${{ inputs.target }}"
+          kustomize edit set image "$img=$img:${{ steps.tag.outputs.tag }}"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -am "deploy(${{ inputs.target }}): 이미지를 ${{ steps.tag.outputs.tag }} 로 올린다 [skip ci]" || exit 0
+          # 여러 서브 프로젝트가 동시에 배포되면 push가 겹칠 수 있어 다시 받아서 재시도
+          for i in 1 2 3 4 5; do git pull --rebase -q && git push -q && exit 0; sleep $((i * 3)); done
+          exit 1

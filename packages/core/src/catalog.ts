@@ -23,6 +23,8 @@ export interface GameMeta {
   inspiredBy: string;
   /** 카드·상세 페이지 색 (CSS 색) */
   accent: string;
+  /** 브랜드 아이콘 SVG 마크업 (viewBox 0 0 64 64) */
+  icon: string;
   /** 'live' = 플레이 가능, 'soon' = 준비 중 */
   status: 'live' | 'soon';
   /** 추가된 날 (YYYY-MM-DD) — "새로 나온 게임" 정렬 */

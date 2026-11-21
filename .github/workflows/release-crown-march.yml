@@ -1,0 +1,21 @@
+name: release crown-march
+on:
+  push:
+    branches: [main]
+    paths:
+      - "games/crown-march/**"
+      - "!games/crown-march/deploy/**"
+      - "packages/**"
+      - "Dockerfile"
+      - "package-lock.json"
+      - "scripts/bundle.mjs"
+  workflow_dispatch:
+permissions:
+  contents: write
+  packages: write
+jobs:
+  release:
+    uses: ./.github/workflows/_release.yml
+    with:
+      target: crown-march
+      deploy-dir: games/crown-march/deploy

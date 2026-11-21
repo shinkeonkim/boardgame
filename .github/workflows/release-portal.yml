@@ -1,0 +1,22 @@
+name: release portal
+on:
+  push:
+    branches: [main]
+    paths:
+      - "apps/portal/**"
+      - "!apps/portal/deploy/**"
+      - "packages/**"
+      - "games/*/meta.ts"
+      - "Dockerfile"
+      - "package-lock.json"
+      - "scripts/bundle.mjs"
+  workflow_dispatch:
+permissions:
+  contents: write
+  packages: write
+jobs:
+  release:
+    uses: ./.github/workflows/_release.yml
+    with:
+      target: portal
+      deploy-dir: apps/portal/deploy

@@ -1,3 +1,4 @@
 export * from './module';
 export * from './protocol';
 export * from './catalog';
+export * from './search';

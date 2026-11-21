@@ -38,7 +38,15 @@ export function serveStatic(req: IncomingMessage, res: ServerResponse, opts: { d
     path = path.slice(base.length);
   }
   let file = normalize(join(dir, path));
-  if (!file.startsWith(dir) || !existsSync(file) || statSync(file).isDirectory()) file = join(dir, 'index.html');
+  if (!file.startsWith(dir)) file = join(dir, 'index.html');
+  else if (!existsSync(file) || statSync(file).isDirectory()) {
+    // 확장자가 있는 파일(그림·스크립트 등)이 없으면 404 — 페이지 경로만 SPA로 돌려준다
+    if (extname(path) && extname(path) !== '.html') {
+      res.writeHead(404, { 'content-type': 'text/plain' }).end('not found');
+      return true;
+    }
+    file = join(dir, 'index.html');
+  }
   if (!existsSync(file)) {
     res.writeHead(404).end('web build not found — run `npm run build`');
     return true;

@@ -1,8 +1,9 @@
 node_modules
 **/node_modules
 **/dist
+**/dist-server
+out
 .git
 docs
 **/deploy
-*.md
 scripts/media
