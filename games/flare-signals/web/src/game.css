@@ -1,0 +1,504 @@
+/* ---------- Flare Signals 전용 토큰 (라이트 / 다크 / 시스템 다크) ---------- */
+:root {
+  --sky: #1a1d36;
+  --sky-ink: #f4f0ff;
+  --card-dark: #232742;
+}
+:root[data-theme='dark'] {
+  --sky: #0d0f1f;
+  --sky-ink: #f4f0ff;
+  --card-dark: #1b1e36;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --sky: #0d0f1f;
+    --sky-ink: #f4f0ff;
+    --card-dark: #1b1e36;
+  }
+}
+
+/* ---------- 카드 ---------- */
+.fcard {
+  --w: 54px;
+  --fc: #888;
+  position: relative;
+  width: var(--w);
+  aspect-ratio: 5 / 7;
+  border-radius: calc(var(--w) * 0.14);
+  background: var(--fbg, var(--fc));
+  color: #fff;
+  border: 2px solid color-mix(in srgb, var(--fc) 70%, black);
+  display: grid;
+  place-items: center;
+  font: inherit;
+  padding: 0;
+  flex: none;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgb(0 0 0 / 0.2);
+}
+.fcard.xs {
+  --w: 24px;
+}
+.fcard.sm {
+  --w: 38px;
+}
+.fcard.md {
+  --w: clamp(40px, 7.5cqw, 58px);
+}
+.fcard.rainbow {
+  border-color: #fff;
+}
+.fcard-num {
+  position: relative;
+  z-index: 1;
+  font-weight: 900;
+  font-size: calc(var(--w) * 0.5);
+  text-shadow: 0 1px 2px rgb(0 0 0 / 0.45);
+}
+.fcard.xs .fcard-num {
+  font-size: 12px;
+}
+.fcard-burst {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  stroke: rgb(255 255 255 / 0.35);
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  fill: rgb(255 255 255 / 0.5);
+}
+button.fcard {
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+button.fcard:hover {
+  transform: translateY(-3px);
+}
+.fcard.mystery {
+  background: var(--card-dark);
+  border-color: #3a3f66;
+}
+.fcard.mystery.tinted {
+  background: color-mix(in srgb, var(--fc) 55%, var(--card-dark));
+  border-color: var(--fc);
+}
+.fcard.mystery.selected {
+  transform: translateY(-10px);
+  outline: 3px solid var(--gold);
+  outline-offset: 2px;
+}
+.fcard.pop {
+  animation: fs-pop 0.7s ease-out;
+}
+@keyframes fs-pop {
+  0% {
+    transform: scale(0.3) translateY(20px);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(1.25);
+  }
+}
+.clue-flag {
+  position: absolute;
+  top: 3px;
+  right: 3px;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  z-index: 2;
+}
+.clue-flag.play {
+  background: #4ade80;
+  box-shadow: 0 0 6px #4ade80;
+}
+.clue-flag.keep {
+  background: #fbbf24;
+  box-shadow: 0 0 6px #fbbf24;
+}
+.clue-flag.inline {
+  position: static;
+  display: inline-block;
+  vertical-align: middle;
+}
+.not-list {
+  position: absolute;
+  left: 2px;
+  right: 2px;
+  bottom: 2px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1px;
+  justify-content: center;
+  z-index: 2;
+}
+.not-list i {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  opacity: 0.8;
+  outline: 1px solid rgb(0 0 0 / 0.3);
+  position: relative;
+}
+.not-list i::after {
+  content: '';
+  position: absolute;
+  left: -1px;
+  right: -1px;
+  top: 2.5px;
+  height: 1px;
+  background: #fff;
+  transform: rotate(-45deg);
+}
+.not-list b {
+  font-size: 8px;
+  color: #cfd3ff;
+  text-decoration: line-through;
+}
+.clue-marks {
+  display: flex;
+  gap: 2px;
+  justify-content: center;
+  min-height: 12px;
+  align-items: center;
+}
+.clue-marks i {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+.clue-marks b {
+  font-size: 0.7rem;
+  line-height: 1;
+}
+
+/* ---------- 하늘(쌓인 불꽃) ---------- */
+.sky {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  flex-wrap: wrap;
+  padding: 12px;
+  border-radius: 16px;
+  background: radial-gradient(ellipse at top, #2c3260, var(--sky));
+  color: var(--sky-ink);
+}
+.pile {
+  display: grid;
+  justify-items: center;
+  gap: 4px;
+}
+.pile.done .fcard {
+  box-shadow: 0 0 14px var(--fc);
+}
+.pile-empty {
+  width: 38px;
+  aspect-ratio: 5 / 7;
+  border-radius: 6px;
+  border: 2px dashed var(--fc);
+  display: grid;
+  place-items: center;
+  font-size: 0.65rem;
+  color: var(--fc);
+}
+.pile-empty.mini {
+  width: 20px;
+}
+.pile-dots {
+  display: flex;
+  gap: 2px;
+}
+.pile-dots i {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: rgb(255 255 255 / 0.2);
+}
+.pile-dots i.on {
+  background: var(--fc);
+}
+
+/* ---------- 다른 사람 ---------- */
+.others {
+  display: grid;
+  gap: 8px;
+  container-type: inline-size;
+}
+.other {
+  position: relative;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 6px 10px;
+  background: var(--panel);
+}
+.other.active {
+  box-shadow: 0 0 0 2px var(--gold);
+}
+.other.choosing {
+  border-color: var(--info);
+}
+.other-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+}
+.other .seat-name {
+  position: relative;
+  display: inline-flex;
+  gap: 5px;
+  align-items: center;
+}
+.other .emote-bubble {
+  left: calc(100% + 8px);
+  bottom: auto;
+  top: -4px;
+}
+.other-cards {
+  display: flex;
+  gap: 6px;
+}
+.ocard {
+  display: grid;
+  gap: 2px;
+  justify-items: center;
+  border-radius: 8px;
+  padding: 2px;
+  transition: background 0.2s;
+}
+.ocard.touch {
+  background: color-mix(in srgb, var(--info) 35%, transparent);
+  outline: 2px solid var(--info);
+}
+.ocard.chop .fcard,
+.mycard.chop .fcard {
+  outline: 2px dashed var(--muted);
+  outline-offset: 2px;
+}
+.hint-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-top: 6px;
+  align-items: center;
+}
+.hint-chip {
+  border: 2px solid var(--line);
+  background: var(--panel);
+  color: var(--ink);
+  border-radius: 999px;
+  padding: 3px 10px;
+  font: inherit;
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+.hint-chip.color {
+  border-color: var(--fc);
+  color: var(--fc);
+}
+.hint-chip.on {
+  background: var(--ink);
+  color: var(--panel);
+}
+.hint-chip.color.on {
+  background: var(--fc);
+  color: #fff;
+}
+
+/* ---------- 내 카드 ---------- */
+.hand-panel.mine {
+  background: color-mix(in srgb, var(--sky) 8%, var(--panel));
+}
+.mycard {
+  display: grid;
+  justify-items: center;
+  gap: 3px;
+}
+.poss {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1px;
+  max-width: 64px;
+  justify-content: center;
+}
+.poss i {
+  font-style: normal;
+  font-size: 9px;
+  font-weight: 800;
+  color: #fff;
+  background: var(--fc);
+  border-radius: 3px;
+  min-width: 11px;
+  text-align: center;
+}
+.poss em {
+  font-size: 9px;
+  color: var(--muted);
+}
+
+/* ---------- 패널 ---------- */
+.tokens {
+  display: grid;
+  gap: 6px;
+}
+.token-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  justify-content: space-between;
+}
+.tok-list {
+  display: flex;
+  gap: 3px;
+  flex: 1;
+  flex-wrap: wrap;
+}
+.tok {
+  display: inline-block;
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  border: 2px solid var(--line);
+}
+.tok.big {
+  width: 26px;
+  height: 26px;
+}
+.tok.hint.on {
+  background: #3b7be0;
+  border-color: #2558a8;
+}
+.tok.fuse.on {
+  background: #e0483c;
+  border-color: #9d2d24;
+}
+.discard-grid table {
+  border-collapse: collapse;
+  margin-top: 6px;
+  width: 100%;
+}
+.discard-grid th {
+  width: 18px;
+}
+.dg-dot {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--fbg, var(--fc));
+}
+.discard-grid td {
+  text-align: center;
+  font-size: 0.78rem;
+  padding: 2px;
+  border: 1px solid var(--line);
+  font-weight: 700;
+}
+.discard-grid td sub {
+  color: var(--danger);
+  font-size: 0.65rem;
+}
+.discard-grid td.played {
+  background: color-mix(in srgb, var(--fc) 25%, transparent);
+}
+.discard-grid td.last {
+  outline: 2px solid var(--fc);
+  outline-offset: -2px;
+}
+.discard-grid td.lost {
+  background: var(--danger);
+  color: #fff;
+}
+.log-list {
+  display: grid;
+  gap: 4px;
+  max-height: 220px;
+  overflow: auto;
+}
+
+/* ---------- 설정 미리보기 · 시연 · 게임 방법 ---------- */
+.fs-preview {
+  display: flex;
+  gap: 5px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin: 8px 0 4px;
+}
+.fs-demo {
+  display: grid;
+  gap: 10px;
+  padding: 14px;
+  border-radius: 16px;
+  background: radial-gradient(ellipse at top, #2c3260, var(--sky));
+  color: var(--sky-ink);
+  width: min(100%, 340px);
+}
+.fs-demo-sky {
+  display: flex;
+  gap: 6px;
+  justify-content: center;
+  min-height: 34px;
+  align-items: center;
+}
+.fs-demo-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.fs-demo-row .small {
+  width: 28px;
+}
+.fs-demo-bubble {
+  font-size: 0.85rem;
+  font-weight: 700;
+  background: #fff;
+  color: #222;
+  border-radius: 12px;
+  padding: 4px 10px;
+  justify-self: start;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+.fs-demo-bubble.show {
+  opacity: 1;
+}
+.fs-g-hand {
+  display: flex;
+  gap: 8px;
+}
+
+@media (max-width: 759px), (max-aspect-ratio: 1/1) {
+  .sky {
+    padding: 6px;
+    gap: 6px;
+  }
+  .sky .fcard.sm,
+  .pile-empty {
+    --w: 26px;
+    width: 26px;
+  }
+  .other {
+    padding: 4px 6px;
+  }
+  .fcard.md {
+    --w: 38px;
+  }
+  .other-cards {
+    gap: 3px;
+  }
+}
+@media (max-height: 520px) {
+  .sky .fcard.sm,
+  .pile-empty {
+    --w: 24px;
+    width: 24px;
+  }
+  .fcard.md {
+    --w: 34px;
+  }
+  .clue-marks {
+    min-height: 8px;
+  }
+}

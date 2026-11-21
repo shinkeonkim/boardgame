@@ -7,8 +7,8 @@
 |---|---|---|---|
 | 0 | 플랫폼: 봇·동시 진행·방 목록 | — | ✅ d454cdf |
 | 1 | 여섯째 줄 (6 nimmt!) | `row-six` | ✅ 엔진·봇·웹·문서 (미디어는 마지막에 일괄) |
-| 2 | 불꽃 신호 (Hanabi) | `flare-signals` | 진행 중 |
-| 3 | 암호 작전 (Codenames) | `cipher-ops` | |
+| 2 | 불꽃 신호 (Hanabi) | `flare-signals` | ✅ |
+| 3 | 암호 작전 (Codenames) | `cipher-ops` | 진행 중 |
 | 4 | 허풍 주사위 (Liar's Dice) | `bluff-dice` | |
 | 5 | 숫자 금고 (다빈치 코드) | `number-vault` | |
 | 6 | 비밀 편지 (Love Letter) | `sealed-letter` | |
