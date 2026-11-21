@@ -24,4 +24,4 @@ labels:
 images:
 - name: ghcr.io/shinkeonkim/boardgame-portal
   newName: ghcr.io/shinkeonkim/boardgame-portal
-  newTag: sha-3ddf9c7
+  newTag: sha-dca26c7
