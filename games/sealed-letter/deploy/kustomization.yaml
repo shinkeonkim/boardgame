@@ -14,4 +14,4 @@ labels:
 images:
 - name: ghcr.io/shinkeonkim/boardgame-sealed-letter
   newName: ghcr.io/shinkeonkim/boardgame-sealed-letter
-  newTag: sha-3ddf9c7
+  newTag: sha-dca26c7
