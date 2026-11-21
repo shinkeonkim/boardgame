@@ -14,4 +14,4 @@ labels:
 images:
 - name: ghcr.io/shinkeonkim/boardgame-crown-march
   newName: ghcr.io/shinkeonkim/boardgame-crown-march
-  newTag: sha-21c1538
+  newTag: sha-ebd4967
