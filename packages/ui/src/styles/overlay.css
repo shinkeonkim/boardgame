@@ -1,0 +1,133 @@
+/* ---------- 점수 오버레이 ---------- */
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(10, 8, 4, 0.5);
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  z-index: 40;
+}
+.sheet {
+  width: min(560px, 100%);
+  max-height: calc(100dvh - 32px);
+  overflow: auto;
+}
+.table-wrap {
+  overflow-x: auto;
+}
+.scores {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+  font-variant-numeric: tabular-nums;
+}
+.scores th,
+.scores td {
+  padding: 6px 4px;
+  text-align: center;
+  border-bottom: 1px solid var(--line);
+}
+.scores th.left {
+  text-align: left;
+  white-space: nowrap;
+}
+.suit-th {
+  color: var(--suit);
+}
+.peek-btn {
+  position: fixed;
+  right: 16px;
+  bottom: calc(16px + env(safe-area-inset-bottom));
+  z-index: 41;
+}
+
+@media (min-width: 760px) {
+  :root {
+    --card-w: 72px;
+    --card-sm-w: 52px;
+    --card-xs-w: 32px;
+  }
+}
+@media (max-width: 380px) {
+  :root {
+    --card-sm-w: 34px;
+    --card-xs-w: 24px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+/* 점수표 등장 */
+.sheet {
+  animation: sheet-in 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+@keyframes sheet-in {
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.97);
+  }
+}
+.scores tbody tr {
+  animation: status-in 0.4s ease-out backwards;
+  animation-delay: calc(var(--r) * 90ms + 150ms);
+}
+
+/* ---------- 방 닫기 / 대기 로비 ---------- */
+.row.tight {
+  margin-top: 0;
+  flex-wrap: nowrap;
+}
+.topbar .right {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  justify-content: flex-end;
+}
+.btn.danger {
+  background: var(--danger);
+  border-color: var(--danger);
+  color: #fff;
+}
+.confirm-close {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  animation: status-in 0.2s ease-out;
+}
+.confirm-close .small {
+  color: var(--danger);
+  font-weight: 700;
+  white-space: nowrap;
+}
+.notice {
+  background: color-mix(in srgb, var(--accent) 14%, var(--panel));
+  border: 1px solid color-mix(in srgb, var(--accent) 45%, var(--line));
+  border-radius: 12px;
+  padding: 10px 14px;
+  margin-bottom: 12px;
+  font-size: 0.9rem;
+}
+.tag.results {
+  background: color-mix(in srgb, var(--accent) 18%, var(--panel));
+  border-color: var(--accent);
+}
+.tag.ready {
+  background: color-mix(in srgb, var(--ok) 18%, var(--panel));
+  border-color: var(--ok);
+}
+@media (max-width: 520px) {
+  .start-bar {
+    flex-wrap: wrap;
+  }
+  .start-bar > .row.tight {
+    width: 100%;
+    justify-content: space-between;
+  }
+}
+

@@ -1,0 +1,18 @@
+{
+  "name": "boardgame",
+  "private": true,
+  "type": "module",
+  "workspaces": ["packages/*", "games/*/engine", "games/*/server", "games/*/web", "apps/*"],
+  "scripts": {
+    "build": "npm run build --workspaces --if-present",
+    "test": "vitest run",
+    "typecheck": "node scripts/typecheck.mjs",
+    "dev": "node scripts/dev.mjs",
+    "media": "node scripts/media/record.mjs"
+  },
+  "devDependencies": {
+    "playwright": "^1.56.1",
+    "typescript": "^5.6.3",
+    "vitest": "^2.1.8"
+  }
+}
