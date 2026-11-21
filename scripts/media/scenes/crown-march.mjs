@@ -148,7 +148,7 @@ export async function desktop(browser, only) {
   if (want('intro')) {
     const intro = await recorder(page, T, 'intro', shot);
     await sleep(3500);
-    await clickAt(page, 'button:has-text("게임 방법 자세히 보기")');
+    await clickAt(page, 'button:has-text("게임 방법 보기")');
     await sleep(1400);
     for (const n of [2, 3, 4, 6]) {
       await clickAt(page, `.g-nav .chip:nth-child(${n})`, 150);
@@ -177,7 +177,7 @@ export async function desktop(browser, only) {
   await sleep(600);
   bots[1].s.emit('emote', { id: 'crown' }, () => {});
   await sleep(700);
-  for (const p of ['폐허 지도', '4인 팀전', '3인 권장']) {
+  for (const p of ['폐허 지도', '4명 팀전', '3명 추천']) {
     await clickAt(page, `.presets .chip:has-text("${p}")`);
     await sleep(1300);
   }
@@ -281,7 +281,7 @@ export async function mobile(browser, only) {
   await page.tap('.field input');
   await typeSlow(page, '하린');
   await sleep(300);
-  await page.tap('button.primary:has-text("입장")');
+  await page.tap('button.primary:has-text("들어가기")');
   await page.waitForSelector('.code.big');
   const token = await page.evaluate(([c, t]) => localStorage.getItem(`bg:${t}:token:${c}`), [code, T]);
   const me = new Bot('하린');

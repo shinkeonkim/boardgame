@@ -5,8 +5,8 @@ import { GameView, viewFor } from './view';
 
 /** 이 게임에만 있는 감정 표현 (공통 목록 뒤에 붙음) */
 export const EXTRA_EMOTES: EmoteDef[] = [
-  { id: 'thanks', text: '버려줘서 고마워 🙏' },
-  { id: 'yum', text: '그 카드 잘 쓸게~ 😋' },
+  { id: 'thanks', text: '버려 줘서 땡큐 🙏' },
+  { id: 'yum', text: '그 카드 내 거 😋' },
 ];
 
 function isMove(m: unknown): m is Move {

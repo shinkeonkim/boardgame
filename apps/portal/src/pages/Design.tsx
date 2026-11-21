@@ -80,9 +80,9 @@ export function DesignPage() {
           onChange={setSeg}
           label="예시"
           options={[
-            { value: 'a', label: '2인' },
-            { value: 'b', label: '3인' },
-            { value: 'c', label: '4인' },
+            { value: 'a', label: '2명' },
+            { value: 'b', label: '3명' },
+            { value: 'c', label: '4명' },
           ]}
         />
         <label className="field">
@@ -94,7 +94,7 @@ export function DesignPage() {
       <section className="panel ds-block">
         <h2>안내 · 경고</h2>
         <Notice>🏁 지난 게임이 끝났어요. 로비로 돌아오면 함께 시작할 수 있어요.</Notice>
-        <div className="alert">암호가 틀렸습니다</div>
+        <div className="alert">암호가 틀렸어요</div>
         <AlertBanner title="남은 돌 6개">{' '}· 다 쓰면 판이 끝나요</AlertBanner>
         <AlertBanner title="덱 2장 남음" critical sub="이번 바퀴 안에 끝날 수 있어요">
           {' '}

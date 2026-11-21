@@ -1,5 +1,5 @@
 import { CLASSIC, Card, scoreColumn } from '@bg/expedition-lines-engine';
-import { Clip, GuideSection } from '@bg/web';
+import { Clip, type GuideSection } from '@bg/web/guide-kit';
 import { CardBack, CardFace } from './cards';
 import { Glyph, SUITS, suitVars } from './theme';
 
@@ -62,8 +62,8 @@ function sections(): GuideSection[] {
       content: (
         <>
 <p>
-              다섯 지역으로 <b>탐험대</b>를 보내 점수를 모읍니다. 탐험대는 같은 색 카드를 <b>작은 숫자부터 큰 숫자 순서로</b> 쌓은 줄이에요.
-              탐험을 시작하면 <b>비용 20점</b>을 먼저 내야 하므로, 끝까지 키울 수 있는 탐험대만 시작하는 게 핵심입니다.
+              다섯 지역으로 <b>탐험대</b>를 보내 점수를 모아요. 탐험대는 같은 색 카드를 <b>작은 숫자부터 큰 숫자 순서로</b> 쌓은 줄이에요.
+              탐험을 시작하면 <b>비용 20점</b>을 먼저 내야 하므로, 끝까지 키울 수 있는 탐험대만 시작하는 게 핵심이에요.
             </p>
             <div className="g-row">
               <Column cards={exGood} note={<ScoreLine cards={exGood} />} />
@@ -122,7 +122,7 @@ function sections(): GuideSection[] {
         <>
 <ol className="g-steps">
               <li>
-                <b>① 카드 1장 내려놓기</b> — 내 탐험대(같은 색 줄)에 <b>놓거나</b>, 같은 색 <b>버림 더미에 버립니다</b>.
+                <b>① 카드 1장 내려놓기</b> — 내 탐험대(같은 색 줄)에 <b>놓거나</b>, 같은 색 <b>버림 더미에 버려요</b>.
               </li>
               <li>
                 <b>② 카드 1장 가져오기</b> — <b>덱</b> 맨 위, 또는 아무 색 <b>버림 더미의 맨 위</b> 카드.
@@ -151,7 +151,7 @@ function sections(): GuideSection[] {
               <Column cards={[k(2, 0), k(2, 3), k(2, 7), k(2, 5)]} bad={3} note={<span>7 다음에 5 ✕ — 이 카드는 버림 더미로</span>} />
               <Column cards={[k(4, 4), k(4, 0)]} bad={1} note={<span>숫자 뒤에 투자 ✕</span>} />
             </div>
-            <p className="muted small">설정의 "같은 숫자 이어 놓기 허용"을 켜면 같은 숫자도 놓을 수 있어요(4인용 2벌 덱에 권장).</p>
+            <p className="muted small">설정의 "같은 숫자 이어 놓기 허용"을 켜면 같은 숫자도 놓을 수 있어요(4명용 2벌 덱에 추천).</p>
         </>
       ),
     },
@@ -208,20 +208,20 @@ function sections(): GuideSection[] {
     },
     {
       id: 'multi',
-      title: '3~4인 · 팀전',
+      title: '3~4명 · 팀전',
       content: (
         <>
 <ul className="g-list">
               <li>
-                <b>3인</b>: 6색·숫자 2~12로 카드를 늘리는 "3인 권장" 프리셋.
+                <b>3명</b>: 6색·숫자 2~12로 카드를 늘리는 "3명 추천" 프리셋.
               </li>
               <li>
-                <b>4인</b>: 같은 덱 2벌을 섞고 같은 숫자를 허용하는 "4인 권장" 프리셋.
+                <b>4명</b>: 같은 덱 2벌을 섞고 같은 숫자를 허용하는 "4명 추천" 프리셋.
               </li>
               <li>
                 <b>2:2 팀전</b>: 좌석 1·3 vs 2·4, 팀원 점수를 합산해요.
               </li>
-              <li>로비 아래에 "1인당 약 몇 턴"이 보여요 — 너무 짧으면 경고가 떠요.</li>
+              <li>대기실 아래에 한 사람이 몇 번쯤 두는지 보여요. 너무 짧으면 알려 줘요.</li>
             </ul>
         </>
       ),
@@ -265,7 +265,7 @@ function sections(): GuideSection[] {
                 <span>원작 규칙 (끌 수 있음)</span>
               </div>
             </div>
-            <Clip src="guide/lobby.mp4" caption="로비: QR로 초대하고 프리셋으로 규칙 고르기" />
+            <Clip src="guide/lobby.mp4" caption="대기실: QR로 초대하고 프리셋으로 규칙 고르기" />
         </>
       ),
     },
@@ -290,7 +290,7 @@ function sections(): GuideSection[] {
 }
 
 export const guide = {
-  subtitle: '2~4인 · 한 판 약 15~20분',
+  subtitle: '2~4명 · 한 판 약 15~20분',
   icon: <Glyph color={2} size={22} />,
   sections: sections(),
 };

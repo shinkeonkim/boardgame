@@ -119,7 +119,7 @@ function RoomPage({ code, onExit }: { code: string; onExit: (msg?: string) => vo
     const onRoom = (v: RoomView) => setView(v);
     const onKicked = (reason?: string) => {
       store.setToken(code, null);
-      onExit(typeof reason === 'string' ? reason : '방에서 나갔습니다');
+      onExit(typeof reason === 'string' ? reason : '방에서 나왔어요');
     };
     const onErr = (m: string) => setToast(m);
     // 연결이 끊겼다가 다시 붙으면(무중단 배포로 새 서버로 옮겨졌을 때 포함) 토큰으로 같은 방에 재입장
@@ -134,13 +134,13 @@ function RoomPage({ code, onExit }: { code: string; onExit: (msg?: string) => vo
       // 새 서버가 방을 막 넘겨받는 중일 수 있어 몇 번 다시 시도
       for (let i = 0; i < 10; i++) {
         err = await enter({ name: store.name() });
-        if (!err || !(err === DRAIN_MESSAGE || /찾을 수 없|응답이 없/.test(err))) break;
+        if (!err || !(err === DRAIN_MESSAGE || /찾을 수 없|연결이 잠깐/.test(err))) break;
         await new Promise((r) => setTimeout(r, 1000));
       }
       // 서버 재시작 등으로 방이 사라졌으면 멈춘 화면에 남지 말고 처음으로
       if (err) {
         store.setToken(code, null);
-        onExit(`${err} — 서버가 재시작되어 방이 닫혔을 수 있어요`);
+        onExit(`${err} 방이 닫혔을 수 있어요. 새 방을 만들어 주세요`);
       }
     };
     const onEmote = (e: EmoteEvent) => {
@@ -183,7 +183,7 @@ function RoomPage({ code, onExit }: { code: string; onExit: (msg?: string) => vo
     onExit();
   };
 
-  if (phase.kind === 'connecting') return <main className="page narrow center muted">접속 중…</main>;
+  if (phase.kind === 'connecting') return <main className="page narrow center muted">들어가는 중…</main>;
   if (phase.kind === 'form') return <JoinForm code={code} phase={phase} defaultPw={hashPw} onSubmit={enter} onCancel={() => onExit()} />;
   if (!view) return <main className="page narrow center muted">불러오는 중…</main>;
 
@@ -200,7 +200,7 @@ function RoomPage({ code, onExit }: { code: string; onExit: (msg?: string) => vo
           {toast}
         </div>
       )}
-      {!connected && <div className="offline">연결이 끊겼습니다 — 다시 연결하는 중…</div>}
+      {!connected && <div className="offline">연결이 끊겼어요. 다시 연결하는 중이에요…</div>}
     </>
   );
 }
@@ -224,7 +224,7 @@ function JoinForm({
   const [busy, setBusy] = useState(false);
 
   const submit = async (spectator = false) => {
-    if (!name.trim()) return setError('닉네임을 입력하세요');
+    if (!name.trim()) return setError('닉네임을 입력해 주세요');
     store.setName(name.trim());
     setBusy(true);
     const err = await onSubmit({ name, password: password || undefined, spectator });
@@ -237,7 +237,7 @@ function JoinForm({
       <h2 className="home-card-title">
         방 <span className="code">{code}</span>에 초대받았어요
       </h2>
-      {phase.inGame && <p className="muted small">이미 게임이 진행 중이라 관전자로 들어갑니다.</p>}
+      {phase.inGame && <p className="muted small">게임이 이미 시작돼서 관전으로 들어가요.</p>}
       {error && <div className="alert">{error}</div>}
       <label className="field">
         <span>닉네임</span>
@@ -251,16 +251,16 @@ function JoinForm({
       )}
       <div className="row">
         <button className="btn primary grow big-btn" disabled={busy} onClick={() => submit()}>
-          입장하기
+          들어가기
         </button>
         {!phase.inGame && (
           <button className="btn" disabled={busy} onClick={() => submit(true)}>
-            관전
+            관전하기
           </button>
         )}
       </div>
       <button className="btn ghost wide" onClick={onCancel}>
-        처음으로
+        첫 화면으로
       </button>
     </HomeShell>
   );

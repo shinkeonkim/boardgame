@@ -26,7 +26,7 @@ export function GameStats({ game }: { game: GameMeta }) {
   return (
     <ul className="game-stats">
       <li title="인원">👥 {playersText(game)}</li>
-      <li title="플레이 시간">⏱ {minutesText(game)}</li>
+      <li title="걸리는 시간">⏱ {minutesText(game)}</li>
       <li title="난이도">⚖️ {weightText(game)}</li>
     </ul>
   );
@@ -61,7 +61,7 @@ export function GameCard({ game }: { game: GameMeta }) {
         <div className="gc-actions">
           {game.status === 'live' ? (
             <a className="btn primary" href={`/${game.id}/`}>
-              ▶ 바로 플레이
+              ▶ 시작하기
             </a>
           ) : (
             <button className="btn" disabled>
@@ -69,7 +69,7 @@ export function GameCard({ game }: { game: GameMeta }) {
             </button>
           )}
           <Link className="btn ghost" href={`/games/${game.id}`}>
-            자세히
+            자세히 보기
           </Link>
         </div>
       </div>

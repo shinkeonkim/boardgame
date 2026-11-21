@@ -18,7 +18,7 @@ export function ThemeToggle({ variant = 'segmented', className = '' }: { variant
   if (variant === 'icon') {
     const next = shown === 'dark' ? 'light' : 'dark';
     return (
-      <button className={`btn ghost tiny theme-icon ${className}`} onClick={() => set(next)} aria-label={`${next === 'dark' ? '다크' : '라이트'} 모드로`} title="테마 바꾸기">
+      <button className={`btn ghost tiny theme-icon ${className}`} onClick={() => set(next)} aria-label={`${next === 'dark' ? '다크' : '라이트'} 모드로 바꾸기`} title="화면 밝기 바꾸기">
         {shown === 'dark' ? '🌙' : '☀️'}
       </button>
     );

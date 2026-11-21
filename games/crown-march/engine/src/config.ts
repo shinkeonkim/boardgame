@@ -24,7 +24,7 @@ export interface GameConfig {
   rounds: number;
   /** 0 = 제한 없음 */
   turnTimerSec: number;
-  /** 4인 팀전 (좌석 0·2 vs 1·3, 같은 팀 돌은 한 영역으로 계산) */
+  /** 4명 팀전 (좌석 0·2 vs 1·3, 같은 팀 돌은 한 영역으로 계산) */
   teams: boolean;
 }
 
@@ -66,22 +66,22 @@ export interface Preset {
 }
 
 export const PRESETS: Preset[] = [
-  { id: 'classic', label: '원작 (2인)', description: '9×9 · 돌 52 · 기사 4 · 카드 24장', config: CLASSIC },
+  { id: 'classic', label: '원작 (2명)', description: '9×9 · 돌 52 · 기사 4 · 카드 24장', config: CLASSIC },
   {
     id: 'three',
-    label: '3인 권장',
+    label: '3명 추천',
     description: '11×11 · 돌 84 · 기사 3 · 카드 2벌',
     config: { ...CLASSIC, boardSize: 11, stones: 84, heroes: 3, cardCopies: 2 },
   },
   {
     id: 'four',
-    label: '4인 권장',
+    label: '4명 추천',
     description: '11×11 · 돌 92 · 기사 3 · 손패 4',
     config: { ...CLASSIC, boardSize: 11, stones: 92, heroes: 3, handLimit: 4, cardCopies: 2 },
   },
   {
     id: 'teams',
-    label: '4인 팀전',
+    label: '4명 팀전',
     description: '좌석 1·3 vs 2·4, 팀 돌이 한 영역',
     config: { ...CLASSIC, boardSize: 11, stones: 92, heroes: 3, handLimit: 4, cardCopies: 2, teams: true },
   },
@@ -121,7 +121,7 @@ export function validateConfig(c: GameConfig, players: number): string[] {
   const errors: string[] = [];
   const check = (key: keyof typeof LIMITS, v: number, label: string) => {
     const [lo, hi] = LIMITS[key];
-    if (!Number.isInteger(v) || v < lo || v > hi) errors.push(`${label}은(는) ${lo}~${hi} 사이여야 합니다`);
+    if (!Number.isInteger(v) || v < lo || v > hi) errors.push(`${label}은(는) ${lo}~${hi} 사이로 정해 주세요`);
   };
   check('boardSize', c.boardSize, '보드 크기');
   check('stones', c.stones, '돌 개수');
@@ -133,13 +133,13 @@ export function validateConfig(c: GameConfig, players: number): string[] {
   check('rounds', c.rounds, '판 수');
   check('turnTimerSec', c.turnTimerSec, '턴 제한시간');
   check('players', players, '인원');
-  if (c.teams && players !== 4) errors.push('팀전은 4인일 때만 가능합니다');
+  if (c.teams && players !== 4) errors.push('팀전은 4명일 때만 할 수 있어요');
   if (errors.length) return errors;
-  if (c.maxDistance >= c.boardSize) errors.push(`최대 거리(${c.maxDistance})는 보드 크기(${c.boardSize})보다 작아야 합니다`);
-  if (c.holes > Math.floor((c.boardSize * c.boardSize) / 5)) errors.push(`막힌 칸이 너무 많습니다 (이 보드는 최대 ${Math.floor((c.boardSize * c.boardSize) / 5)}개)`);
-  if (c.stones > openCells(c)) errors.push(`돌(${c.stones}개)이 놓을 수 있는 칸(${openCells(c)}칸)보다 많습니다`);
+  if (c.maxDistance >= c.boardSize) errors.push(`이동 거리(${c.maxDistance}칸)를 보드 크기(${c.boardSize}칸)보다 작게 정해 주세요`);
+  if (c.holes > Math.floor((c.boardSize * c.boardSize) / 5)) errors.push(`막힌 칸이 너무 많아요. 이 보드는 ${Math.floor((c.boardSize * c.boardSize) / 5)}개까지 둘 수 있어요`);
+  if (c.stones > openCells(c)) errors.push(`돌(${c.stones}개)이 놓을 수 있는 칸(${openCells(c)}칸)보다 많아요. 돌을 줄이거나 보드를 키워 주세요`);
   if (deckSize(c) < players * (c.handLimit + 2)) {
-    errors.push(`이동 카드가 부족합니다 (카드 ${deckSize(c)}장, 필요 ${players * (c.handLimit + 2)}장 이상 = 인원×(손패+2)). 카드 벌 수·최대 거리를 늘리거나 손패를 줄이세요`);
+    errors.push(`이동 카드가 부족해요(${deckSize(c)}장, ${players}명이면 ${players * (c.handLimit + 2)}장 이상 필요). 카드 벌 수나 이동 거리를 늘리거나 손패를 줄여 주세요`);
   }
   return errors;
 }

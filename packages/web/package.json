@@ -8,7 +8,9 @@
   "exports": {
     ".": "./src/index.ts",
     "./vite": "./src/vite.js",
-    "./styles.css": "./src/styles/index.css"
+    "./styles.css": "./src/styles/index.css",
+    "./guide-kit": "./src/guide-kit.tsx",
+    "./guide.css": "./src/styles/guide.css"
   },
   "dependencies": {
     "@bg/core": "*",

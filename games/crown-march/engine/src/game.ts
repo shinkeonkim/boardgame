@@ -157,7 +157,7 @@ export function newMatch(c: GameConfig, players: number, rng: () => number = Mat
 }
 
 export function startNextRound(match: MatchState) {
-  if (match.status !== 'round-over') throw new MoveError('판이 아직 끝나지 않았습니다');
+  if (match.status !== 'round-over') throw new MoveError('아직 판이 끝나지 않았어요');
   match.round++;
   match.state = newRound(match.config, match.players, match.round, match);
   match.status = 'playing';
@@ -169,7 +169,7 @@ export function startNextRound(match: MatchState) {
  */
 export function continueMatch(prev: MatchState, config: GameConfig, rng: () => number = Math.random): MatchState {
   const done = prev.roundScores.length;
-  if (done >= config.rounds) throw new MoveError(`이미 ${done}판을 마쳤어요. 판 수를 ${done + 1} 이상으로 늘려야 이어갈 수 있어요`);
+  if (done >= config.rounds) throw new MoveError(`벌써 ${done}판을 마쳤어요. 판 수를 ${done + 1}판 이상으로 늘리면 이어서 할 수 있어요`);
   const errors = validateConfig(config, prev.players);
   if (errors.length) throw new MoveError(errors[0]);
   const m = { rng: Math.floor(rng() * 4294967296) >>> 0 };
@@ -223,7 +223,7 @@ export function playOutcome(b: BoardLike, teams: boolean, seat: number, card: Ca
     return { kind: 'place', to };
   }
   if (sameSide(teams, v, seat)) return { reason: v === seat ? '이미 내 돌이 있는 칸이에요' : '같은 팀 돌이 있는 칸이에요', to };
-  if ((b.heroes[seat] ?? 0) <= 0) return { reason: '기사 카드가 없어 상대 돌 칸으로 갈 수 없어요', to };
+  if ((b.heroes[seat] ?? 0) <= 0) return { reason: '기사 카드가 없어서 상대 돌이 있는 칸으로는 갈 수 없어요', to };
   return { kind: 'hero', to };
 }
 
@@ -246,14 +246,14 @@ export function mustPass(m: MatchState, seat: number): boolean {
 }
 
 export function applyMove(m: MatchState, seat: number, move: Move) {
-  if (m.status !== 'playing') throw new MoveError('진행 중인 판이 아닙니다');
+  if (m.status !== 'playing') throw new MoveError('지금은 진행 중인 판이 없어요');
   const s = m.state;
-  if (seat !== s.turn) throw new MoveError('지금은 당신의 차례가 아닙니다');
+  if (seat !== s.turn) throw new MoveError('지금은 내 차례가 아니에요');
   const n = (s.log[s.log.length - 1]?.n ?? 0) + 1;
 
   if (move.type === 'play') {
     const idx = s.hands[seat].findIndex((c) => c.id === move.cardId);
-    if (idx < 0) throw new MoveError('손에 없는 카드입니다');
+    if (idx < 0) throw new MoveError('손에 없는 카드예요');
     const card = s.hands[seat][idx];
     const r = playOutcome(s, m.config.teams, seat, card);
     if (!('kind' in r)) throw new MoveError(r.reason);
@@ -275,7 +275,7 @@ export function applyMove(m: MatchState, seat: number, move: Move) {
     s.passes = 0;
     if (s.supply <= 0) return endRound(m, 'stones');
   } else if (move.type === 'draw') {
-    if (s.hands[seat].length >= m.config.handLimit) throw new MoveError(`손패가 ${m.config.handLimit}장이면 더 가져올 수 없어요`);
+    if (s.hands[seat].length >= m.config.handLimit) throw new MoveError(`카드는 ${m.config.handLimit}장까지 들 수 있어요. 먼저 카드를 내 주세요`);
     let reshuffled = false;
     if (s.deck.length === 0) {
       if (s.discard.length === 0) throw new MoveError('가져올 카드가 없어요');
@@ -287,12 +287,12 @@ export function applyMove(m: MatchState, seat: number, move: Move) {
     s.passes = 0;
     s.log.push({ n, seat, type: 'draw', reshuffled });
   } else if (move.type === 'pass') {
-    if (!mustPass(m, seat)) throw new MoveError('할 수 있는 행동이 있으면 패스할 수 없어요');
+    if (!mustPass(m, seat)) throw new MoveError('아직 할 수 있는 게 있어서 패스할 수 없어요');
     s.passes++;
     s.log.push({ n, seat, type: 'pass' });
     if (s.passes >= m.players) return endRound(m, 'stuck');
   } else {
-    throw new MoveError('잘못된 요청입니다');
+    throw new MoveError('할 수 없는 동작이에요');
   }
   s.turn = (s.turn + 1) % m.players;
 }

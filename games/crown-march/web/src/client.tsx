@@ -10,7 +10,7 @@ import { SeatStone, seatName } from './theme';
 export const client: GameClient<GameView, GameConfig> = {
   id: 'crown-march',
   title: 'Crown March',
-  subtitle: '왕관 행진 · 2~4인 영토 보드게임',
+  subtitle: '왕관 행진 · 2~4명이 하는 땅따먹기',
   logo: (
     <svg viewBox="0 0 64 64" aria-hidden>
       <rect width="64" height="64" rx="14" fill="var(--ink)" />
@@ -22,10 +22,10 @@ export const client: GameClient<GameView, GameConfig> = {
     <>
       모두가 함께 움직이는 <b>왕관</b>을 이동 카드로 옮겨, 멈춘 칸에 내 가문의 돌을 놓으세요.
       <br />
-      이어진 영토가 클수록 점수는 <b>제곱</b>으로 커집니다.
+      이어진 영토가 클수록 점수는 <b>제곱</b>으로 커져요.
     </>
   ),
-  chips: ['👥 2~4인 · 4인 팀전', '📱 각자 휴대폰으로 QR 입장', '🧩 보드 크기·돌·카드 커스텀', '⚔️ 기사로 상대 돌 뒤집기'],
+  chips: ['👥 2~4명 · 4명 팀전', '📱 QR로 각자 폰에서 참여', '🧩 보드 크기·돌·카드를 마음대로', '⚔️ 기사로 상대 돌 뒤집기'],
   Demo: DemoBoard,
   emotes: [...BASE_EMOTES, ...EXTRA_EMOTES],
   ConfigPanel,

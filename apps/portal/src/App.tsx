@@ -47,9 +47,6 @@ function Header({ path }: { path: string }) {
           <Link href="/games" className={path.startsWith('/games') ? 'on' : ''}>
             게임 찾기
           </Link>
-          <Link href="/design" className={path.startsWith('/design') ? 'on' : ''}>
-            디자인
-          </Link>
         </nav>
         <ThemeToggle className="ph-theme" />
       </div>
@@ -63,10 +60,10 @@ function Footer() {
       <div className="pf-inner">
         <div>
           <b>보드게임 테이블</b>
-          <p className="muted small">친구들과 각자 휴대폰으로 바로 즐기는 온라인 보드게임. 회원가입 없이 방을 만들고 QR로 초대하세요.</p>
+          <p className="muted small">친구들과 각자 폰으로 같이 하는 온라인 보드게임이에요. 가입 없이 방을 만들고 QR로 초대해 보세요.</p>
         </div>
         <div className="muted small">
-          게임 규칙 메커니즘은 고전 보드게임에서 영감을 받았고, 이름·그림·화면은 모두 직접 만들었습니다.
+          게임 방식은 고전 보드게임에서 영감을 받았어요. 이름·그림·화면은 모두 직접 만들었어요.
           <br />
           <a href="https://github.com/shinkeonkim/boardgame">GitHub</a> · <Link href="/design">디자인 시스템</Link>
         </div>
@@ -80,7 +77,7 @@ function NotFound() {
     <section className="empty-state">
       <div className="es-icon">🧭</div>
       <h1>페이지를 찾을 수 없어요</h1>
-      <p className="muted">주소가 바뀌었거나 아직 없는 게임일 수 있어요.</p>
+      <p className="muted">주소가 바뀌었을 수 있어요. 게임 찾기에서 다시 찾아보세요.</p>
       <Link className="btn primary" href="/games">
         게임 찾기
       </Link>

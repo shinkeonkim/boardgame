@@ -10,7 +10,7 @@ import { guide } from './guide';
 export const client: GameClient<GameView, GameConfig> = {
   id: 'expedition-lines',
   title: 'Expedition Lines',
-  subtitle: '탐험대를 꾸려 점수를 모으는 2~4인 카드 게임',
+  subtitle: '탐험대 · 2~4명이 하는 카드 게임',
   logo: (
     <svg viewBox="0 0 64 64" aria-hidden>
       <rect width="64" height="64" rx="14" fill="var(--ink)" />
@@ -20,12 +20,12 @@ export const client: GameClient<GameView, GameConfig> = {
   ),
   lead: (
     <>
-      다섯 지역으로 <b>탐험대</b>를 보내세요. 같은 색 카드를 <b>작은 숫자부터 차례로</b> 쌓을수록 점수가 커집니다.
+      다섯 지역으로 <b>탐험대</b>를 보내세요. 같은 색 카드를 <b>작은 숫자부터 차례로</b> 쌓을수록 점수가 커져요.
       <br />
       단, 시작한 탐험대는 비용을 내야 해요 — 어디에 걸지가 승부!
     </>
   ),
-  chips: ['👥 2~4인 · 4인 팀전', '📱 각자 휴대폰으로 QR 입장', '🧩 색 2~6개·숫자·투자 카드 커스텀', '🃏 끌어다 놓는 카드 · 버림 더미 펼쳐보기'],
+  chips: ['👥 2~4명 · 4명 팀전', '📱 QR로 각자 폰에서 참여', '🧩 색·숫자·투자 카드를 마음대로', '🃏 끌어서 놓고, 버린 카드 펼쳐 보기'],
   Demo: DemoBoard,
   emotes: [...BASE_EMOTES, ...EXTRA_EMOTES],
   ConfigPanel,

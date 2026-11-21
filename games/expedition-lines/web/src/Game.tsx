@@ -13,9 +13,9 @@ type View = RoomView<GameView, GameConfig>;
 
 function describe(e: LogEntry, names: string[]): string {
   const who = names[e.player] ?? `P${e.player + 1}`;
-  if (e.move.type === 'play') return `${who} · ${e.card ? cardLabel(e.card) : ''} 놓음`;
-  if (e.move.type === 'discard') return `${who} · ${e.card ? cardLabel(e.card) : ''} 버림`;
-  return `${who} · ${e.move.source === 'deck' ? '덱에서 뽑음' : `${e.card ? cardLabel(e.card) : ''} 주움`}`;
+  if (e.move.type === 'play') return `${who} 님이 ${e.card ? cardLabel(e.card) : ''}을(를) 탐험대에 놓았어요`;
+  if (e.move.type === 'discard') return `${who} 님이 ${e.card ? cardLabel(e.card) : ''}을(를) 버렸어요`;
+  return `${who} 님이 ${e.move.source === 'deck' ? '덱에서 1장 가져왔어요' : `${e.card ? cardLabel(e.card) : ''}을(를) 주워 갔어요`}`;
 }
 
 /**
@@ -82,7 +82,7 @@ export function Game({
     notify(msg);
     setShake((n) => n + 1);
   };
-  const notMyTurnMsg = me < 0 ? '관전 중에는 플레이할 수 없어요' : `지금은 ${turnName} 님의 차례예요`;
+  const notMyTurnMsg = me < 0 ? '관전 중에는 둘 수 없어요' : `지금은 ${turnName} 님의 차례예요`;
 
   // 내 차례가 오면 진동 + (다른 탭을 보고 있으면) 탭 제목으로 알림
   useEffect(() => {
@@ -113,13 +113,13 @@ export function Game({
     if (g.status !== 'playing' || (turnKey === firstTurnKey.current && !fresh)) return;
     const mine = g.turn === me;
     setSplash({
-      text: fresh ? (mine ? '내가 먼저!' : `${turnName} 님부터 시작`) : mine ? '내 차례!' : `${turnName} 님 차례`,
+      text: fresh ? (mine ? '내가 먼저 해요!' : `${turnName} 님이 먼저 해요`) : mine ? '내 차례!' : `${turnName} 님 차례`,
       sub: fresh
         ? mine
-          ? '무작위로 첫 차례가 됐어요 · 카드를 1장 내려놓고, 1장 가져오세요'
-          : '첫 차례를 무작위로 정했어요'
+          ? '카드를 1장 내려놓고 1장 가져오세요'
+          : '첫 차례는 무작위로 정했어요'
         : mine
-          ? '카드를 1장 내려놓고, 1장 가져오세요'
+          ? '카드를 1장 내려놓고 1장 가져오세요'
           : (g.turn + 1) % g.players === me
             ? '다음은 내 차례예요'
             : '',
@@ -241,7 +241,7 @@ export function Game({
     if (Date.now() - suppressClick.current < 300) return;
     if (g.status !== 'playing') return;
     if (!myTurn) return warn(notMyTurnMsg);
-    if (g.phase === 'draw') return warn('먼저 카드를 1장 가져오세요 — 덱이나 빛나는 버림 더미를 누르세요');
+    if (g.phase === 'draw') return warn('먼저 카드를 1장 가져오세요. 덱이나 빛나는 더미를 누르면 돼요');
     setSelected((s) => (s === card.id ? null : card.id));
   };
   const onDeckClick = () => {
@@ -260,7 +260,7 @@ export function Game({
     if (!myTurn || g.phase !== 'play' || !selCard) return;
     if (col !== selCard.color) return warn('같은 색 탐험대에만 놓을 수 있어요');
     const reason = playBlockReason(c, g.expeditions[me][col], selCard);
-    if (reason) return warn(`${reason} (버리기는 가능해요)`);
+    if (reason) return warn(`${reason}. 버림 더미에는 버릴 수 있어요`);
     play();
   };
 
@@ -285,7 +285,7 @@ export function Game({
           {view.hostId === view.you && g.status !== 'match-over' && <StopGameButton act={act} small />}
           {view.hostId === view.you && <CloseRoomButton act={act} small />}
           <ThemeToggle variant="icon" />
-          <GuideButton className="btn ghost tiny" label="규칙" />
+          <GuideButton className="btn ghost tiny" label="게임 방법" />
           <button className="btn ghost tiny" onClick={() => setShowLog((v) => !v)}>
             기록
           </button>
@@ -309,7 +309,7 @@ export function Game({
 
       {showLog && (
         <div className="log panel">
-          {g.log.length === 0 ? <span className="muted small">아직 기록이 없습니다</span> : g.log.map((e) => <div key={e.n} className="small">{describe(e, names)}</div>)}
+          {g.log.length === 0 ? <span className="muted small">아직 기록이 없어요</span> : g.log.map((e) => <div key={e.n} className="small">{describe(e, names)}</div>)}
         </div>
       )}
 
@@ -318,7 +318,7 @@ export function Game({
           title={`덱 ${g.deckCount}장 남음`}
           critical={g.deckCount! <= g.players}
           compactKey={g.deckCount ?? 0}
-          sub={g.deckCount! <= g.players ? '이번 바퀴 안에 끝날 수 있어요 — 버림 더미에서 가져오면 시간을 벌 수 있어요' : undefined}
+          sub={g.deckCount! <= g.players ? '이번 바퀴에 끝날 수 있어요. 버림 더미에서 가져오면 시간을 벌 수 있어요' : undefined}
         >
           {' '}
           · 마지막 장을 가져가면 판이 끝나요
@@ -372,7 +372,7 @@ export function Game({
           ))}
         </div>
         <div className="deck-col">
-          <button className={`deck ${g.drawable.deck ? 'drawable' : ''}`} onClick={onDeckClick} aria-label={`덱에서 뽑기 (${g.deckCount ?? '?'}장)`}>
+          <button className={`deck ${g.drawable.deck ? 'drawable' : ''}`} onClick={onDeckClick} aria-label={`덱에서 가져오기 (${g.deckCount ?? '?'}장)`}>
             {(g.deckCount ?? 10) > 2 && <CardBack className="layer l2" />}
             {(g.deckCount ?? 10) > 1 && <CardBack className="layer l1" />}
             {!g.deckEmpty && <CardBack ref={deckRef} className="layer l0" />}
@@ -423,7 +423,7 @@ export function Game({
                 </>
               ) : (
                 <span className="muted small">
-                  {myTurn ? (g.phase === 'play' ? '카드를 누르거나, 끌어서 탐험대·버림 더미에 놓으세요' : '덱이나 빛나는 버림 더미를 누르세요') : ' '}
+                  {myTurn ? (g.phase === 'play' ? '카드를 끌어서 탐험대나 버림 더미에 놓으세요' : '덱이나 빛나는 더미에서 1장 가져오세요') : ' '}
                 </span>
               )}
             </div>
@@ -450,7 +450,7 @@ export function Game({
         </>
       )}
 
-      {me < 0 && <p className="muted small center-text">관전 중입니다</p>}
+      {me < 0 && <p className="muted small center-text">관전하고 있어요</p>}
 
       <EmoteFeed items={seatless} />
       <TurnSplash splash={splash} />
@@ -504,14 +504,14 @@ function TurnBanner({
     title = '내 차례예요 · 카드를 1장 내려놓으세요';
     if (selCard) {
       const reason = playBlockReason(c, g.expeditions[g.me][selCard.color], selCard);
-      hint = reason ? `${cardLabel(selCard)}: ${reason} — 버림 더미에 버릴 수는 있어요` : `${cardLabel(selCard)}: 내 탐험대에 놓거나, 같은 색 버림 더미에 버리세요`;
-    } else hint = '내 탐험대에 놓거나 같은 색 버림 더미에 버리세요';
+      hint = reason ? `${cardLabel(selCard)}: ${reason}. 버림 더미에는 버릴 수 있어요` : `${cardLabel(selCard)}: 탐험대에 놓거나 같은 색 더미에 버리세요`;
+    } else hint = '탐험대에 놓거나 같은 색 더미에 버리세요';
   } else if (myTurn) {
-    title = '이제 카드를 1장 가져오세요';
-    hint = justDiscarded ? `덱이나 빛나는 버림 더미에서 — 방금 버린 ${cardLabel(justDiscarded)}는 다시 못 가져와요` : '덱이나 빛나는 버림 더미를 누르세요';
+    title = '이제 1장 가져오세요';
+    hint = justDiscarded ? `덱이나 빛나는 더미에서 가져오세요. 방금 버린 ${cardLabel(justDiscarded)}은(는) 바로 가져올 수 없어요` : '덱이나 빛나는 더미를 누르세요';
   } else {
     title = `${turnName} 님의 차례예요`;
-    hint = away ? '연결이 끊겼어요 · 다시 들어오길 기다리는 중' : g.phase === 'play' ? '카드를 내려놓는 중…' : '카드를 가져가는 중…';
+    hint = away ? '연결이 끊겨서 다시 들어오길 기다리고 있어요' : g.phase === 'play' ? '카드를 내려놓는 중이에요' : '카드를 가져가는 중이에요';
     if (g.me >= 0 && (g.turn + 1) % g.players === g.me) hint += ' · 다음은 내 차례예요'
     if (g.me < 0) hint += ' · 관전 중';
   }
@@ -528,7 +528,7 @@ function TurnBanner({
           {myTurn && <TurnSteps steps={['① 내려놓기', '② 가져오기']} current={g.phase === 'play' ? 0 : 1} />}
           <TurnTimer secs={secs} />
           {away && nudgeLeft !== null && g.me >= 0 && (
-            <button className="btn tiny" disabled={nudgeLeft > 0} onClick={onNudge} title="자동으로 카드 1장을 버리고 덱에서 1장 가져옵니다">
+            <button className="btn tiny" disabled={nudgeLeft > 0} onClick={onNudge} title="자동으로 카드 1장을 버리고 덱에서 1장 가져와요">
               대신 진행{nudgeLeft > 0 ? ` (${nudgeLeft}초)` : ''}
             </button>
           )}
@@ -708,11 +708,11 @@ function RoundOver({ view, act, onLeave, onPeek }: { view: View; act: Act; onLea
 
   let headline = '';
   if (matchOver) {
-    if (isTeam) headline = teamTotals[0] === teamTotals[1] ? '무승부!' : `${teamTotals[0] > teamTotals[1] ? 'A팀' : 'B팀'} 승리!`;
+    if (isTeam) headline = teamTotals[0] === teamTotals[1] ? '비겼어요!' : `${teamTotals[0] > teamTotals[1] ? 'A팀' : 'B팀'}이 이겼어요!`;
     else {
       const best = g.totals[order[0]];
       const winners = order.filter((p) => g.totals[p] === best).map((p) => names[p]);
-      headline = `${winners.join(', ')} 승리!`;
+      headline = `${winners.join(', ')} 님이 이겼어요!`;
     }
   }
 
@@ -765,7 +765,7 @@ function RoundOver({ view, act, onLeave, onPeek }: { view: View; act: Act; onLea
         )}
         {g.roundScores.length > 1 && (
           <p className="muted small">
-            판별:{' '}
+            판마다:{' '}
             {g.roundScores.map((r, i) => (
               <span key={i}>
                 {i + 1}판({r.join(' / ')}){' '}
@@ -775,10 +775,10 @@ function RoundOver({ view, act, onLeave, onPeek }: { view: View; act: Act; onLea
         )}
         <div className="row">
           <button className="btn primary grow" onClick={() => (matchOver ? act('back') : act('next', { round: g.round + 1, status: g.status }))}>
-            {matchOver ? '로비로 돌아가기' : '다음 판 시작'}
+            {matchOver ? '대기실로 돌아가기' : '다음 판 시작하기'}
           </button>
           <button className="btn" onClick={onPeek}>
-            보드 보기
+            판 다시 보기
           </button>
           {matchOver && (
             <button className="btn ghost" onClick={onLeave}>

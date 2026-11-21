@@ -60,7 +60,7 @@ export interface RoomView<GameView = unknown, Config = unknown> {
 }
 
 /** 무중단 배포로 서버를 교체하는 동안의 안내 (클라이언트는 이 오류면 잠시 뒤 다시 시도) */
-export const DRAIN_MESSAGE = '서버를 업데이트하는 중이에요 — 잠시 뒤 자동으로 이어져요';
+export const DRAIN_MESSAGE = '새 버전으로 바꾸는 중이에요. 잠시 뒤 자동으로 이어져요';
 
 export interface EmoteDef {
   id: string;
@@ -71,6 +71,7 @@ export interface EmoteDef {
 
 /** 모든 게임 공통 감정 표현. 게임은 extraEmotes로 몇 개를 더할 수 있다 */
 export const BASE_EMOTES: EmoteDef[] = [
+  // 이모지만 (팔레트 위쪽 격자)
   { id: 'thumbs', text: '👍' },
   { id: 'clap', text: '👏' },
   { id: 'lol', text: '😂' },
@@ -81,20 +82,24 @@ export const BASE_EMOTES: EmoteDef[] = [
   { id: 'fire', text: '🔥' },
   { id: 'cool', text: '😎' },
   { id: 'pray', text: '🙏' },
-  { id: 'nice', text: '좋은 수!' },
-  { id: 'close', text: '아깝다~' },
-  { id: 'hurry', text: '빨리요~ ⏳' },
-  { id: 'hmm', text: '고민되네…' },
-  { id: 'please', text: '잘 부탁해요!' },
-  { id: 'gg', text: '줴줴이야 👋' },
-  // 약올리기
   { id: 'teabag', text: '🍵', anim: 'teabag' },
   { id: 'clown', text: '🤡' },
+  // 짧은 말 — 친구끼리 보드게임하며 실제로 하는 말 (docs/ux-writing.md 5절)
+  { id: 'please', text: '잘 부탁해요 🙌' },
+  { id: 'nice', text: '오 나이스 👍' },
+  { id: 'close', text: '아 아깝다 😫' },
+  { id: 'hmm', text: '어떡하지… 🤔' },
+  { id: 'hurry', text: '빨리 좀~ ⏳' },
+  { id: 'wait', text: '잠깐만! ✋' },
+  { id: 'again', text: '한 판 더? 🔁' },
+  { id: 'gg', text: '줴줴이야 👋' },
+  // 약올리기 (놀리되 상처 주지 않게)
   { id: 'meh', text: '메롱 😜' },
-  { id: 'yawn', text: '하품 나온다 🥱' },
-  { id: 'plan', text: '계획대로 😏' },
-  { id: 'shaking', text: '떨고 있니? 🫵' },
-  { id: 'ez', text: '너무 쉽다~ 💅' },
+  { id: 'best', text: '그게 최선이야? 😏' },
+  { id: 'yawn', text: '하품 나와 🥱' },
+  { id: 'plan', text: '다 계획대로야 😎' },
+  { id: 'shaking', text: '쫄았지? 🫣' },
+  { id: 'ez', text: '너무 쉬운데? 💅' },
 ];
 
 export interface EmoteEvent {

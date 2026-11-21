@@ -1,5 +1,5 @@
 import { CLASSIC, Card, EMPTY, HOLE, scoreBoard } from '@bg/crown-march-engine';
-import { Clip, GuideSection } from '@bg/web';
+import { Clip, type GuideSection } from '@bg/web/guide-kit';
 import { CrownIcon, KnightIcon, MoveCard, SeatStone } from './theme';
 
 /* 게임 방법 모달 내용 — 실제 게임 부품(돌·왕관·이동 카드)으로 그린 그림과 플레이 영상 */
@@ -80,8 +80,8 @@ function sections(): GuideSection[] {
       content: (
         <>
 <p>
-              보드 위의 <b>왕관 하나를 모두가 함께</b> 움직입니다. 왕관이 멈춘 칸에 내 가문의 돌을 놓아 <b>이어진 영토를 크게</b> 만드세요.
-              영토 점수는 칸 수의 <b>제곱</b>이라, 작은 땅 여러 개보다 <b>큰 땅 하나</b>가 훨씬 유리합니다.
+              보드 위의 <b>왕관 하나를 모두가 함께</b> 움직여요. 왕관이 멈춘 칸에 내 가문의 돌을 놓아 <b>이어진 영토를 크게</b> 만드세요.
+              영토 점수는 칸 수의 <b>제곱</b>이라, 작은 땅 여러 개보다 <b>큰 땅 하나</b>가 훨씬 유리해요.
             </p>
             <div className="g-row center">
               <MiniBoard size={5} cells={{ 6: 0, 7: 0, 11: 0, 12: 0, 13: 0, 3: 1, 4: 1, 20: 1 }} crown={[2, 2]} />
@@ -115,7 +115,7 @@ function sections(): GuideSection[] {
                   <SeatStone seat={3} size={30} />
                 </span>
                 <b>가문 돌</b>
-                <span>진홍 · 백은 · 청람 · 비취. 모두가 한 무더기(공용 돌)에서 꺼내 씁니다. 원작 52개.</span>
+                <span>진홍 · 백은 · 청람 · 비취. 모두가 한 무더기(공용 돌)에서 꺼내 써요. 원작 52개.</span>
               </div>
               <div className="g-part">
                 <span className="g-part-art">
@@ -124,7 +124,7 @@ function sections(): GuideSection[] {
                 </span>
                 <b>이동 카드</b>
                 <span>
-                  <b>검이 가리키는 방향</b>으로 <b>점 개수만큼</b> 왕관을 옮겨요. 8방향 × 1~3칸 = 24장. 손패는 최대 5장이고 <b>모두에게 공개</b>됩니다.
+                  <b>검이 가리키는 방향</b>으로 <b>점 개수만큼</b> 왕관을 옮겨요. 8방향 × 1~3칸 = 24장. 손패는 최대 5장이고 <b>모두에게 공개</b>돼요.
                 </span>
               </div>
               <div className="g-part">
@@ -132,7 +132,7 @@ function sections(): GuideSection[] {
                   <KnightIcon size={34} />
                 </span>
                 <b>기사 카드</b>
-                <span>한 사람당 4장. 상대 돌을 내 색으로 뒤집을 때 씁니다. 한 번 쓰면 끝.</span>
+                <span>한 사람당 4장. 상대 돌을 내 색으로 뒤집을 때 써요. 한 번 쓰면 끝.</span>
               </div>
             </div>
         </>
@@ -145,13 +145,13 @@ function sections(): GuideSection[] {
         <>
 <ol className="g-steps">
               <li>
-                <b>이동 카드 내기</b> — 왕관을 카드대로 옮기고, 도착한 <b>빈 칸</b>에 내 돌을 놓습니다. 사이에 있는 칸은 상관없이 뛰어넘어요.
+                <b>이동 카드 내기</b> — 왕관을 카드대로 옮기고, 도착한 <b>빈 칸</b>에 내 돌을 놓아요. 사이에 있는 칸은 상관없이 뛰어넘어요.
               </li>
               <li>
-                <b>카드 1장 가져오기</b> — 손패가 상한(5장)보다 적을 때만. 더미가 비면 버린 카드를 섞어 다시 씁니다.
+                <b>카드 1장 가져오기</b> — 손패가 상한(5장)보다 적을 때만. 더미가 비면 버린 카드를 섞어 다시 써요.
               </li>
               <li>
-                <b>기사 + 이동 카드</b> — 도착한 칸에 <b>상대 돌</b>이 있으면 기사 1장을 써서 그 돌을 내 색으로 뒤집습니다. (아래 4번)
+                <b>기사 + 이동 카드</b> — 도착한 칸에 <b>상대 돌</b>이 있으면 기사 1장을 써서 그 돌을 내 색으로 뒤집어요. (아래 4번)
               </li>
             </ol>
             <div className="g-row">
@@ -173,8 +173,8 @@ function sections(): GuideSection[] {
       content: (
         <>
 <p>
-              이동 카드의 도착 칸에 <b>상대의 돌</b>이 있으면 보통은 갈 수 없지만, <b>기사 1장</b>을 함께 쓰면 갈 수 있고 그 돌이 <b>내 색으로 뒤집힙니다</b>.
-              상대의 큰 영토 한가운데를 끊어 점수를 크게 깎을 수 있어요. 기사를 쓸 수 있는 카드에는 <span className="g-inline-badge"><KnightIcon size={11} /></span> 표시가 붙습니다.
+              이동 카드의 도착 칸에 <b>상대의 돌</b>이 있으면 보통은 갈 수 없지만, <b>기사 1장</b>을 함께 쓰면 갈 수 있고 그 돌이 <b>내 색으로 뒤집혀요</b>.
+              상대의 큰 영토 한가운데를 끊어 점수를 크게 깎을 수 있어요. 기사를 쓸 수 있는 카드에는 <span className="g-inline-badge"><KnightIcon size={11} /></span> 표시가 붙어요.
             </p>
             <div className="g-row">
               <MiniBoard size={5} cells={{ 11: 1, 12: 1, 13: 1, 7: 1, 17: 0 }} crown={[2, 3]} arrow={[2, 3, 2, 2]} marks={{ 12: 'hero' }} />
@@ -183,7 +183,7 @@ function sections(): GuideSection[] {
               </div>
             </div>
             <Clip src="guide/knight.mp4" caption="기사로 상대 돌을 뒤집는 장면" />
-            <p className="muted small">팁: 기사는 동점일 때도 중요해요 — 점수가 같으면 기사를 덜 쓴 사람이 이깁니다.</p>
+            <p className="muted small">팁: 기사는 동점일 때도 중요해요 — 점수가 같으면 기사를 덜 쓴 사람이 이겨요.</p>
         </>
       ),
     },
@@ -254,14 +254,14 @@ function sections(): GuideSection[] {
     },
     {
       id: 'multi',
-      title: '3~4인 · 팀전',
+      title: '3~4명 · 팀전',
       content: (
         <>
 <ul className="g-list">
               <li>가문마다 색이 다른 돌을 쓰고, 기사는 <b>아무 상대</b>의 돌이나 뒤집을 수 있어요.</li>
-              <li>인원이 많으면 카드가 모자라므로 이동 카드를 <b>2벌</b> 섞고 보드를 <b>11×11</b>로 키우는 걸 권장해요 (로비의 "3인 권장"·"4인 권장").</li>
+              <li>인원이 많으면 카드가 모자라므로 이동 카드를 <b>2벌</b> 섞고 보드를 <b>11×11</b>로 키우는 걸 추천해요 (대기실의 "3명 추천"·"4명 추천").</li>
               <li>
-                <b>4인 팀전</b>: 좌석 1·3 vs 2·4. 같은 팀 돌은 <b>한 영역으로 이어져</b> 점수가 합쳐지고, 서로 뒤집을 수 없어요.
+                <b>4명 팀전</b>: 좌석 1·3 vs 2·4. 같은 팀 돌은 <b>한 영역으로 이어져</b> 점수가 합쳐지고, 서로 뒤집을 수 없어요.
               </li>
             </ul>
             <div className="g-row center">
@@ -320,7 +320,7 @@ function sections(): GuideSection[] {
                 <span>여러 판 합산, 시간 초과 시 자동 진행</span>
               </div>
             </div>
-            <Clip src="guide/lobby.mp4" caption="로비: QR로 초대하고 프리셋으로 규칙 고르기" />
+            <Clip src="guide/lobby.mp4" caption="대기실: QR로 초대하고 프리셋으로 규칙 고르기" />
         </>
       ),
     },
@@ -334,7 +334,7 @@ function sections(): GuideSection[] {
                 카드를 <b>누르면</b> 갈 칸이 금색으로 표시되고 경로가 보여요. <b>한 번 더 누르거나</b> 그 칸을 누르면 실행.
               </li>
               <li>
-                보드의 <b>점선 원</b>은 지금 갈 수 있는 칸이에요 — 칸을 바로 눌러도 됩니다. 빨간 원은 기사로 갈 수 있는 칸.
+                보드의 <b>점선 원</b>은 지금 갈 수 있는 칸이에요 — 칸을 바로 눌러도 돼요. 빨간 원은 기사로 갈 수 있는 칸.
               </li>
               <li>카드를 보드로 끌어다 놓아도 내려놓을 수 있어요.</li>
               <li>"영역" 버튼: 돌마다 속한 영역의 칸 수 표시 · "기록": 지금까지의 수</li>
@@ -346,4 +346,4 @@ function sections(): GuideSection[] {
   ];
 }
 
-export const guide = { subtitle: '2~4인 · 약 20~30분', icon: <CrownIcon size={26} />, sections: sections() };
+export const guide = { subtitle: '2~4명 · 약 20~30분', icon: <CrownIcon size={26} />, sections: sections() };

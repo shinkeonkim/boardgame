@@ -62,6 +62,7 @@ apps/portal/      홈 · 게임 찾기 · 상세 · /design · deploy/
 
 자세히: [`docs/architecture.md`](docs/architecture.md) · 디자인 시스템: [`packages/ui/README.md`](packages/ui/README.md) ·
 **새 게임 추가 절차와 노하우: [`.claude/skills/new-boardgame/SKILL.md`](.claude/skills/new-boardgame/SKILL.md)** ·
+문구 쓰는 법: [`docs/ux-writing.md`](docs/ux-writing.md) ·
 게임별 규칙 조사·설계·QA: [`docs/games/`](docs/games)
 
 ## 개발

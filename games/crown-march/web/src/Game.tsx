@@ -16,13 +16,13 @@ function describe(e: LogEntry, names: string[]): string {
   const who = names[e.seat] ?? `P${e.seat + 1}`;
   switch (e.type) {
     case 'place':
-      return `${who} · ${cardText(e.card)} 이동, 돌을 놓았어요`;
+      return `${who} 님이 ${cardText(e.card)}칸 옮겨 돌을 놓았어요`;
     case 'hero':
-      return `${who} · ⚔ 기사! ${cardText(e.card)} 이동, ${names[e.victim] ?? '상대'} 님의 돌을 뒤집었어요`;
+      return `⚔ ${who} 님이 기사로 ${names[e.victim] ?? '상대'} 님의 돌을 뒤집었어요`;
     case 'draw':
-      return `${who} · 카드 1장 가져옴${e.reshuffled ? ' (버린 카드를 섞어 새 더미)' : ''}`;
+      return `${who} 님이 카드를 1장 가져왔어요${e.reshuffled ? ' (버린 카드를 섞어 다시 쌓았어요)' : ''}`;
     case 'pass':
-      return `${who} · 할 수 있는 게 없어 패스`;
+      return `${who} 님은 할 수 있는 게 없어서 넘겼어요`;
   }
 }
 
@@ -64,7 +64,7 @@ export function Game({
     notify(msg);
     setShake((n) => n + 1);
   };
-  const notMyTurnMsg = me < 0 ? '관전 중에는 플레이할 수 없어요' : `지금은 ${turnName} 님의 차례예요`;
+  const notMyTurnMsg = me < 0 ? '관전 중에는 둘 수 없어요' : `지금은 ${turnName} 님의 차례예요`;
 
   // 내 차례 알림: 진동 + 다른 탭이면 탭 제목
   useEffect(() => {
@@ -99,7 +99,7 @@ export function Game({
     const mine = g.turn === me;
     setSplash({
       text: mine ? '내 차례!' : `${turnName} 님 차례`,
-      sub: mine ? '카드로 왕관을 옮겨 돌을 놓으세요' : g.players > 2 && (g.turn + 1) % g.players === me ? '다음은 내 차례예요' : '',
+      sub: mine ? '카드를 골라 왕관을 옮기세요' : g.players > 2 && (g.turn + 1) % g.players === me ? '다음은 내 차례예요' : '',
       mine,
       k: Date.now(),
     });
@@ -195,8 +195,8 @@ export function Game({
     if (g.can.draw) return act('move', { move: { type: 'draw' } });
     if (g.status !== 'playing') return;
     if (!myTurn) return warn(notMyTurnMsg);
-    if (myHand.length >= c.handLimit) return warn(`손패가 ${c.handLimit}장이라 더 가져올 수 없어요 — 카드를 내세요`);
-    return warn('가져올 카드가 없어요');
+    if (myHand.length >= c.handLimit) return warn(`카드는 ${c.handLimit}장까지 들 수 있어요. 먼저 카드를 내 주세요`);
+    return warn('가져올 카드가 남아 있지 않아요');
   };
 
   const onHandClick = (card: Card) => {
@@ -229,9 +229,9 @@ export function Game({
       setSelected(pick.card.id);
       return;
     }
-    if (selCard) return warn('선택한 카드로는 빛나는 칸으로만 갈 수 있어요');
-    if (targets.size === 0) return warn(g.can.draw ? '낼 수 있는 카드가 없어요 — 카드를 가져오세요' : '할 수 있는 행동이 없어요 — 패스하세요');
-    warn('카드로 갈 수 있는 칸(표시된 칸)을 누르세요');
+    if (selCard) return warn('고른 카드로는 빛나는 칸으로만 갈 수 있어요');
+    if (targets.size === 0) return warn(g.can.draw ? '낼 수 있는 카드가 없어요. 카드를 1장 가져오세요' : '할 수 있는 게 없어요. 넘기기를 눌러 주세요');
+    warn('점선으로 표시된 칸을 눌러 주세요');
   };
 
   // 영역 점수 (실시간)
@@ -271,7 +271,7 @@ export function Game({
           {view.hostId === view.you && g.status !== 'match-over' && <StopGameButton act={act} small />}
           {view.hostId === view.you && <CloseRoomButton act={act} small />}
           <ThemeToggle variant="icon" />
-          <GuideButton className="btn ghost tiny" label="규칙" />
+          <GuideButton className="btn ghost tiny" label="게임 방법" />
           <button className={`btn ghost tiny ${showAreas ? 'on' : ''}`} aria-pressed={showAreas} onClick={() => setShowAreas((v) => !v)}>
             영역
           </button>
@@ -300,7 +300,7 @@ export function Game({
 
       {showLog && (
         <div className="log panel">
-          {g.log.length === 0 ? <span className="muted small">아직 기록이 없습니다</span> : [...g.log].reverse().map((e) => <div key={e.n} className="small">{describe(e, names)}</div>)}
+          {g.log.length === 0 ? <span className="muted small">아직 기록이 없어요</span> : [...g.log].reverse().map((e) => <div key={e.n} className="small">{describe(e, names)}</div>)}
         </div>
       )}
 
@@ -358,7 +358,7 @@ export function Game({
           </div>
           </div>
           <div className="ticker small muted" aria-live="polite" key={last?.n ?? -1}>
-            {last ? describe(last, names) : g.status === 'playing' ? '가운데 왕관에서 시작합니다' : ' '}
+            {last ? describe(last, names) : g.status === 'playing' ? '가운데 왕관에서 시작해요' : ' '}
           </div>
         </section>
 
@@ -368,7 +368,7 @@ export function Game({
               title={`남은 돌 ${g.supply}개`}
               critical={g.supply <= g.players}
               compactKey={g.supply}
-              sub={g.supply <= g.players ? '이번 바퀴 안에 끝날 수 있어요 — 큰 영역을 지키세요' : undefined}
+              sub={g.supply <= g.players ? '이번 바퀴에 끝날 수 있어요. 큰 땅을 지켜 보세요' : undefined}
             >
               {' '}
               · 다 쓰면 판이 끝나요
@@ -393,7 +393,7 @@ export function Game({
           </section>
 
           <section className="supply-row">
-            <div className="supply" title="공용 돌 — 다 쓰면 판이 끝나요">
+            <div className="supply" title="모두 함께 쓰는 돌이에요. 다 쓰면 판이 끝나요">
               <span className="supply-stack" aria-hidden>
                 <i />
                 <i />
@@ -411,9 +411,9 @@ export function Game({
               </button>
               <EmoteButton onSend={onEmote} small />
             </div>
-            <div className="discard" title={`버린 카드 ${g.discardCount}장 — 더미가 비면 섞어서 다시 씀`}>
+            <div className="discard" title={`버린 카드 ${g.discardCount}장. 가져올 카드가 떨어지면 섞어서 다시 써요`}>
               {g.discardTop ? <MoveCard card={g.discardTop} size="sm" key={g.discardTop.id} fresh /> : <span className="discard-empty" />}
-              <span className="muted small">버림 {g.discardCount}</span>
+              <span className="muted small">버린 카드 {g.discardCount}</span>
             </div>
           </section>
 
@@ -423,7 +423,7 @@ export function Game({
                 <span>
                   <SeatStone seat={me} size={16} /> 내 카드 <span className="muted">{myHand.length}/{c.handLimit}</span>
                 </span>
-                <span className="heroes-left" title="기사 카드: 이동 카드와 함께 내면 상대 돌을 내 색으로 뒤집어요">
+                <span className="heroes-left" title="기사 카드: 이동 카드와 같이 내면 상대 돌을 내 색으로 바꿔요">
                   {Array.from({ length: c.heroes }, (_, i) => (
                     <span key={i} className={i < g.heroes[me] ? 'on' : 'used'}>
                       <KnightIcon size={16} />
@@ -441,7 +441,7 @@ export function Game({
                       card={card}
                       kind={myTurn ? kind : null}
                       selected={card.id === selected}
-                      title={isOutcomeOk(o) ? (o.kind === 'hero' ? '기사로 상대 돌 뒤집기' : '빈 칸에 돌 놓기') : o.reason}
+                      title={isOutcomeOk(o) ? (o.kind === 'hero' ? '기사로 상대 돌 뒤집기' : '빈칸에 돌 놓기') : o.reason}
                       onClick={() => onHandClick(card)}
                       onPointerDown={(e) => startDrag(e, card)}
                       className={drag?.card.id === card.id ? 'dragging' : ''}
@@ -455,7 +455,7 @@ export function Game({
               <div className="actions">
                 {myTurn && selCard && isOutcomeOk(outcomes.get(selCard.id)!) ? (
                   <button className={`btn primary ${(outcomes.get(selCard.id) as { kind: string }).kind === 'hero' ? 'hero-btn' : ''}`} onClick={() => play(selCard)}>
-                    {(outcomes.get(selCard.id) as { kind: string }).kind === 'hero' ? '⚔ 기사로 뒤집기' : '여기에 돌 놓기'}
+                    {(outcomes.get(selCard.id) as { kind: string }).kind === 'hero' ? '⚔ 기사로 뒤집기' : '돌 놓기'}
                   </button>
                 ) : null}
                 {myTurn && g.can.draw && (
@@ -465,14 +465,14 @@ export function Game({
                 )}
                 {myTurn && g.can.pass && (
                   <button className="btn primary" onClick={() => act('move', { move: { type: 'pass' } })}>
-                    패스
+                    넘기기
                   </button>
                 )}
-                {!myTurn && <span className="muted small">{g.status === 'playing' ? `${turnName} 님이 두는 중` : ' '}</span>}
+                {!myTurn && <span className="muted small">{g.status === 'playing' ? `${turnName} 님이 두고 있어요` : ' '}</span>}
               </div>
             </section>
           )}
-          {me < 0 && <p className="muted small center-text">관전 중입니다</p>}
+          {me < 0 && <p className="muted small center-text">관전하고 있어요</p>}
         </aside>
       </div>
 
@@ -499,7 +499,7 @@ export function Game({
 function cellLabel(v: number, x: number, y: number, names: string[]) {
   const pos = `${x + 1}열 ${y + 1}행`;
   if (v === HOLE) return `${pos} 막힌 칸`;
-  if (v === EMPTY) return `${pos} 빈 칸`;
+  if (v === EMPTY) return `${pos} 빈칸`;
   return `${pos} ${names[v] ?? ''} 돌`;
 }
 
@@ -615,31 +615,31 @@ function TurnBanner({
   let hint: string;
   if (myTurn) {
     if (g.can.pass) {
-      title = '할 수 있는 행동이 없어요';
-      hint = '모든 카드가 막혔고 더 가져올 수도 없어요 — 패스하세요';
+      title = '할 수 있는 게 없어요';
+      hint = '낼 카드도, 가져올 카드도 없어요. 넘기기를 눌러 주세요';
     } else if (selCard && selOutcome) {
       if (isOutcomeOk(selOutcome)) {
-        title = selOutcome.kind === 'hero' ? '⚔ 기사 출격 준비' : '여기에 돌을 놓을까요?';
+        title = selOutcome.kind === 'hero' ? '⚔ 기사로 뒤집을까요?' : '여기에 돌을 놓을까요?';
         const victim = g.board[selOutcome.to.y * g.size + selOutcome.to.x];
         hint =
           selOutcome.kind === 'hero'
-            ? `${cardText(selCard)}: 기사 1장을 써서 ${names[victim] ?? '상대'} 님의 돌을 내 색으로 뒤집어요 · 카드를 한 번 더 누르면 실행`
-            : `${cardText(selCard)}: 왕관을 옮기고 빈 칸에 내 돌을 놓아요 · 카드나 칸을 한 번 더 누르면 실행`;
+            ? `기사 1장을 써서 ${names[victim] ?? '상대'} 님의 돌을 내 색으로 바꿔요. 카드를 한 번 더 누르세요`
+            : `왕관을 옮기고 그 칸에 내 돌을 놓아요. 카드나 칸을 한 번 더 누르세요`;
       } else {
         title = '이 카드는 지금 낼 수 없어요';
         hint = `${cardText(selCard)}: ${selOutcome.reason}`;
       }
     } else if (playableCount > 0) {
-      title = '내 차례예요 · 왕관을 움직이세요';
-      hint = `카드를 고르거나 보드에 표시된 칸을 누르세요${g.can.draw ? ' · 카드를 가져와도 돼요' : ''}`;
+      title = '내 차례예요';
+      hint = `카드를 고르거나 점선 칸을 눌러 왕관을 옮기세요${g.can.draw ? '. 카드를 가져와도 돼요' : ''}`;
     } else {
       title = '낼 수 있는 카드가 없어요';
       hint = '카드를 1장 가져오세요';
     }
   } else {
     title = `${turnName} 님의 차례예요`;
-    hint = away ? '연결이 끊겼어요 · 다시 들어오길 기다리는 중' : '왕관을 움직이는 중…';
-    if (g.me >= 0 && g.players > 2 && (g.turn + 1) % g.players === g.me) hint += ' · 다음은 내 차례예요';
+    hint = away ? '연결이 끊겨서 다시 들어오길 기다리고 있어요' : '왕관을 옮기는 중이에요';
+    if (g.me >= 0 && g.players > 2 && (g.turn + 1) % g.players === g.me) hint += ' · 다음은 내 차례예요'
     if (g.me < 0) hint += ' · 관전 중';
   }
   const teamNote = g.config.teams && g.me >= 0 ? ` · 같은 팀: ${names.filter((_, i) => i !== g.me && sameSide(true, i, g.me)).join(', ')}` : '';
@@ -665,7 +665,7 @@ function TurnBanner({
         <>
           <TurnTimer secs={secs} />
           {away && nudgeLeft !== null && g.me >= 0 && (
-            <button className="btn tiny" disabled={nudgeLeft > 0} onClick={onNudge} title="자동으로 돌을 놓거나 카드를 가져옵니다">
+            <button className="btn tiny" disabled={nudgeLeft > 0} onClick={onNudge} title="자동으로 돌을 놓거나 카드를 가져와요">
               대신 진행{nudgeLeft > 0 ? ` (${nudgeLeft}초)` : ''}
             </button>
           )}
@@ -688,14 +688,14 @@ function RoundOver({ view, act, onLeave, onPeek }: { view: View; act: Act; onLea
   let headline = `${g.round}판 결과`;
   if (matchOver) {
     const top = rows.filter((r) => r.rank === 1);
-    if (isTeam) headline = top.length === 4 ? '무승부!' : `${top[0].seat % 2 === 0 ? 'A팀' : 'B팀'} 승리!`;
-    else headline = top.length === rows.length && rows.length > 1 ? '무승부!' : `${top.map((r) => names[r.seat]).join(', ')} 승리!`;
+    if (isTeam) headline = top.length === 4 ? '비겼어요!' : `${top[0].seat % 2 === 0 ? 'A팀' : 'B팀'}이 이겼어요!`;
+    else headline = top.length === rows.length && rows.length > 1 ? '비겼어요!' : `${top.map((r) => names[r.seat]).join(', ')} 님이 이겼어요!`;
   }
   const tieBroken = matchOver && rows.length > 1 && rows[0].total === rows[1].total && rows[0].rank !== rows[1].rank;
   const breakdown = (seat: number) => {
     const side = isTeam ? seat % 2 : seat;
     const sizes = final.groups.filter((gr) => gr.side === side).map((gr) => gr.cells.length).sort((a, b) => b - a);
-    if (!sizes.length) return '영역 없음';
+    if (!sizes.length) return '땅 없음';
     const shown = sizes.slice(0, 6).map((n) => (c.squareScoring && n > 1 ? `${n}²` : `${n}`));
     return shown.join(' + ') + (sizes.length > 6 ? ` + …(${sizes.length - 6}개)` : '');
   };
@@ -704,16 +704,16 @@ function RoundOver({ view, act, onLeave, onPeek }: { view: View; act: Act; onLea
     <div className="overlay" role="dialog" aria-modal="true" aria-label="점수">
       <div className="panel sheet">
         <h2>{headline}</h2>
-        <p className="muted small">{g.endReason === 'stones' ? '공용 돌을 모두 썼어요' : '아무도 왕관을 움직일 수 없어 끝났어요'}</p>
+        <p className="muted small">{g.endReason === 'stones' ? '돌을 모두 써서 판이 끝났어요' : '아무도 왕관을 옮길 수 없어서 판이 끝났어요'}</p>
         <div className="table-wrap">
           <table className="scores">
             <thead>
               <tr>
                 <th />
-                <th className="left">영역 (이번 판)</th>
+                <th className="left">땅 (이번 판)</th>
                 {c.rounds > 1 && <th>이번 판</th>}
                 <th>합계</th>
-                <th title="동점이면 기사를 덜 쓴 쪽이 이깁니다">기사 사용</th>
+                <th title="점수가 같으면 기사를 덜 쓴 쪽이 이겨요">기사 사용</th>
               </tr>
             </thead>
             <tbody>
@@ -734,13 +734,13 @@ function RoundOver({ view, act, onLeave, onPeek }: { view: View; act: Act; onLea
             </tbody>
           </table>
         </div>
-        {tieBroken && <p className="small">점수가 같아 기사를 덜 쓴 쪽이 앞섭니다.</p>}
+        {tieBroken && <p className="small">점수가 같아서 기사를 덜 쓴 쪽이 앞서요.</p>}
         <div className="row">
           <button className="btn primary grow" onClick={() => (matchOver ? act('back') : act('next', { round: g.round, status: g.status }))}>
-            {matchOver ? '로비로 돌아가기' : '다음 판 시작'}
+            {matchOver ? '대기실로 돌아가기' : '다음 판 시작하기'}
           </button>
           <button className="btn" onClick={onPeek}>
-            보드 보기
+            판 다시 보기
           </button>
           {matchOver && (
             <button className="btn ghost" onClick={onLeave}>

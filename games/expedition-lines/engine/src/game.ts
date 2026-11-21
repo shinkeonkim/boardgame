@@ -144,16 +144,16 @@ export function canDrawFrom(c: GameConfig, s: RoundState, source: DrawSource): b
 
 /** 상태를 직접 변경한다. 잘못된 수면 MoveError. */
 export function applyMove(m: MatchState, player: number, move: Move): void {
-  if (m.status !== 'playing') throw new MoveError('진행 중인 판이 아닙니다');
+  if (m.status !== 'playing') throw new MoveError('지금은 진행 중인 판이 없어요');
   const s = m.state;
   const c = m.config;
-  if (s.turn !== player) throw new MoveError('내 차례가 아닙니다');
+  if (s.turn !== player) throw new MoveError('지금은 내 차례가 아니에요');
 
   if (move.type === 'play' || move.type === 'discard') {
     if (s.phase !== 'play') throw new MoveError('먼저 카드를 1장 가져오세요');
     const hand = s.hands[player];
     const idx = hand.findIndex((x) => x.id === move.cardId);
-    if (idx < 0) throw new MoveError('손에 없는 카드입니다');
+    if (idx < 0) throw new MoveError('손에 없는 카드예요');
     const card = hand[idx];
     if (move.type === 'play') {
       const column = s.expeditions[player][card.color];
@@ -174,7 +174,7 @@ export function applyMove(m: MatchState, player: number, move: Move): void {
   if (move.type === 'draw') {
     if (s.phase !== 'draw') throw new MoveError('먼저 카드를 1장 내려놓으세요');
     if (move.source !== 'deck' && (typeof move.source !== 'number' || move.source < 0 || move.source >= c.colors)) {
-      throw new MoveError('잘못된 더미입니다');
+      throw new MoveError('가져올 수 없는 더미예요');
     }
     if (!canDrawFrom(c, s, move.source)) {
       const pile = move.source === 'deck' ? null : s.discards[move.source];
@@ -196,7 +196,7 @@ export function applyMove(m: MatchState, player: number, move: Move): void {
     return;
   }
 
-  throw new MoveError('알 수 없는 행동입니다');
+  throw new MoveError('할 수 없는 동작이에요');
 }
 
 function finishRound(m: MatchState) {
@@ -205,7 +205,7 @@ function finishRound(m: MatchState) {
 }
 
 export function startNextRound(m: MatchState, rng: Rng): void {
-  if (m.status !== 'round-over') throw new MoveError('다음 판을 시작할 수 없습니다');
+  if (m.status !== 'round-over') throw new MoveError('아직 다음 판을 시작할 수 없어요');
   // 매 판 첫 차례는 무작위 (서버는 crypto 난수를 넘긴다)
   const starter = Math.floor(rng() * m.players);
   m.round += 1;
@@ -245,7 +245,7 @@ export function scorePlayer(c: GameConfig, columns: Card[][]) {
  */
 export function continueMatch(prev: MatchState, config: GameConfig, rng: Rng): MatchState {
   const done = prev.roundScores.length;
-  if (done >= config.rounds) throw new MoveError(`이미 ${done}판을 마쳤어요. 판 수를 ${done + 1} 이상으로 늘려야 이어갈 수 있어요`);
+  if (done >= config.rounds) throw new MoveError(`벌써 ${done}판을 마쳤어요. 판 수를 ${done + 1}판 이상으로 늘리면 이어서 할 수 있어요`);
   const starter = Math.floor(rng() * prev.players);
   return {
     config,

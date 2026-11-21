@@ -22,11 +22,8 @@ export interface ConfigPanelProps<C = unknown> {
   set: (patch: Partial<C>) => void;
 }
 
-export interface GuideSection {
-  id: string;
-  title: string;
-  content: ReactNode;
-}
+export type { GuideSection, GuideDef } from './guide-kit';
+import type { GuideDef } from './guide-kit';
 
 /**
  * 게임 하나의 웹 클라이언트 정의. games/<id>/web/src/main.tsx 에서 mountGame(client)로 띄운다.
@@ -61,5 +58,5 @@ export interface GameClient<V = unknown, C = unknown> {
   /** 앱 맨 위에 한 번 그리는 것 (예: 카드 그림용 SVG defs) */
   Globals?: ComponentType;
   /** 게임 방법 모달 */
-  guide: { subtitle: string; icon: ReactNode; sections: GuideSection[] };
+  guide: GuideDef;
 }

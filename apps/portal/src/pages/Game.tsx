@@ -2,6 +2,7 @@ import { TAG_LABELS } from '@bg/core';
 import { GAMES, gameById } from '../catalog';
 import { GameArt, GameCard, GameIcon, GameStats } from '../GameCard';
 import { Link } from '../router';
+import { GuideCard } from '../GuideCard';
 
 export function GamePage({ id }: { id: string }) {
   const g = gameById(id)!;
@@ -33,25 +34,27 @@ export function GamePage({ id }: { id: string }) {
           <div className="gd-actions">
             {g.status === 'live' ? (
               <a className="btn primary big-btn" href={`/${g.id}/`}>
-                ▶ 방 만들고 플레이
+                ▶ 시작하기
               </a>
             ) : (
               <button className="btn big-btn" disabled>
                 준비 중
               </button>
             )}
-            <span className="muted small">게임 화면의 “📖 게임 방법”에서 그림과 영상으로 규칙을 볼 수 있어요.</span>
+            <a className="btn ghost" href="#how-to-play">
+              게임 방법 보기
+            </a>
           </div>
         </div>
       </header>
 
       <div className="gd-body">
         <section className="panel">
-          <h2>어떤 게임인가요</h2>
+          <h2>어떤 게임이에요?</h2>
           {g.description.map((p, i) => (
             <p key={i}>{p}</p>
           ))}
-          <p className="muted small">{g.inspiredBy}에서 영감을 받았고, 이름·그림·화면은 직접 만들었어요.</p>
+          <p className="muted small">{g.inspiredBy}에서 영감을 받았어요. 이름·그림·화면은 직접 만들었어요.</p>
         </section>
         <div className="gd-side">
           <section className="panel">
@@ -74,6 +77,8 @@ export function GamePage({ id }: { id: string }) {
           </section>
         </div>
       </div>
+
+      <GuideCard game={g} />
 
       {related.length > 0 && (
         <section className="section">

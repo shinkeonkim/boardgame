@@ -24,7 +24,7 @@ export function GameNav() {
   return (
     <nav className="game-nav">
       <a className="btn ghost tiny" href="/">
-        ← 전체 게임
+        ← 다른 게임 보기
       </a>
       <ThemeToggle />
     </nav>
@@ -48,7 +48,7 @@ export function HomeShell({ children }: { children: React.ReactNode }) {
               <li key={c}>{c}</li>
             ))}
           </ul>
-          <GuideButton className="btn guide-cta" label="게임 방법 자세히 보기" />
+          <GuideButton className="btn guide-cta" label="게임 방법 보기" />
         </section>
         <section className="home-card panel">{children}</section>
       </main>
@@ -65,7 +65,7 @@ export function Home({ onEnter, flash }: { onEnter: (code: string) => void; flas
   const [busy, setBusy] = useState(false);
 
   const create = async () => {
-    if (!name.trim()) return setError('닉네임을 입력하세요');
+    if (!name.trim()) return setError('닉네임을 입력해 주세요');
     setBusy(true);
     store.setName(name.trim());
     const pw = usePw ? password : '';
@@ -79,7 +79,7 @@ export function Home({ onEnter, flash }: { onEnter: (code: string) => void; flas
 
   const join = () => {
     const c = joinCode.trim().toUpperCase();
-    if (!/^[A-Z0-9]{4}$/.test(c)) return setError('방 코드는 4자리입니다');
+    if (!/^[A-Z0-9]{4}$/.test(c)) return setError('방 코드 4자리를 입력해 주세요');
     if (name.trim()) store.setName(name.trim());
     onEnter(c);
   };
@@ -87,7 +87,6 @@ export function Home({ onEnter, flash }: { onEnter: (code: string) => void; flas
   return (
     <HomeShell>
       <h2 className="home-card-title">게임 시작하기</h2>
-      <p className="muted small home-step">① 닉네임을 정하고 ② 방을 새로 만들거나, 초대받은 방에 들어가세요</p>
       {error && <div className="alert">{error}</div>}
       <label className="field">
         <span>닉네임</span>
@@ -101,11 +100,11 @@ export function Home({ onEnter, flash }: { onEnter: (code: string) => void; flas
             </span>
             <div>
               <h3>새 방 만들기</h3>
-              <p>내가 방장이 돼요. 만들면 QR·링크로 친구를 초대할 수 있어요.</p>
+              <p>내가 방장이 되고, QR이나 링크로 친구를 초대해요.</p>
             </div>
           </div>
           <label className="check small">
-            <input type="checkbox" checked={usePw} onChange={(e) => setUsePw(e.target.checked)} /> 방 암호 걸기 (선택)
+            <input type="checkbox" checked={usePw} onChange={(e) => setUsePw(e.target.checked)} /> 암호 걸기
           </label>
           {usePw && <input value={password} maxLength={64} onChange={(e) => setPassword(e.target.value)} placeholder="암호" onKeyDown={(e) => e.key === 'Enter' && create()} />}
           <button className="btn primary wide big-btn" disabled={busy} onClick={create}>
@@ -121,8 +120,8 @@ export function Home({ onEnter, flash }: { onEnter: (code: string) => void; flas
               🔑
             </span>
             <div>
-              <h3>초대받은 방 들어가기</h3>
-              <p>친구에게 받은 4자리 방 코드를 입력하세요. QR·링크로 받았다면 그냥 열면 돼요.</p>
+              <h3>친구 방에 들어가기</h3>
+              <p>친구에게 받은 방 코드 4자리를 입력해 주세요. 링크로 받았다면 열기만 하면 돼요.</p>
             </div>
           </div>
           <div className="row">
@@ -137,7 +136,7 @@ export function Home({ onEnter, flash }: { onEnter: (code: string) => void; flas
               aria-label="방 코드 4자리"
             />
             <button className="btn join-btn big-btn" onClick={join} disabled={joinCode.length !== 4}>
-              입장
+              들어가기
             </button>
           </div>
         </div>

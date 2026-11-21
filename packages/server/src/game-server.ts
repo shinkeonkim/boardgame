@@ -101,7 +101,7 @@ export function createGameServer(opts: GameServerOptions) {
         const r = fn(payload ?? ({} as T));
         if (typeof ack === 'function') ack({ ok: true, ...(r ?? {}) });
       } catch (e) {
-        const msg = e instanceof RoomError ? e.message : '서버 오류';
+        const msg = e instanceof RoomError ? e.message : '문제가 생겼어요. 잠시 뒤 다시 시도해 주세요';
         if (!(e instanceof RoomError)) console.error(e);
         if (typeof ack === 'function') ack({ ok: false, error: msg });
         else socket.emit('error-message', msg);
@@ -111,10 +111,10 @@ export function createGameServer(opts: GameServerOptions) {
 
   function current(socket: Socket): { room: Room; member: Member } {
     const { code, memberId } = socket.data as SocketData;
-    if (!code) throw new RoomError('방에 들어가 있지 않습니다');
+    if (!code) throw new RoomError('방에 들어가 있지 않아요. 방 코드로 다시 들어와 주세요');
     const room = rooms.get(code);
     const member = room.members.find((m) => m.id === memberId);
-    if (!member) throw new RoomError('방에서 나가졌습니다');
+    if (!member) throw new RoomError('방에서 나왔어요. 방 코드로 다시 들어올 수 있어요');
     return { room, member };
   }
 
@@ -167,7 +167,7 @@ export function createGameServer(opts: GameServerOptions) {
           const data = socket.data as SocketData;
           const now = Date.now();
           data.failedJoins = data.failedJoins.filter((t) => now - t < 60_000);
-          if (data.failedJoins.length >= 10) throw new RoomError('시도가 너무 많습니다. 잠시 후 다시 시도하세요');
+          if (data.failedJoins.length >= 10) throw new RoomError('여러 번 실패했어요. 잠시 뒤 다시 시도해 주세요');
           try {
             const { room, member } = rooms.join(normalizeCode(p.code), {
               name: p.name,

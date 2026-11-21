@@ -82,7 +82,7 @@ describe('행동', () => {
   });
   it('손패가 가득 차면 못 가져오고, 덱이 비면 버림 더미를 섞는다', () => {
     const m = newMatch(CLASSIC, 2, seeded());
-    expect(() => applyMove(m, 0, { type: 'draw' })).toThrow(/더 가져올 수 없/);
+    expect(() => applyMove(m, 0, { type: 'draw' })).toThrow(/까지 들 수 있어요/);
     m.state.hands[0].pop();
     m.state.discard = m.state.deck.splice(0);
     m.state.discard.push(...m.state.deck);
@@ -107,7 +107,7 @@ describe('행동', () => {
   });
   it('남의 차례에는 못 둔다', () => {
     const m = newMatch(CLASSIC, 2, seeded());
-    expect(() => applyMove(m, 1, { type: 'draw' })).toThrow(/차례가 아닙니다/);
+    expect(() => applyMove(m, 1, { type: 'draw' })).toThrow(/차례가 아니에요/);
   });
 });
 

@@ -26,12 +26,12 @@ function useShareBase() {
 
 /** 방장 전용: 방 닫기 */
 export function CloseRoomButton({ act, small }: { act: Act; small?: boolean }) {
-  return <ConfirmButton label="방 닫기" warning="모두 나가게 돼요" onConfirm={() => act('close')} small={small} />;
+  return <ConfirmButton label="방 닫기" warning="모두 첫 화면으로 나가요" onConfirm={() => act('close')} small={small} />;
 }
 
 /** 방장 전용: 게임 중지 → 모두 로비로 (설정을 바꾼 뒤 이어서 할 수 있음) */
 export function StopGameButton({ act, small }: { act: Act; small?: boolean }) {
-  return <ConfirmButton label="게임 중지" warning="모두 로비로 가요" onConfirm={() => act('stop')} small={small} />;
+  return <ConfirmButton label="게임 멈추기" warning="모두 대기실로 돌아가요" onConfirm={() => act('stop')} small={small} />;
 }
 
 export function Lobby({ view, act, onLeave, emotes, onEmote }: { view: RoomView; act: Act; onLeave: () => void; emotes: EmoteEvent[]; onEmote: (id: string) => void }) {
@@ -64,7 +64,7 @@ export function Lobby({ view, act, onLeave, emotes, onEmote }: { view: RoomView;
       </header>
       {view.lobby.inResults.length > 0 && (
         <Notice>
-          🏁 지난 게임이 끝났어요. <b>{view.lobby.inResults.join(', ')}</b> 님이 아직 결과를 보고 있어요 — 로비로 돌아오면 함께 시작할 수 있어요.
+          🏁 <b>{view.lobby.inResults.join(', ')}</b> 님이 아직 결과를 보고 있어요. 대기실로 돌아오면 함께 시작할 수 있어요.
         </Notice>
       )}
       {view.lobby.paused && <PausedNotice view={view} isHost={isHost} />}
@@ -90,9 +90,9 @@ export function Lobby({ view, act, onLeave, emotes, onEmote }: { view: RoomView;
                   {m.isHost && <span className="tag">방장</span>}
                   {m.id === view.you && <span className="tag mine">나</span>}
                   {teams && <span className="tag">{i % 2 === 0 ? 'A팀' : 'B팀'}</span>}
-                  {!m.connected && <span className="tag">끊김</span>}
+                  {!m.connected && <span className="tag">연결 끊김</span>}
                   {m.connected && m.inResults && <span className="tag results">결과 보는 중</span>}
-                  {m.connected && !m.inResults && view.lobby.inResults.length > 0 && <span className="tag ready">대기 중</span>}
+                  {m.connected && !m.inResults && view.lobby.inResults.length > 0 && <span className="tag ready">준비됨</span>}
                 </span>
                 {isHost && (
                   <span className="mini-actions">
@@ -113,23 +113,23 @@ export function Lobby({ view, act, onLeave, emotes, onEmote }: { view: RoomView;
             ))}
           </ol>
           <EmoteFeed items={emotes.filter((e) => spectators.some((s) => s.id === e.from))} />
-          {spectators.length > 0 && <p className="muted small">관전: {spectators.map((m) => m.name).join(', ')}</p>}
+          {spectators.length > 0 && <p className="muted small">관전 중: {spectators.map((m) => m.name).join(', ')}</p>}
           <div className="row">
             {me.role === 'player' ? (
               <button className="btn ghost" onClick={() => act('role', { role: 'spectator' })}>
-                관전으로 전환
+                관전하기
               </button>
             ) : (
               <button className="btn" disabled={players.length >= maxPlayers} onClick={() => act('role', { role: 'player' })}>
-                플레이어로 참가
+                게임에 참여하기
               </button>
             )}
           </div>
-          {teams && <p className="muted small">팀전: 1·3번 좌석이 A팀, 2·4번 좌석이 B팀입니다.</p>}
+          {teams && <p className="muted small">팀전: 1·3번째가 A팀, 2·4번째가 B팀이에요.</p>}
         </section>
 
         <section className="panel config">
-          <h2>규칙 설정 {!isHost && <span className="muted small">(방장만 변경)</span>}</h2>
+          <h2>규칙 {!isHost && <span className="muted small">방장만 바꿀 수 있어요</span>}</h2>
           <ConfigPanel view={view} config={view.config} isHost={isHost} set={(patch) => isHost && act('config', { config: patch })} />
         </section>
       </div>
@@ -144,7 +144,7 @@ export function Lobby({ view, act, onLeave, emotes, onEmote }: { view: RoomView;
           view.lobby.paused ? (
             <div className="row tight">
               <button className="btn" disabled={view.lobby.errors.length > 0} onClick={() => act('start')}>
-                새 게임
+                새로 시작하기
               </button>
               <button className="btn primary" disabled={!!view.lobby.paused.blocked} onClick={() => act('resume')}>
                 이어서 하기
@@ -152,18 +152,18 @@ export function Lobby({ view, act, onLeave, emotes, onEmote }: { view: RoomView;
             </div>
           ) : view.lobby.inResults.length > 0 ? (
             <div className="row tight">
-              <span className="muted small">{view.lobby.inResults.length}명 기다리는 중</span>
+              <span className="muted small">{view.lobby.inResults.length}명이 결과를 보는 중</span>
               <button className="btn" disabled={view.lobby.errors.length > 0} onClick={() => act('start', { force: true })}>
-                기다리지 않고 시작
+                지금 시작하기
               </button>
             </div>
           ) : (
             <button className="btn primary" disabled={view.lobby.errors.length > 0} onClick={() => act('start')}>
-              게임 시작
+              게임 시작하기
             </button>
           )
         ) : (
-          <span className="muted small">방장이 시작하길 기다리는 중</span>
+          <span className="muted small">방장이 시작하면 바로 시작돼요</span>
         )}
       </div>
     </main>
@@ -176,15 +176,15 @@ function PausedNotice({ view, isHost }: { view: RoomView; isHost: boolean }) {
   const done = p.roundOver ? p.round : p.round - 1;
   const changed =
     done === 0
-      ? '설정이 바뀌어서 새 설정으로 1판부터 다시 시작해요 (같은 자리 순서).'
-      : `설정이 바뀌어서 ${p.roundOver ? '' : '진행 중이던 판은 버리고, '}끝난 ${done}판의 점수를 이어 새 설정으로 ${done + 1}판을 시작해요.`;
+      ? '규칙이 바뀌어서 같은 순서로 1판부터 새로 시작해요.'
+      : `규칙이 바뀌어서 ${p.roundOver ? '' : '하던 판은 빼고 '}끝난 ${done}판의 점수를 이어 ${done + 1}판부터 새 규칙으로 해요.`;
   return (
     <Notice className="paused-notice">
       <div>
-        ⏸ 방장이 게임을 중지했어요 · <b>
+        ⏸ 방장이 게임을 멈췄어요 · <b>
           {p.round}/{p.rounds}판
         </b>
-        {p.roundOver ? ' 끝난 뒤' : ' 진행 중'} ·{' '}
+        {p.roundOver ? ' 끝난 뒤' : ' 하는 중'} ·{' '}
         {p.players.map((x, i) => (
           <span key={i} className="paused-score">
             {x.name} <b>{x.total}</b>
@@ -193,8 +193,8 @@ function PausedNotice({ view, isHost }: { view: RoomView; isHost: boolean }) {
         ))}
       </div>
       <div className="small muted">
-        {p.blocked ? p.blocked : p.sameConfig ? '설정이 그대로라 하던 판을 그대로 이어가요. 규칙을 바꾸고 이어서 할 수도 있어요.' : changed}
-        {isHost ? '' : ' 방장이 이어서 시작하길 기다리는 중이에요.'}
+        {p.blocked ? p.blocked : p.sameConfig ? '하던 판을 그대로 이어서 해요. 규칙을 바꾸고 이어서 할 수도 있어요.' : changed}
+        {isHost ? '' : ' 방장이 이어서 시작하면 돌아가요.'}
       </div>
     </Notice>
   );
@@ -221,7 +221,7 @@ function ShareBox({ view, isHost, act }: { view: RoomView; isHost: boolean; act:
   const copy = async () => {
     try {
       if (navigator.share && /Mobi/.test(navigator.userAgent)) {
-        await navigator.share({ title, text: `방 ${view.code}에 들어와요`, url });
+        await navigator.share({ title, text: `${title} 방 ${view.code}에 들어와요!`, url });
         return;
       }
       await navigator.clipboard.writeText(url);
@@ -244,32 +244,32 @@ function ShareBox({ view, isHost, act }: { view: RoomView; isHost: boolean; act:
   return (
     <section className="panel share">
       <h2>초대하기</h2>
-      <div className="qr">{qr ? <img src={qr} alt={`방 ${view.code} 입장 QR 코드`} /> : <div className="qr-ph" />}</div>
+      <div className="qr">{qr ? <img src={qr} alt={`방 ${view.code}에 들어오는 QR 코드`} /> : <div className="qr-ph" />}</div>
       <div className="url-row">
         <code className="url">{url.replace(/^https?:\/\//, '')}</code>
         <button className="btn" onClick={copy}>
-          {copied ? '복사됨' : '링크 공유'}
+          {copied ? '복사했어요' : '링크 보내기'}
         </button>
       </div>
       <div className="pw-row small">
-        {view.hasPassword ? <span>🔒 암호 걸린 방</span> : <span className="muted">암호 없음 — 링크만 있으면 입장</span>}
+        {view.hasPassword ? <span>🔒 암호 걸린 방</span> : <span className="muted">암호 없이 링크만 있으면 들어올 수 있어요</span>}
         {view.hasPassword && savedPw && (
           <label className="check">
-            <input type="checkbox" checked={includePw} onChange={(e) => setIncludePw(e.target.checked)} /> QR·링크에 암호 포함
+            <input type="checkbox" checked={includePw} onChange={(e) => setIncludePw(e.target.checked)} /> QR과 링크에 암호 넣기
           </label>
         )}
       </div>
       {isHost &&
         (editingPw ? (
           <div className="row">
-            <input className="grow" value={pwInput} placeholder="새 암호 (비우면 해제)" maxLength={64} onChange={(e) => setPwInput(e.target.value)} />
+            <input className="grow" value={pwInput} placeholder="새 암호 (비우면 암호 없음)" maxLength={64} onChange={(e) => setPwInput(e.target.value)} />
             <button className="btn" onClick={savePw}>
               저장
             </button>
           </div>
         ) : (
           <button className="btn ghost small-btn" onClick={() => setEditingPw(true)}>
-            암호 {view.hasPassword ? '변경' : '설정'}
+            암호 {view.hasPassword ? '바꾸기' : '걸기'}
           </button>
         ))}
     </section>

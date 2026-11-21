@@ -13,7 +13,7 @@ export type AckResult<T = Record<string, unknown>> = ({ ok: true } & T) | { ok: 
 export function call<T = Record<string, unknown>>(event: string, payload: object = {}): Promise<AckResult<T>> {
   return new Promise((resolve) => {
     socket.timeout(8000).emit(event, payload, (err: unknown, res: AckResult<T>) => {
-      if (err) resolve({ ok: false, error: '서버 응답이 없습니다' });
+      if (err) resolve({ ok: false, error: '연결이 잠깐 끊겼어요. 다시 시도해 주세요' });
       else resolve(res);
     });
   });

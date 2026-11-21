@@ -5,9 +5,9 @@ import { GameView, viewFor } from './view';
 
 /** 이 게임에만 있는 감정 표현 (공통 목록 뒤에 붙음) */
 export const EXTRA_EMOTES: EmoteDef[] = [
-  { id: 'knight', text: '기사 출격! ⚔️' },
-  { id: 'crown', text: '왕관은 내 거 👑' },
-  { id: 'steal', text: '그 땅 잘 먹을게~ 🍽️' },
+  { id: 'knight', text: '기사 나간다 ⚔️' },
+  { id: 'crown', text: '이 땅 내 거야 👑' },
+  { id: 'steal', text: '거기 내가 먹는다 🍽️' },
 ];
 
 function isMove(m: unknown): m is Move {

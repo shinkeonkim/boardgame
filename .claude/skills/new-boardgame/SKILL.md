@@ -32,6 +32,14 @@ scripts/  local.mjs(운영과 같은 경로 게이트웨이) · bundle.mjs(이�
 - localStorage는 같은 도메인을 공유한다 → 키는 `bg:<id>:…`(토큰·암호), 공유값은 `bg:name`·`bg:mute`·`bg:theme`.
 - 명령: `npm test` · `npm run typecheck` · `npm run build && npm run local`(→ http://localhost:8080) · `npm run media`.
 
+## 0-1. 문구는 docs/ux-writing.md를 따른다
+
+화면 문구·오류·게임 방법·감정 표현을 쓰기 전에 **`docs/ux-writing.md`**를 읽는다(토스 8가지 라이팅 원칙 + 에러 메시지 6원칙 기반).
+- 제품이 하는 말은 해요체, 버튼은 "무엇을 하는지" 동사형(시작하기·들어가기·관전하기), 오류는 상황 → 이유 → 할 일.
+- 용어표를 지킨다: 방·방장·대기실·차례·판·명·넘기기·관전 (로비·턴·인·패스 ✕).
+- 엔진의 `MoveError`·`validateConfig` 문장도 사용자에게 그대로 뜨므로 같은 규칙으로 쓴다. 테스트 정규식은 바뀐 문장에 맞춘다.
+- 감정 표현은 "친구에게 실제로 하는 말"(반말 허용, 6글자 안팎, 이모지 끝에 하나). 게임 전용은 그 게임의 순간에 맞게 2~3개만.
+
 ## 1. 규칙 조사 (docs/games/<id>/01-rules.md)
 
 1. 사용자가 준 링크(나무위키·보드엠 등)를 web-fetch로 **세부 규칙 위주로** 읽게 한다: 구성물 수량, 준비, 차례 행동, 금지 조건, 덱 소진·재섞기, 종료 조건, 점수, 동점, 변형.
@@ -83,7 +91,10 @@ scripts/  local.mjs(운영과 같은 경로 게이트웨이) · bundle.mjs(이�
 - 진행 문구(ticker)와 보드 사이 여백, 결과 화면은 점수 풀이("5² + 3² + …")까지.
 - 테마: 게임 전용 색은 게임 CSS에 토큰으로(`:root` + `[data-theme='dark']` + 시스템 다크 미디어쿼리 3곳). 다크에서 안 보이는 요소(막힌 칸 등)는 두 테마 모두 같은 강한 색으로.
 
-**게임 방법 모달**(`guide.tsx`): 8~10개 섹션(목표·구성·차례·특수 규칙·금지·점수·끝·3~4인·설정·화면 사용법). 그림은 **실제 게임 컴포넌트로** 작게 그리고(카드·돌·보드), 점수 예시는 엔진 함수로 계산해 틀릴 수 없게. 짧은 영상은 `<Clip src="guide/move.mp4">` (파일은 `web/public/guide/`, `npm run media`가 만든다).
+**게임 방법**(`guide.tsx` + `guide-entry.tsx`): 같은 내용이 **게임 안 모달**과 **포털 게임 상세 페이지(카드 안에 펼침)** 두 곳에 나온다.
+`guide-entry.tsx`는 `import './game.css'; export { guide } from './guide';`(+ 카드 SVG defs 같은 `Globals`)만 — 포털이 이것만 필요할 때 불러온다(소켓 없음).
+그래서 guide.tsx는 `@bg/web/guide-kit`(Clip·GuideSection)만 import하고 `@bg/web` 본체(소켓)를 import하지 않는다.
+구성: 8~10개 섹션(목표·구성·차례·특수 규칙·금지·점수·끝·3~4인·설정·화면 사용법). 그림은 **실제 게임 컴포넌트로** 작게 그리고(카드·돌·보드), 점수 예시는 엔진 함수로 계산해 틀릴 수 없게. 짧은 영상은 `<Clip src="guide/move.mp4">` (파일은 `web/public/guide/`, `npm run media`가 만든다).
 
 **meta.ts**: 포털 카드·검색·상세에 쓰인다 (players, minutes, weight, tags, accent, icon SVG, highlights, customizable). 태그는 `TAG_LABELS`에 있는 것을 우선 쓰고 새 태그면 거기에 한국어 이름을 추가.
 
@@ -142,13 +153,19 @@ scripts/  local.mjs(운영과 같은 경로 게이트웨이) · bundle.mjs(이�
 | 같은 도메인에서 게임끼리 토큰 충돌 | 저장 키에 게임 id |
 | CI 태그 갱신 커밋이 다시 배포를 부름 | release paths에 `!<dir>/deploy/**` + 커밋 메시지 `[skip ci]` |
 | 홈랩 문서와 실제가 다름(shinkeonkim.com 터널) | 문서를 믿기 전에 실제 동작(`curl`)으로 확인 |
+| 셸(zsh)로 매니페스트를 만들 때 `$id:latest`의 `:l`이 소문자 수식어로 먹힘 → 이미지 이름이 `…linesatest` | 변수는 `${id}`로 감싼다, 만든 뒤 `kubectl kustomize`로 이미지 줄 확인 |
+| 포털이 `@bg/web`을 import하면 소켓이 열림 | 포털·게임 방법은 `@bg/web/guide-kit`만 |
+| ffmpeg에 webp 인코더가 없음 | 표지는 JPEG(`covers/<id>.jpg`) |
+| 모바일 녹화가 영원히 안 끝남 | 캡처 호출에 3초 제한, stop은 4초까지만 기다림 |
+| 문구가 딱딱·어색 (합니다체·명사형·개발 용어·"2인/로비/패스") | docs/ux-writing.md 기준으로 한 번에 정리 |
 
 ## 11. 새 게임 체크리스트 (복사해서 쓰기)
 
 - [ ] docs/games/<id>/01-rules.md, 02-custom.md
 - [ ] engine: config(LIMITS·CLASSIC·PRESETS·validate·sanitize) · game · view · module · 테스트(단위+퍼즈)
 - [ ] server/src/main.ts, package.json(이름 `@bg/<id>-server`)
-- [ ] web: client.tsx · ConfigPanel · Game · Demo · guide · game.css(토큰 3곳) · index.html · vite.config.ts(`gameViteConfig('<id>')`)
+- [ ] web: client.tsx · ConfigPanel · Game · Demo · guide.tsx · guide-entry.tsx · game.css(토큰 3곳) · index.html · vite.config.ts(`gameViteConfig('<id>')`)
+- [ ] 모든 문구를 docs/ux-writing.md 체크리스트로 확인 (해요체·동사 버튼·용어표)
 - [ ] meta.ts (포털에 자동 표시)
 - [ ] `npm test && npm run typecheck && npm run build && npm run local` 로 한 판 + QA 크기·테마
 - [ ] deploy/ · release-<id>.yml · `npm run media`(포털 표지 `apps/portal/public/covers/<id>.jpg`, 게임 방법 영상)

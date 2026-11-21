@@ -90,19 +90,19 @@ export class Rooms {
       for (let j = 0; j < 4; j++) code += CODE_ALPHABET[randomInt(CODE_ALPHABET.length)];
       if (!this.rooms.has(code)) return code;
     }
-    throw new RoomError('방을 더 만들 수 없습니다');
+    throw new RoomError('지금은 방을 더 만들 수 없어요. 잠시 뒤 다시 시도해 주세요');
   }
 
   get(code: string): Room {
     const room = this.rooms.get(normalizeCode(code));
-    if (!room) throw new RoomError('방을 찾을 수 없습니다');
+    if (!room) throw new RoomError('방을 찾을 수 없어요. 방 코드를 다시 확인해 주세요');
     return room;
   }
 
   create(name: string, password?: string): { room: Room; member: Member } {
     if (this.rooms.size >= this.maxRooms) this.sweep();
     if (this.rooms.size >= this.maxRooms) {
-      throw new RoomError(`지금은 방이 가득 찼습니다 (최대 ${this.maxRooms}개). 비어 있는 방은 1시간 뒤 자동으로 정리돼요 — 기존 방에 참가하거나 나중에 다시 시도하세요`);
+      throw new RoomError(`지금은 방이 모두 찼어요(최대 ${this.maxRooms}개). 친구 방에 들어가거나 조금 뒤 다시 만들어 주세요`);
     }
     const member = makeMember(name, 'player');
     const room: Room = {
@@ -132,10 +132,10 @@ export class Rooms {
     if (room.password) {
       const now = Date.now();
       room.failedPasswords = room.failedPasswords.filter((t) => now - t < PW_FAIL_WINDOW_MS);
-      if (room.failedPasswords.length >= PW_FAIL_LIMIT) throw new RoomError('암호 시도가 너무 많습니다. 몇 분 뒤 다시 시도하세요');
+      if (room.failedPasswords.length >= PW_FAIL_LIMIT) throw new RoomError('암호를 여러 번 틀렸어요. 몇 분 뒤 다시 시도해 주세요');
       if (!checkPassword(room.password, opts.password ?? '')) {
         room.failedPasswords.push(now);
-        throw new RoomError('암호가 틀렸습니다');
+        throw new RoomError('암호가 달라요. 방장에게 암호를 다시 물어봐 주세요');
       }
     }
     const playerCount = room.members.filter((m) => m.role === 'player').length;
@@ -164,7 +164,7 @@ export class Rooms {
 
   leave(room: Room, member: Member) {
     if (room.match && member.seat !== null && this.game.status(room.match) !== 'match-over') {
-      throw new RoomError('게임 중에는 나갈 수 없습니다 (연결을 끊으면 다시 들어올 수 있어요)');
+      throw new RoomError('게임이 끝나면 나갈 수 있어요. 창을 닫아도 다시 열면 이어서 할 수 있어요');
     }
     room.members = room.members.filter((m) => m !== member);
     if (room.members.length === 0) return this.remove(room);
@@ -186,17 +186,17 @@ export class Rooms {
 
   kick(room: Room, by: Member, targetId: string) {
     this.requireHost(room, by);
-    if (!this.lobbyOpen(room)) throw new RoomError('게임 중에는 내보낼 수 없습니다');
-    if (targetId === by.id) throw new RoomError('자기 자신은 내보낼 수 없습니다');
+    if (!this.lobbyOpen(room)) throw new RoomError('게임이 끝난 뒤에 내보낼 수 있어요');
+    if (targetId === by.id) throw new RoomError('나 자신은 내보낼 수 없어요');
     room.members = room.members.filter((m) => m.id !== targetId);
     this.touch(room);
   }
 
   setRole(room: Room, member: Member, role: Member['role']) {
-    if (!this.lobbyOpen(room)) throw new RoomError('게임 중에는 바꿀 수 없습니다');
+    if (!this.lobbyOpen(room)) throw new RoomError('게임이 끝난 뒤에 바꿀 수 있어요');
     if (role === 'player' && member.role !== 'player') {
       const max = this.game.players.max;
-      if (room.members.filter((m) => m.role === 'player').length >= max) throw new RoomError(`플레이어는 최대 ${max}명입니다`);
+      if (room.members.filter((m) => m.role === 'player').length >= max) throw new RoomError(`플레이어는 ${max}명까지 참여할 수 있어요`);
     }
     member.role = role;
     this.touch(room);
@@ -205,7 +205,7 @@ export class Rooms {
   /** 로비에서 플레이어 순서 이동 */
   moveMember(room: Room, by: Member, targetId: string, dir: -1 | 1) {
     this.requireHost(room, by);
-    if (!this.lobbyOpen(room)) throw new RoomError('게임 중에는 바꿀 수 없습니다');
+    if (!this.lobbyOpen(room)) throw new RoomError('게임이 끝난 뒤에 바꿀 수 있어요');
     const i = room.members.findIndex((m) => m.id === targetId);
     const j = i + dir;
     if (i < 0 || j < 0 || j >= room.members.length) return;
@@ -215,7 +215,7 @@ export class Rooms {
 
   setConfig(room: Room, by: Member, input: object) {
     this.requireHost(room, by);
-    if (!this.lobbyOpen(room)) throw new RoomError('게임 중에는 설정을 바꿀 수 없습니다');
+    if (!this.lobbyOpen(room)) throw new RoomError('규칙은 게임이 끝난 뒤에 바꿀 수 있어요. 방장은 게임을 멈추고 바꿀 수도 있어요');
     room.config = this.game.sanitizeConfig({ ...(room.config as object), ...input });
     this.touch(room);
   }
@@ -231,10 +231,10 @@ export class Rooms {
   /** force: 아직 결과 화면에 있는 사람을 기다리지 않고 시작 */
   start(room: Room, by: Member, force = false) {
     this.requireHost(room, by);
-    if (!this.lobbyOpen(room)) throw new RoomError('이미 게임 중입니다');
+    if (!this.lobbyOpen(room)) throw new RoomError('이미 게임을 하고 있어요');
     const players = room.members.filter((m) => m.role === 'player');
     const waiting = players.filter((m) => m.connections > 0 && this.inResults(room, m) && m !== by);
-    if (waiting.length && !force) throw new RoomError(`${waiting.map((m) => m.name).join(', ')} 님이 아직 결과를 보고 있어요`);
+    if (waiting.length && !force) throw new RoomError(`${waiting.map((m) => m.name).join(', ')} 님이 아직 결과를 보고 있어요. 기다리지 않으려면 지금 시작하기를 눌러 주세요`);
     const errors = this.startErrors(room.config, players.length);
     if (errors.length) throw new RoomError(errors[0]);
     room.members.forEach((m) => {
@@ -251,15 +251,15 @@ export class Rooms {
   private startErrors(config: unknown, players: number): string[] {
     const { min } = this.game.players;
     const errors = this.game.validateConfig(config, Math.max(players, min));
-    if (players < min) errors.push(`플레이어가 ${min}명 이상 필요합니다`);
+    if (players < min) errors.push(`${min}명이 모이면 시작할 수 있어요`);
     return errors;
   }
 
   move(room: Room, member: Member, move: unknown) {
     const match = room.match;
-    if (!match) throw new RoomError('게임이 시작되지 않았습니다');
-    if (member.seat === null) throw new RoomError('관전자는 플레이할 수 없습니다');
-    if (!this.game.isMove(move)) throw new RoomError('잘못된 요청입니다');
+    if (!match) throw new RoomError('아직 게임이 시작되지 않았어요');
+    if (member.seat === null) throw new RoomError('관전 중에는 둘 수 없어요');
+    if (!this.game.isMove(move)) throw new RoomError('처리할 수 없는 동작이에요. 화면을 새로고침해 주세요');
     const before = [this.game.turn(match), this.game.round(match), this.game.status(match)].join();
     this.rule(() => this.game.applyMove(match, member.seat!, move));
     const after = [this.game.turn(match), this.game.round(match), this.game.status(match)].join();
@@ -272,11 +272,11 @@ export class Rooms {
     const match = room.match;
     if (!match) {
       if (expect?.status === 'match-over') return;
-      throw new RoomError('게임이 없습니다');
+      throw new RoomError('진행 중인 게임이 없어요');
     }
     const status = this.game.status(match);
     if (expect && ((expect.round !== undefined && expect.round !== this.game.round(match)) || (expect.status && expect.status !== status))) return;
-    if (by.seat === null && by.id !== room.hostId) throw new RoomError('플레이어만 진행할 수 있습니다');
+    if (by.seat === null && by.id !== room.hostId) throw new RoomError('게임에 참여한 사람만 넘길 수 있어요');
     if (status === 'round-over') {
       this.rule(() => this.game.startNextRound(match, rng));
       this.resetTimer(room);
@@ -284,7 +284,7 @@ export class Rooms {
       this.back(room, by);
       return;
     } else {
-      throw new RoomError('판이 아직 끝나지 않았습니다');
+      throw new RoomError('아직 판이 끝나지 않았어요');
     }
     this.touch(room);
   }
@@ -309,7 +309,7 @@ export class Rooms {
   stop(room: Room, by: Member) {
     this.requireHost(room, by);
     const match = room.match;
-    if (!match || this.game.status(match) === 'match-over') throw new RoomError('진행 중인 게임이 없습니다');
+    if (!match || this.game.status(match) === 'match-over') throw new RoomError('멈출 게임이 없어요');
     const seatIds: string[] = [];
     for (const m of room.members) if (m.seat !== null) seatIds[m.seat] = m.id;
     room.paused = { match, seatIds };
@@ -325,7 +325,7 @@ export class Rooms {
   /** 중지했던 게임 이어서 하기: 설정이 같으면 하던 판 그대로, 바뀌었으면 끝난 판 점수를 이어 새 판 */
   resume(room: Room, by: Member) {
     this.requireHost(room, by);
-    if (room.match) throw new RoomError('이미 게임 중입니다');
+    if (room.match) throw new RoomError('이미 게임을 하고 있어요');
     const blocked = this.resumeBlocked(room);
     if (blocked) throw new RoomError(blocked);
     const { match, seatIds } = room.paused!;
@@ -342,20 +342,20 @@ export class Rooms {
 
   private resumeBlocked(room: Room): string | null {
     const p = room.paused;
-    if (!p) return '중지한 게임이 없습니다';
+    if (!p) return '멈춘 게임이 없어요';
     const players = room.members.filter((m) => m.role === 'player');
     const missing = p.seatIds.filter((id) => !players.some((m) => m.id === id));
     const extra = players.filter((m) => !p.seatIds.includes(m.id));
     if (missing.length || extra.length) {
       const names = p.seatIds.map((id) => room.members.find((m) => m.id === id)?.name ?? '나간 사람');
-      return `중지할 때의 플레이어(${names.join(', ')})가 그대로 있어야 이어갈 수 있어요`;
+      return `멈출 때 함께한 ${names.join(', ')} 님이 모두 있어야 이어서 할 수 있어요`;
     }
     if (sameConfig(this.game.config(p.match), room.config)) return null;
     const errors = this.game.validateConfig(room.config, p.seatIds.length);
     if (errors.length) return errors[0];
     const done = this.game.roundsDone(p.match);
     const rounds = (room.config as { rounds?: number }).rounds ?? 1;
-    if (done >= rounds) return `이미 ${done}판을 마쳤어요. 판 수를 ${done + 1} 이상으로 늘려야 이어갈 수 있어요`;
+    if (done >= rounds) return `벌써 ${done}판을 마쳤어요. 판 수를 ${done + 1}판 이상으로 늘리면 이어서 할 수 있어요`;
     return null;
   }
 
@@ -376,11 +376,11 @@ export class Rooms {
   /** 감정 표현: 목록에 있는 것만, 1초에 1번 · 10초에 5번까지 */
   emote(room: Room, member: Member, id: unknown): EmoteEvent {
     const e = this.emotes.find((x) => x.id === id);
-    if (!e) throw new RoomError('알 수 없는 감정 표현입니다');
+    if (!e) throw new RoomError('보낼 수 없는 감정 표현이에요');
     const now = Date.now();
     member.emoteTimes = member.emoteTimes.filter((t) => now - t < 10_000);
     const last = member.emoteTimes[member.emoteTimes.length - 1];
-    if ((last !== undefined && now - last < 1000) || member.emoteTimes.length >= 5) throw new RoomError('조금 천천히 보내 주세요');
+    if ((last !== undefined && now - last < 1000) || member.emoteTimes.length >= 5) throw new RoomError('감정 표현은 조금 천천히 보내 주세요');
     member.emoteTimes.push(now);
     this.emoteSeq = (this.emoteSeq + 1) % 1_000_000;
     return { from: member.id, name: member.name, seat: room.match ? member.seat : null, id: e.id, n: this.emoteSeq };
@@ -395,10 +395,10 @@ export class Rooms {
   /** 끊긴 플레이어의 차례를 다른 플레이어가 대신 진행 */
   nudge(room: Room, by: Member) {
     const match = room.match;
-    if (!match || this.game.status(match) !== 'playing') throw new RoomError('진행 중인 판이 아닙니다');
-    if (by.seat === null) throw new RoomError('플레이어만 할 수 있습니다');
+    if (!match || this.game.status(match) !== 'playing') throw new RoomError('지금은 진행 중인 판이 없어요');
+    if (by.seat === null) throw new RoomError('게임에 참여한 사람만 할 수 있어요');
     const wait = this.nudgeInMs(room);
-    if (wait === null) throw new RoomError('차례인 플레이어가 접속해 있습니다');
+    if (wait === null) throw new RoomError('차례인 사람이 접속해 있어요. 조금만 기다려 주세요');
     if (wait > 0) throw new RoomError(`${Math.ceil(wait / 1000)}초 뒤에 대신 진행할 수 있어요`);
     this.timeout(room);
   }
@@ -519,7 +519,7 @@ export class Rooms {
     // 방장이 접속해 있지 않으면 요청한 플레이어가 방장을 이어받는다
     const host = room.members.find((x) => x.id === room.hostId);
     if ((!host || host.connections === 0) && m.connections > 0 && m.role === 'player') room.hostId = m.id;
-    if (room.hostId !== m.id) throw new RoomError('방장만 할 수 있습니다');
+    if (room.hostId !== m.id) throw new RoomError('방장만 할 수 있어요');
   }
 
   private touch(room: Room) {

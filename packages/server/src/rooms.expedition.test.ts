@@ -124,7 +124,7 @@ describe('Rooms', () => {
     const m = (room.match as any);
     const notTurn = [host, others[0]].find((x) => x.seat !== m.state.turn)!;
     expect(() => rooms.move(room, notTurn, { type: 'draw', source: 'deck' })).toThrow(RoomError);
-    expect(() => rooms.move(room, spec, { type: 'draw', source: 'deck' })).toThrow(/관전자/);
+    expect(() => rooms.move(room, spec, { type: 'draw', source: 'deck' })).toThrow(/관전 중에는/);
     expect(() => rooms.move(room, host, { type: 'bogus' } as any)).toThrow(RoomError);
     expect((rooms.view(room, spec).game as any).hand).toEqual([]);
   });
@@ -137,11 +137,11 @@ describe('Rooms', () => {
     const b = rooms.create('b');
     rooms.connect(b.room, b.member);
     rooms.disconnect(b.room, b.member); // b 방은 모두 나감
-    expect(() => rooms.create('c')).toThrow(/가득/);
+    expect(() => rooms.create('c')).toThrow(/모두 찼어요/);
     vi.advanceTimersByTime(59 * 60 * 1000);
     rooms.sweep();
     expect(rooms.rooms.has(b.room.code)).toBe(true); // 아직 1시간 안 됨
-    expect(() => rooms.create('c')).toThrow(/가득/);
+    expect(() => rooms.create('c')).toThrow(/모두 찼어요/);
     vi.advanceTimersByTime(2 * 60 * 1000);
     rooms.sweep();
     expect(rooms.rooms.has(b.room.code)).toBe(false);
@@ -159,7 +159,7 @@ describe('Rooms', () => {
     const seated = [host, others[0]];
     const cur = seated.find((m) => m.seat === (room.match as any).state.turn)!;
     const other = seated.find((m) => m !== cur)!;
-    expect(() => rooms.nudge(room, other)).toThrow(/접속해 있습니다/);
+    expect(() => rooms.nudge(room, other)).toThrow(/접속해 있어요/);
     rooms.disconnect(room, cur);
     expect(rooms.view(room, other).members.find((m) => m.id === cur.id)!.connected).toBe(false);
     expect(() => rooms.nudge(room, other)).toThrow(/초 뒤/);
@@ -172,8 +172,8 @@ describe('Rooms', () => {
 
   it('방 단위 암호 시도 제한', () => {
     const { rooms, room } = lobby(1, 'pw');
-    for (let i = 0; i < 10; i++) expect(() => rooms.join(room.code, { name: 'x', password: 'bad' })).toThrow(/틀렸/);
-    expect(() => rooms.join(room.code, { name: 'x', password: 'pw' })).toThrow(/너무 많/);
+    for (let i = 0; i < 10; i++) expect(() => rooms.join(room.code, { name: 'x', password: 'bad' })).toThrow(/암호가 달라요/);
+    expect(() => rooms.join(room.code, { name: 'x', password: 'pw' })).toThrow(/여러 번 틀렸어요/);
   });
 
   it('다음 판 중복 요청은 조용히 무시', () => {
@@ -191,7 +191,7 @@ describe('Rooms', () => {
   it('감정 표현: 허용 목록 + 도배 방지', () => {
     vi.useFakeTimers();
     const { rooms, room, host } = lobby(2);
-    expect(() => rooms.emote(room, host, 'nope')).toThrow(/알 수 없는/);
+    expect(() => rooms.emote(room, host, 'nope')).toThrow(/보낼 수 없는/);
     const e = rooms.emote(room, host, 'gg');
     expect(e).toMatchObject({ from: host.id, name: host.name, id: 'gg', seat: null });
     expect(() => rooms.emote(room, host, 'gg')).toThrow(/천천히/);
@@ -282,7 +282,7 @@ describe('Rooms', () => {
     rooms.setConfig(room, host, { colors: 3 });
     const { member: late } = rooms.join(room.code, { name: '늦게온사람' });
     rooms.connect(room, late);
-    expect(rooms.view(room, host).lobby.paused!.blocked).toMatch(/그대로 있어야/);
+    expect(rooms.view(room, host).lobby.paused!.blocked).toMatch(/모두 있어야/);
     expect(() => rooms.resume(room, host)).toThrow(RoomError);
     rooms.setRole(room, late, 'spectator');
     expect(rooms.view(room, host).lobby.paused!.blocked).toBeNull();

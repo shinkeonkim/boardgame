@@ -580,3 +580,34 @@ a.chip {
 .swatch code {
   color: var(--muted);
 }
+
+/* ---------- 게임 상세: 게임 방법 (모달과 같은 내용을 페이지에 펼침) ---------- */
+.guide-card {
+  margin-top: var(--sp-5);
+  padding: 0;
+  overflow: visible;
+}
+.guide-card-head {
+  display: flex;
+  align-items: baseline;
+  gap: var(--sp-3);
+  padding: var(--sp-4) var(--sp-4) 0;
+}
+.guide-card-head h2 {
+  margin: 0;
+}
+.guide-card .g-nav-sticky {
+  position: sticky;
+  z-index: 5;
+  background: var(--panel);
+  padding: var(--sp-3) var(--sp-4);
+  margin: 0;
+  border-bottom: 1px solid var(--line);
+}
+.guide-card .g-body-flow {
+  overflow: visible;
+  padding: 0 var(--sp-4) var(--sp-4);
+}
+#how-to-play {
+  scroll-margin-top: 70px;
+}

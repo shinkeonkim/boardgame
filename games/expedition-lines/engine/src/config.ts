@@ -26,7 +26,7 @@ export interface GameConfig {
   showScorePreview: boolean;
   /** 버림 더미 전체를 펼쳐볼 수 있음 (원작: 맨 위만 보임) */
   revealDiscards: boolean;
-  /** 4인 팀전 (좌석 0·2 vs 1·3) */
+  /** 4명 팀전 (좌석 0·2 vs 1·3) */
   teams: boolean;
 }
 
@@ -74,17 +74,17 @@ export interface Preset {
 }
 
 export const PRESETS: Preset[] = [
-  { id: 'classic', label: '원작 (5색)', description: '2인 기본 규칙 그대로', config: CLASSIC },
-  { id: 'long', label: '롱게임 (6색)', description: '원작의 6탐험대 변형', config: { ...CLASSIC, colors: 6 } },
+  { id: 'classic', label: '원작 (5색)', description: '2명이 하는 원작 규칙', config: CLASSIC },
+  { id: 'long', label: '긴 게임 (6색)', description: '6개 지역으로 길게', config: { ...CLASSIC, colors: 6 } },
   {
     id: 'three',
-    label: '3인 권장',
+    label: '3명 추천',
     description: '6색 · 숫자 2~12 · 비용 자동 보정',
     config: { ...CLASSIC, colors: 6, maxValue: 12, expeditionCost: autoCost(2, 12) },
   },
   {
     id: 'four',
-    label: '4인 권장',
+    label: '4명 추천',
     description: '5색 덱 2벌 · 같은 숫자 허용',
     config: { ...CLASSIC, deckCopies: 2, allowEqual: true },
   },
@@ -120,12 +120,12 @@ export function validateConfig(c: GameConfig, players: number): string[] {
   const errors: string[] = [];
   const check = (key: keyof typeof LIMITS, v: number, label: string) => {
     const [lo, hi] = LIMITS[key];
-    if (!Number.isInteger(v) || v < lo || v > hi) errors.push(`${label}은(는) ${lo}~${hi} 사이여야 합니다`);
+    if (!Number.isInteger(v) || v < lo || v > hi) errors.push(`${label}은(는) ${lo}~${hi} 사이로 정해 주세요`);
   };
   check('colors', c.colors, '색 수');
   check('minValue', c.minValue, '최소 숫자');
   check('maxValue', c.maxValue, '최대 숫자');
-  check('wagersPerColor', c.wagersPerColor, '와거 장수');
+  check('wagersPerColor', c.wagersPerColor, '투자 카드 수');
   check('deckCopies', c.deckCopies, '덱 배수');
   check('handSize', c.handSize, '손패');
   check('expeditionCost', c.expeditionCost, '탐험대 비용');
@@ -134,10 +134,10 @@ export function validateConfig(c: GameConfig, players: number): string[] {
   check('rounds', c.rounds, '판 수');
   check('turnTimerSec', c.turnTimerSec, '턴 제한시간');
   check('players', players, '인원');
-  if (c.maxValue < c.minValue) errors.push('최대 숫자는 최소 숫자 이상이어야 합니다');
-  if (c.teams && players !== 4) errors.push('팀전은 4인일 때만 가능합니다');
+  if (c.maxValue < c.minValue) errors.push('가장 큰 숫자를 가장 작은 숫자보다 크게 정해 주세요');
+  if (c.teams && players !== 4) errors.push('팀전은 4명일 때만 할 수 있어요');
   if (errors.length === 0 && expectedTurns(c, players) < 3) {
-    errors.push(`카드가 부족합니다 (덱 ${deckSize(c)}장, 인원당 약 ${expectedTurns(c, players).toFixed(1)}턴). 색·숫자 범위·덱 배수를 늘리거나 손패를 줄이세요`);
+    errors.push(`카드가 부족해요(덱 ${deckSize(c)}장, 1명당 약 ${expectedTurns(c, players).toFixed(1)}차례). 색이나 덱 배수를 늘리거나 손패를 줄여 주세요`);
   }
   return errors;
 }

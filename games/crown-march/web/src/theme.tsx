@@ -173,7 +173,7 @@ export function BoardPreview({ config: c, players }: { config: GameConfig; playe
           이동 카드 <b>{deckSize(c)}</b>장 ({c.diagonals ? 8 : 4}방향 × 1~{c.maxDistance}칸{c.cardCopies > 1 ? ` × ${c.cardCopies}벌` : ''})
         </div>
         <div>
-          기사 1인 <b>{c.heroes}</b>장 · 손패 {c.handLimit}장{c.openHands ? ' 공개' : ' 비공개'}
+          기사 한 사람당 <b>{c.heroes}</b>장 · 손패 {c.handLimit}장{c.openHands ? ' 공개' : ' 비공개'}
         </div>
       </div>
     </div>
