@@ -14,4 +14,4 @@ labels:
 images:
 - name: ghcr.io/shinkeonkim/boardgame-flag-line
   newName: ghcr.io/shinkeonkim/boardgame-flag-line
-  newTag: sha-57c1653
+  newTag: sha-3ddf9c7
