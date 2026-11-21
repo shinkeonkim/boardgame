@@ -223,6 +223,28 @@
 .path.bad circle {
   fill: var(--danger);
 }
+.path .head {
+  fill: var(--gold);
+}
+.path.bad .head {
+  fill: var(--danger);
+}
+/* 보드 밖으로 나가는 카드: 가장자리 바로 밖에 ✕ */
+.path .off-mark circle {
+  fill: var(--danger);
+  stroke: var(--panel);
+  stroke-width: 0.05;
+}
+.path .off-mark path {
+  stroke: #fff;
+  stroke-width: 0.06;
+  stroke-linecap: round;
+  fill: none;
+}
+.path.out line {
+  stroke: var(--danger);
+  stroke-dasharray: 0.1 0.12;
+}
 @keyframes dash {
   to {
     stroke-dashoffset: -0.6;

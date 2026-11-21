@@ -2,6 +2,7 @@ import type { EmoteDef, GameModule } from '@bg/core';
 import { CLASSIC, GameConfig, LIMITS, deckSize, expectedTurns, sanitizeConfig, validateConfig } from './config';
 import { MatchState, Move, applyMove, autoMove, continueMatch, matchTotals, newMatch, startNextRound } from './game';
 import { GameView, viewFor } from './view';
+import { expeditionBot } from './bot';
 
 /** 이 게임에만 있는 감정 표현 (공통 목록 뒤에 붙음) */
 export const EXTRA_EMOTES: EmoteDef[] = [
@@ -37,6 +38,7 @@ export const expeditionLines: GameModule<GameConfig, MatchState, Move, GameView>
   applyMove,
   autoMove,
   viewFor,
+  bot: expeditionBot,
   status: (m) => m.status,
   turn: (m) => m.state.turn,
   round: (m) => m.round + 1,

@@ -10,6 +10,8 @@
  * - 규칙 위반은 RuleError(메시지는 사용자에게 그대로 보임)로 던진다.
  */
 
+import type { Bot } from './bot';
+
 /** 사용자에게 보여 줄 규칙 위반/설정 오류. 그 밖의 예외는 서버 오류로 취급한다 */
 export class RuleError extends Error {
   readonly isRuleError = true;
@@ -47,13 +49,21 @@ export interface GameModule<Config extends object, Match, Move, View> {
   /** 서버로 들어온 임의의 값이 이 게임의 수인지 (모양만 검사, 규칙 검사는 applyMove) */
   isMove(x: unknown): x is Move;
   applyMove(match: Match, seat: number, move: Move): void;
-  /** 시간 초과·대신 진행 때 둘 수 (항상 합법이어야 함) */
-  autoMove(match: Match): Move;
+  /** 시간 초과·대신 진행 때 seat가 둘 수 (항상 합법이어야 함) */
+  autoMove(match: Match, seat: number): Move;
   viewFor(match: Match, seat: number): View;
 
   status(match: Match): MatchStatus;
-  /** 지금 차례인 좌석 */
+  /** 지금 차례인 좌석 (대표 한 명 — 화면 표시용) */
   turn(match: Match): number;
+  /**
+   * 지금 수를 둘 수 있는 좌석들. 없으면 [turn(match)].
+   * 동시에 고르는 게임(모두가 카드 한 장씩)이나 끼어들기(도전·막기)는 여러 좌석을 돌려준다.
+   * 플랫폼은 이 좌석들에 대해 타이머(시간 초과 → autoMove), 대신 진행, 봇 차례를 처리한다.
+   */
+  actors?(match: Match): number[];
+  /** 봇 (없으면 autoMove로 두는 기본 봇). 봇 만드는 법: bot.ts */
+  bot?: Bot<View, Move>;
   /** 1부터 시작하는 판 번호 */
   round(match: Match): number;
   config(match: Match): Config;

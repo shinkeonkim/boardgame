@@ -503,21 +503,49 @@ function cellLabel(v: number, x: number, y: number, names: string[]) {
   return `${pos} ${names[v] ?? ''} 돌`;
 }
 
-/** 왕관 → 카드 목적지 점선 (보드 밖이면 가장자리까지) */
+/**
+ * 왕관 → 카드 목적지 점선.
+ * 보드 밖으로 나가는 카드는 실제 방향 그대로 가장자리까지 그리고, 가장자리 바로 밖에 ✕와 "밖" 표시.
+ * (전에는 x·y를 따로 잘라서 대각선이 엉뚱한 각도로 꺾였다)
+ */
 function PathLine({ from, card, ok, size }: { from: { x: number; y: number }; card: Card; ok: boolean; size: number }) {
   const d = DIRS[card.dir];
+  const sx = from.x + 0.5;
+  const sy = from.y + 0.5;
   const tx = from.x + d.dx * card.dist;
   const ty = from.y + d.dy * card.dist;
-  const clamp = (v: number) => Math.max(-0.3, Math.min(size - 0.7, v));
+  const inside = tx >= 0 && ty >= 0 && tx < size && ty < size;
+  // 보드 경계(0~size)에 닿는 거리 t (칸 단위, 방향 벡터 배수)
+  const exitT = Math.min(d.dx > 0 ? (size - sx) / d.dx : d.dx < 0 ? sx / -d.dx : Infinity, d.dy > 0 ? (size - sy) / d.dy : d.dy < 0 ? sy / -d.dy : Infinity);
+  const endT = inside ? card.dist : Math.min(card.dist, exitT + 0.04); // ✕는 보드 가장자리 위에 (밖으로 멀리 그리면 잘림)
+  const ex = sx + d.dx * endT;
+  const ey = sy + d.dy * endT;
+  // 화살촉: 진행 방향으로 작은 삼각형
+  const len = Math.hypot(d.dx, d.dy);
+  const ux = d.dx / len;
+  const uy = d.dy / len;
+  const head = (x: number, y: number) => {
+    const b = 0.22;
+    const w = 0.13;
+    return `${x},${y} ${x - ux * b - uy * w},${y - uy * b + ux * w} ${x - ux * b + uy * w},${y - uy * b - ux * w}`;
+  };
   return (
-    <g className={`path ${ok ? 'ok' : 'bad'}`}>
-      <line x1={from.x + 0.5} y1={from.y + 0.5} x2={clamp(tx) + 0.5} y2={clamp(ty) + 0.5} />
+    <g className={`path ${ok ? 'ok' : 'bad'} ${inside ? '' : 'out'}`}>
+      <line x1={sx} y1={sy} x2={inside ? ex - ux * 0.16 : ex} y2={inside ? ey - uy * 0.16 : ey} />
       {Array.from({ length: card.dist }, (_, i) => {
-        const sx = from.x + d.dx * (i + 1);
-        const sy = from.y + d.dy * (i + 1);
-        if (sx < 0 || sy < 0 || sx >= size || sy >= size) return null;
-        return <circle key={i} cx={sx + 0.5} cy={sy + 0.5} r={i === card.dist - 1 ? 0.14 : 0.07} />;
+        const cx = from.x + d.dx * (i + 1);
+        const cy = from.y + d.dy * (i + 1);
+        if (cx < 0 || cy < 0 || cx >= size || cy >= size) return null;
+        return i === card.dist - 1 ? null : <circle key={i} cx={cx + 0.5} cy={cy + 0.5} r={0.07} />;
       })}
+      {inside ? (
+        <polygon className="head" points={head(ex, ey)} />
+      ) : (
+        <g className="off-mark" transform={`translate(${ex} ${ey})`}>
+          <circle r={0.24} />
+          <path d="M -0.1 -0.1 L 0.1 0.1 M 0.1 -0.1 L -0.1 0.1" />
+        </g>
+      )}
     </g>
   );
 }

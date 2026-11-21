@@ -278,3 +278,67 @@
   width: 34px;
   height: 34px;
 }
+
+/* ---------- 친구 방 목록 ---------- */
+.room-list {
+  margin-top: var(--sp-3, 12px);
+  border-top: 1px solid var(--line);
+  padding-top: var(--sp-3, 12px);
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+.room-list-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-weight: 600;
+}
+.room-list ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 6px;
+  max-height: 232px;
+  overflow-y: auto;
+}
+.room-list-empty {
+  margin: 0;
+}
+.room-row {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-align: left;
+  padding: 8px 10px;
+  border-radius: var(--r-md, 10px);
+  border: 1px solid var(--line);
+  background: var(--panel);
+  color: var(--ink);
+  cursor: pointer;
+  font: inherit;
+  min-width: 0;
+}
+.room-row:hover,
+.room-row:focus-visible {
+  border-color: var(--info);
+}
+.room-row .code {
+  font-family: ui-monospace, monospace;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+.room-row-main {
+  display: grid;
+  min-width: 0;
+}
+.room-row-main > span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.room-row .tag {
+  flex: none;
+}

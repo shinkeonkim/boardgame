@@ -67,10 +67,24 @@ scripts/  local.mjs(운영과 같은 경로 게이트웨이) · bundle.mjs(이�
 - 테스트: 원작 구성 수치, 각 금지 조건, 점수 예시(손으로 검산한 값), 종료·다음 판, 숨김 뷰, 그리고 **퍼즈 테스트**(프리셋 전부 × 시드 15개, 불법 수 섞어 끝까지 진행하며 매 수마다 불변식: 카드/돌 총량 보존·중복 없음·손패 상한·종료 보장).
 - `autoMove`는 항상 합법이어야 한다(시간 초과·대신 진행에 쓰임) — 퍼즈에서 같이 검증.
 
+## 3-1. 동시 진행·끼어들기 (`actors`)
+
+- 한 명씩 두는 게임은 `turn`만 있으면 된다. **여럿이 동시에 고르는 게임**(모두 카드 한 장씩)이나 **끼어들기**(도전·막기 대기)는 `actors(match)`로 지금 둘 수 있는 좌석 목록을 돌려준다.
+- 플랫폼이 `actors` 기준으로 타이머(시간 초과 → 남은 사람만 `autoMove(match, seat)`), 대신 진행(끊긴 사람만), 봇 차례를 처리한다. 한 명이 골라 남은 사람이 줄기만 하면 타이머는 이어진다.
+- 동시 선택은 공개 전까지 `viewFor`에서 남의 선택을 `true`(골랐음)로만 보낸다.
+
+## 3-2. 봇 (`games/<id>/engine/src/bot.ts`, 공통: `packages/core/src/bot.ts`)
+
+- 방장이 대기실에서 빈자리에 봇을 넣는다(쉬움·보통·어려움, 넣은 뒤에도 변경). 봇은 소켓이 없고 늘 접속한 것으로 보며, 방장이 되지 않고, 사람이 모두 나가면 방이 없어진다. 무중단 배포 때 봇 좌석도 넘어가고 받은 쪽에서 이어서 둔다.
+- 봇은 **자기 좌석의 뷰(`viewFor`)만 본다**(몰래 보기 금지). 고른 수가 규칙에 어긋나면 플랫폼이 `autoMove`로 대신한다(지표 `bg_bot_moves_total{fallback="true"}` — 0이어야 정상).
+- 만드는 순서: ① 아무것도 안 하면 `autoMove` 봇 ② `scoredBot({ legal, score })` — 할 수 있는 수 나열 + 점수, 난이도별 고르기는 `pickByLevel`이 처리 ③ 추리·블러핑은 `Bot.choose` 직접.
+- 난이도 = 고르기(쉬움은 흐리게·가끔 아무거나, 보통은 80% 최선, 어려움은 최선) + 점수 깊이(`ctx.level`로 견제·한 수 앞 보기·카드 세기 켜기).
+- 테스트(`bot.test.ts`): `playOut`으로 모든 프리셋 × 난이도에서 **규칙 위반 0**, `duel`로 **어려움이 쉬움을 65% 이상** 이김(벌점 게임은 `lowerWins`).
+
 ## 4. 서버 (games/<id>/server)
 
 `createGameServer({ game, extraEmotes })` 4줄이면 끝. 플랫폼이 이미 처리하는 것(다시 만들지 말 것):
-방 코드·QR용 `PUBLIC_URL`·암호(scrypt, 방 단위 5분 10회)·토큰 재접속·관전·방장 승계/강퇴/순서·설정·시작(결과 보는 사람 기다리기/force)·다음 판(중복 요청 무시)·각자 로비 복귀·중지/이어하기·턴 타이머(남은 ms로 전송)·끊긴 차례 20초 뒤 대신 진행·감정 표현(허용 목록·도배 방지)·방 최대 개수/1시간 유휴 정리·`/healthz` `/readyz` `/api/info`·무중단 배포 handoff.
+방 코드·QR용 `PUBLIC_URL`·암호(scrypt, 방 단위 5분 10회)·토큰 재접속·관전·방장 승계/강퇴/순서·설정·시작(결과 보는 사람 기다리기/force)·다음 판(중복 요청 무시)·각자 로비 복귀·중지/이어하기·턴 타이머(남은 ms로 전송)·끊긴 차례 20초 뒤 대신 진행·감정 표현(허용 목록·도배 방지)·방 최대 개수/1시간 유휴 정리·봇 좌석·첫 화면 방 목록(`/api/rooms`, 방장이 숨기기 가능)·`/healthz` `/readyz` `/api/info`·무중단 배포 handoff.
 새 게임 때문에 플랫폼을 고쳐야 하면 `packages/server/src/rooms.test.ts`(Crown March)·`rooms.expedition.test.ts`(Expedition Lines) 둘 다 통과시킨다.
 
 ## 5. 웹 (games/<id>/web)
@@ -168,7 +182,7 @@ scripts/  local.mjs(운영과 같은 경로 게이트웨이) · bundle.mjs(이�
 ## 11. 새 게임 체크리스트 (복사해서 쓰기)
 
 - [ ] docs/games/<id>/01-rules.md, 02-custom.md
-- [ ] engine: config(LIMITS·CLASSIC·PRESETS·validate·sanitize) · game · view · module · 테스트(단위+퍼즈)
+- [ ] engine: config(LIMITS·CLASSIC·PRESETS·validate·sanitize) · game · view · module · bot · 테스트(단위+퍼즈+봇)
 - [ ] server/src/main.ts, package.json(이름 `@bg/<id>-server`)
 - [ ] web: client.tsx · ConfigPanel · Game · Demo · guide.tsx · guide-entry.tsx · game.css(토큰 3곳) · index.html · vite.config.ts(`gameViteConfig('<id>')`)
 - [ ] 모든 문구를 docs/ux-writing.md 체크리스트로 확인 (해요체·동사 버튼·용어표)

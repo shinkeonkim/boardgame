@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import type { RoomListing } from '@bg/core';
 import { ThemeToggle } from '@bg/ui';
 import { useGameClient } from './App';
 import { GuideButton } from './Guide';
-import { call, store } from './runtime';
+import { BASE, call, store } from './runtime';
 
 export function Brand({ small }: { small?: boolean }) {
   const client = useGameClient();
@@ -139,8 +140,68 @@ export function Home({ onEnter, flash }: { onEnter: (code: string) => void; flas
               들어가기
             </button>
           </div>
+          <RoomList onPick={(code) => {
+            if (name.trim()) store.setName(name.trim());
+            onEnter(code);
+          }} />
         </div>
       </div>
     </HomeShell>
+  );
+}
+
+/** 지금 열려 있는 방 목록 (방장이 「목록에 보이기」를 끈 방은 빠짐). 5초마다 새로 고침 */
+function RoomList({ onPick }: { onPick: (code: string) => void }) {
+  const [rooms, setRooms] = useState<RoomListing[] | null>(null);
+  const [failed, setFailed] = useState(false);
+  useEffect(() => {
+    let alive = true;
+    const load = () =>
+      fetch(`${BASE}/api/rooms`, { cache: 'no-store' })
+        .then((r) => r.json())
+        .then((d: { rooms: RoomListing[] }) => {
+          if (!alive) return;
+          setRooms(d.rooms);
+          setFailed(false);
+        })
+        .catch(() => alive && setFailed(true));
+    load();
+    const t = setInterval(() => document.visibilityState === 'visible' && load(), 5000);
+    return () => {
+      alive = false;
+      clearInterval(t);
+    };
+  }, []);
+  if (failed && !rooms) return null;
+  return (
+    <div className="room-list">
+      <div className="room-list-head">
+        <span>지금 열린 방</span>
+        <span className="muted small">{rooms ? `${rooms.length}개` : '불러오는 중…'}</span>
+      </div>
+      {rooms && rooms.length === 0 && <p className="muted small room-list-empty">아직 열린 방이 없어요. 새 방을 만들어 친구를 불러 보세요.</p>}
+      {rooms && rooms.length > 0 && (
+        <ul>
+          {rooms.map((r) => (
+            <li key={r.code}>
+              <button className={`room-row ${r.open ? 'open' : ''}`} onClick={() => onPick(r.code)}>
+                <span className="code">{r.code}</span>
+                <span className="grow room-row-main">
+                  <span className="room-row-host">
+                    {r.host} 님의 방 {r.hasPassword && <span aria-label="암호 걸린 방">🔒</span>}
+                  </span>
+                  <span className="muted small">
+                    {r.state === 'playing' ? `게임 중 · ${r.round}/${r.rounds}판` : r.state === 'paused' ? '잠깐 멈춤' : '대기실'} · 플레이어 {r.players}/{r.maxPlayers}명
+                    {r.bots > 0 ? ` (봇 ${r.bots})` : ''}
+                    {r.spectators > 0 ? ` · 관전 ${r.spectators}` : ''}
+                  </span>
+                </span>
+                <span className={`tag ${r.open ? 'ready' : ''}`}>{r.open ? '들어가기' : '관전하기'}</span>
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
   );
 }

@@ -1,5 +1,5 @@
 import { randomBytes, randomInt, scryptSync, timingSafeEqual } from 'node:crypto';
-import { AnyGameModule, BASE_EMOTES, EmoteDef, EmoteEvent, PausedInfo, RoomView, isRuleError } from '@bg/core';
+import { AnyGameModule, BASE_EMOTES, BotLevel, EmoteDef, EmoteEvent, PausedInfo, RoomListing, RoomView, isRuleError } from '@bg/core';
 import { Metrics, noMetrics } from './metrics';
 
 const CODE_ALPHABET = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
@@ -26,7 +26,12 @@ export interface Member {
   backInLobby: boolean;
   /** 최근 감정 표현 보낸 시각들 (도배 방지) */
   emoteTimes: number[];
+  /** 봇이면 난이도 (봇은 소켓이 없고 늘 접속한 것으로 본다) */
+  bot?: BotLevel | null;
 }
+
+/** 봇 이름 (순서대로) */
+const BOT_NAMES = ['봇 하나', '봇 둘', '봇 셋', '봇 넷', '봇 다섯', '봇 여섯', '봇 일곱', '봇 여덟', '봇 아홉', '봇 열'];
 
 export interface Room<Config = unknown, Match = unknown> {
   code: string;
@@ -43,6 +48,16 @@ export interface Room<Config = unknown, Match = unknown> {
   failedPasswords: number[];
   /** 지금 매치를 시작한 시각 (지표: 게임 길이) */
   startedAt?: number;
+  /** 첫 화면 방 목록에 보이기 (방장이 끌 수 있음) */
+  listed: boolean;
+  /** 봇이 두기까지 기다리는 타이머 */
+  botTimer?: NodeJS.Timeout | null;
+}
+
+interface Snap {
+  actors: number[];
+  round: number;
+  status: string;
 }
 
 /** 무중단 배포 때 이전 파드 → 새 파드로 넘기는 방 하나 (JSON) */
@@ -54,6 +69,7 @@ export interface RoomSnapshot {
   members: Member[];
   match: unknown;
   paused: Room['paused'];
+  listed?: boolean;
   turnRemainingMs: number | null;
   idleMs: number;
 }
@@ -76,7 +92,15 @@ export class Rooms {
   constructor(
     readonly game: AnyGameModule,
     private onChange: Listener = () => {},
-    private opts: { maxRooms?: number; extraEmotes?: EmoteDef[]; metrics?: Metrics } = {},
+    private opts: {
+      maxRooms?: number;
+      extraEmotes?: EmoteDef[];
+      metrics?: Metrics;
+      /** 봇이 감정 표현을 보냈을 때 (서버가 방에 뿌린다) */
+      onEmote?: (room: Room, e: EmoteEvent) => void;
+      /** 봇 생각 시간 고정 (테스트용, ms) */
+      botDelayMs?: number;
+    } = {},
   ) {
     this.emotes = [...BASE_EMOTES, ...(opts.extraEmotes ?? [])];
     this.m = opts.metrics ?? noMetrics;
@@ -97,6 +121,8 @@ export class Rooms {
       resumed: m.counter('bg_matches_resumed_total', '이어서 한 게임'),
       emotes: m.counter('bg_emotes_total', '보낸 감정 표현 (emote: id)'),
       createRejected: m.counter('bg_room_create_rejected_total', '방이 가득 차서 만들지 못한 횟수'),
+      botsAdded: m.counter('bg_bots_added_total', '방장이 넣은 봇 (level)'),
+      botMoves: m.counter('bg_bot_moves_total', '봇이 둔 수 (level, fallback=규칙에 어긋나 자동 수로 대신)'),
     };
     // 라벨 없는 카운터는 0으로 미리 내보내 Grafana에 "데이터 없음" 대신 0이 보이게
     for (const k of ['created', 'rounds', 'moves', 'rejected', 'kicks', 'paused', 'resumed', 'createRejected']) this.c[k]({}, 0);
@@ -105,6 +131,9 @@ export class Rooms {
   private m: Metrics;
   private c: Record<string, (labels?: Record<string, string | number>, by?: number) => void>;
   private duration: (v: number, labels?: Record<string, string | number>) => void;
+
+  /** 배포로 방을 넘겨준 뒤: 봇도 두지 않는다 */
+  private frozen = false;
 
   get maxRooms() {
     return this.opts.maxRooms ?? MAX_ROOMS;
@@ -149,6 +178,8 @@ export class Rooms {
       timer: null,
       lastActive: Date.now(),
       failedPasswords: [],
+      listed: true,
+      botTimer: null,
     };
     this.rooms.set(room.code, room);
     this.c.created();
@@ -207,7 +238,7 @@ export class Rooms {
       throw new RoomError('게임이 끝나면 나갈 수 있어요. 창을 닫아도 다시 열면 이어서 할 수 있어요');
     }
     room.members = room.members.filter((m) => m !== member);
-    if (room.members.length === 0) return this.remove(room, 'empty');
+    if (!room.members.some((m) => !m.bot)) return this.remove(room, 'empty');
     this.ensureHost(room);
     this.touch(room);
   }
@@ -231,6 +262,139 @@ export class Rooms {
     room.members = room.members.filter((m) => m.id !== targetId);
     this.c.kicks();
     this.touch(room);
+  }
+
+  // ---------- 봇 ----------
+
+  /** 방장이 봇을 자리에 넣는다 (대기실에서만) */
+  addBot(room: Room, by: Member, level: BotLevel) {
+    this.requireHost(room, by);
+    if (!this.lobbyOpen(room)) throw new RoomError('게임이 끝난 뒤에 봇을 넣을 수 있어요');
+    const max = this.game.players.max;
+    if (room.members.filter((m) => m.role === 'player').length >= max) throw new RoomError(`자리가 다 찼어요. 플레이어는 ${max}명까지예요`);
+    const name = BOT_NAMES.find((n) => !room.members.some((m) => m.name === n)) ?? uniqueName(room, '봇');
+    const bot = makeMember(name, 'player');
+    bot.bot = level;
+    bot.backInLobby = true;
+    room.members.push(bot);
+    this.c.botsAdded({ level });
+    this.touch(room);
+    return bot;
+  }
+
+  /** 봇 난이도 바꾸기 (게임 중에도 가능) */
+  setBotLevel(room: Room, by: Member, id: string, level: BotLevel) {
+    this.requireHost(room, by);
+    const bot = room.members.find((m) => m.id === id && m.bot);
+    if (!bot) throw new RoomError('봇을 찾을 수 없어요');
+    bot.bot = level;
+    this.touch(room);
+  }
+
+  private botAt(room: Room, seat: number): Member | undefined {
+    return room.members.find((m) => m.seat === seat && m.bot);
+  }
+
+  /** 지금 둘 차례인 봇이 있으면 생각할 시간을 두고 둔다 */
+  private scheduleBots(room: Room) {
+    if (room.botTimer || this.frozen || !this.rooms.has(room.code)) return;
+    const match = room.match;
+    if (!match || this.game.status(match) !== 'playing') return;
+    if (!this.actors(match).some((seat) => this.botAt(room, seat))) return;
+    const [lo, hi] = this.game.bot?.thinkMs ?? [700, 1600];
+    const wait = this.opts.botDelayMs ?? lo + rng() * (hi - lo);
+    room.botTimer = setTimeout(() => {
+      room.botTimer = null;
+      this.stepBots(room);
+      this.onChange(room);
+    }, wait);
+    room.botTimer.unref?.();
+  }
+
+  private clearBotTimer(room: Room) {
+    if (room.botTimer) clearTimeout(room.botTimer);
+    room.botTimer = null;
+  }
+
+  /** 차례인 봇들이 한 수씩 둔다 (테스트에서 직접 부를 수 있음) */
+  stepBots(room: Room) {
+    const match = room.match;
+    if (!match || this.game.status(match) !== 'playing') return;
+    const before = this.snap(match);
+    for (const seat of before.actors) {
+      const bot = this.botAt(room, seat);
+      if (!bot?.bot || this.game.status(match) !== 'playing' || !this.actors(match).includes(seat)) continue;
+      let fallback = false;
+      try {
+        const move = this.game.bot
+          ? this.game.bot.choose({ view: this.game.viewFor(match, seat), seat, level: bot.bot, rng })
+          : this.game.autoMove(match, seat);
+        this.game.applyMove(match, seat, move);
+      } catch (e) {
+        if (!isRuleError(e)) console.error('봇 오류 — 자동 수로 대신', e);
+        fallback = true;
+        this.game.applyMove(match, seat, this.game.autoMove(match, seat));
+      }
+      this.c.moves();
+      this.c.botMoves({ level: bot.bot, fallback: String(fallback) });
+    }
+    this.changed(room, before);
+    this.touch(room);
+  }
+
+  /** 봇이 가끔 감정 표현 (시작·판 끝·게임 끝) */
+  private botChatter(room: Room, moment: 'start' | 'round' | 'end') {
+    if (!this.opts.onEmote) return;
+    const pool = { start: ['please', 'hi'], round: ['nice', 'close', 'hmm', 'plan'], end: ['gg', 'again', 'clap'] }[moment];
+    for (const m of room.members) {
+      if (!m.bot || rng() > (moment === 'end' ? 0.6 : 0.3)) continue;
+      const ids = pool.filter((id) => this.emotes.some((e) => e.id === id));
+      if (!ids.length) continue;
+      const id = ids[Math.floor(rng() * ids.length)];
+      const delay = 400 + rng() * 1800;
+      setTimeout(() => {
+        if (!this.rooms.has(room.code) || !room.members.includes(m)) return;
+        try {
+          this.opts.onEmote?.(room, this.emote(room, m, id));
+        } catch {
+          /* 도배 방지에 걸리면 조용히 건너뜀 */
+        }
+      }, delay).unref?.();
+    }
+  }
+
+  // ---------- 방 목록 ----------
+
+  setListed(room: Room, by: Member, listed: boolean) {
+    this.requireHost(room, by);
+    room.listed = listed;
+    this.touch(room);
+  }
+
+  /** 첫 화면에 보여 줄 방 목록: 목록에 보이기가 켜져 있고 사람이 접속해 있는 방 */
+  listing(): RoomListing[] {
+    const out: RoomListing[] = [];
+    for (const room of this.rooms.values()) {
+      if (!room.listed || !room.members.some((m) => !m.bot && m.connections > 0)) continue;
+      const players = room.members.filter((m) => m.role === 'player');
+      const playing = !!room.match && this.game.status(room.match) !== 'match-over';
+      const cfg = (room.match ? this.game.config(room.match) : room.config) as { rounds?: number };
+      out.push({
+        code: room.code,
+        host: room.members.find((m) => m.id === room.hostId)?.name ?? '',
+        players: players.length,
+        maxPlayers: this.game.players.max,
+        bots: players.filter((m) => m.bot).length,
+        spectators: room.members.filter((m) => m.role === 'spectator').length,
+        hasPassword: !!room.password,
+        state: playing ? 'playing' : room.paused ? 'paused' : 'lobby',
+        round: playing ? this.game.round(room.match) : null,
+        rounds: cfg.rounds ?? 1,
+        open: this.lobbyOpen(room) && players.length < this.game.players.max,
+      });
+    }
+    const rank = (r: RoomListing) => (r.open ? 0 : r.state === 'playing' ? 1 : 2);
+    return out.sort((a, b) => rank(a) - rank(b) || a.code.localeCompare(b.code));
   }
 
   setRole(room: Room, member: Member, role: Member['role']) {
@@ -289,6 +453,7 @@ export class Rooms {
     room.paused = null; // 새 게임을 시작하면 중지했던 게임은 버린다
     this.resetTimer(room);
     this.touch(room);
+    this.botChatter(room, 'start');
   }
 
   private startErrors(config: unknown, players: number): string[] {
@@ -303,7 +468,7 @@ export class Rooms {
     if (!match) throw new RoomError('아직 게임이 시작되지 않았어요');
     if (member.seat === null) throw new RoomError('관전 중에는 둘 수 없어요');
     if (!this.game.isMove(move)) throw new RoomError('처리할 수 없는 동작이에요. 화면을 새로고침해 주세요');
-    const before = [this.game.turn(match), this.game.round(match), this.game.status(match)].join();
+    const before = this.snap(match);
     try {
       this.rule(() => this.game.applyMove(match, member.seat!, move));
     } catch (e) {
@@ -311,23 +476,44 @@ export class Rooms {
       throw e;
     }
     this.c.moves();
-    this.afterProgress(room, before);
-    const after = [this.game.turn(match), this.game.round(match), this.game.status(match)].join();
-    if (after !== before) this.resetTimer(room);
+    this.changed(room, before);
     this.touch(room);
   }
 
+  /** 지금 둘 수 있는 좌석들 (동시 진행 게임은 여럿) */
+  actors(match: unknown): number[] {
+    return this.game.actors?.(match) ?? [this.game.turn(match)];
+  }
+
+  private snap(match: unknown): Snap {
+    return { actors: this.actors(match), round: this.game.round(match), status: this.game.status(match) };
+  }
+
+  /**
+   * 수를 둔 뒤: 판·게임이 끝났으면 지표, 새로 둘 사람이 생겼으면 턴 타이머를 새로.
+   * (동시 진행 게임에서 한 명이 골라 남은 사람이 줄기만 했으면 타이머는 그대로 — 같은 시간 안에 모두 골라야 함)
+   */
+  private changed(room: Room, before: Snap) {
+    const match = room.match;
+    if (!match) return;
+    const now = this.snap(match);
+    this.afterProgress(room, before.status);
+    if (now.round !== before.round || now.status !== before.status || now.actors.some((a) => !before.actors.includes(a))) this.resetTimer(room);
+  }
+
   /** 판·게임이 끝났는지 보고 지표를 남긴다 */
-  private afterProgress(room: Room, before: string) {
+  private afterProgress(room: Room, beforeStatus: string) {
     const match = room.match;
     if (!match) return;
     const status = this.game.status(match);
-    if (before.endsWith(status)) return;
+    if (beforeStatus === status) return;
     if (status === 'round-over' || status === 'match-over') this.c.rounds();
+    if (status === 'round-over') this.botChatter(room, 'round');
     if (status === 'match-over') {
       const players = room.members.filter((m) => m.seat !== null).length;
       this.c.finished({ players });
       if (room.startedAt) this.duration((Date.now() - room.startedAt) / 1000);
+      this.botChatter(room, 'end');
     }
   }
 
@@ -365,6 +551,7 @@ export class Rooms {
         m.backInLobby = false;
       });
       this.clearTimer(room);
+      this.clearBotTimer(room);
     }
     this.touch(room);
   }
@@ -384,6 +571,7 @@ export class Rooms {
       m.backInLobby = false;
     });
     this.clearTimer(room);
+    this.clearBotTimer(room);
     this.touch(room);
   }
 
@@ -467,28 +655,36 @@ export class Rooms {
     const wait = this.nudgeInMs(room);
     if (wait === null) throw new RoomError('차례인 사람이 접속해 있어요. 조금만 기다려 주세요');
     if (wait > 0) throw new RoomError(`${Math.ceil(wait / 1000)}초 뒤에 대신 진행할 수 있어요`);
-    this.timeout(room, 'nudge');
+    this.timeout(room, 'nudge', this.awayActors(room).map((m) => m.seat!));
+  }
+
+  /** 둘 차례인데 접속이 끊긴 사람들 (봇 제외) */
+  private awayActors(room: Room, now = Date.now()): Member[] {
+    const match = room.match;
+    if (!match || this.game.status(match) !== 'playing') return [];
+    return this.actors(match)
+      .map((seat) => room.members.find((m) => m.seat === seat))
+      .filter((m): m is Member => !!m && !m.bot && m.connections === 0 && m.disconnectedAt !== null && now - m.disconnectedAt >= 0);
   }
 
   nudgeInMs(room: Room, now = Date.now()): number | null {
-    const match = room.match;
-    if (!match || this.game.status(match) !== 'playing') return null;
-    const cur = room.members.find((m) => m.seat === this.game.turn(match));
-    if (!cur || cur.connections > 0 || cur.disconnectedAt === null) return null;
-    return Math.max(0, NUDGE_AFTER_MS - (now - cur.disconnectedAt));
+    const away = this.awayActors(room, now);
+    if (!away.length) return null;
+    return Math.max(0, NUDGE_AFTER_MS - (now - Math.min(...away.map((m) => m.disconnectedAt!))));
   }
 
-  /** 시간 초과·대신 진행: 지금 차례인 사람의 차례가 넘어갈 때까지 자동으로 둔다 */
-  timeout(room: Room, cause: 'timer' | 'nudge' = 'timer') {
+  /** 시간 초과·대신 진행: 둘 차례인 좌석(기본: 모두)의 차례가 넘어갈 때까지 자동으로 둔다 */
+  timeout(room: Room, cause: 'timer' | 'nudge' = 'timer', seats?: number[]) {
     const match = room.match;
     if (!match || this.game.status(match) !== 'playing') return;
     this.c.timeouts({ cause });
-    const before = [this.game.turn(match), this.game.round(match), this.game.status(match)].join();
-    const turn = this.game.turn(match);
-    for (let guard = 0; guard < 4 && this.game.status(match) === 'playing' && this.game.turn(match) === turn; guard++) {
-      this.game.applyMove(match, turn, this.game.autoMove(match));
+    const before = this.snap(match);
+    for (const seat of seats ?? before.actors) {
+      for (let guard = 0; guard < 4 && this.game.status(match) === 'playing' && this.game.round(match) === before.round && this.actors(match).includes(seat); guard++) {
+        this.game.applyMove(match, seat, this.game.autoMove(match, seat));
+      }
     }
-    this.afterProgress(room, before);
+    this.afterProgress(room, before.status);
     this.resetTimer(room);
     this.touch(room);
   }
@@ -516,17 +712,23 @@ export class Rooms {
     room.turnDeadline = null;
   }
 
-  /** 방을 넘겨준 뒤 종료를 기다리는 동안 턴 타이머 정지 (남은 시간은 turnDeadline에 남겨 둠) */
+  /** 방을 넘겨준 뒤 종료를 기다리는 동안 턴 타이머·봇 정지 (남은 시간은 turnDeadline에 남겨 둠) */
   freezeTimers() {
+    this.frozen = true;
     for (const room of this.rooms.values()) {
       if (room.timer) clearTimeout(room.timer);
       room.timer = null;
+      this.clearBotTimer(room);
     }
   }
 
   /** 넘기기가 무산됐을 때(새 파드가 못 뜸) 남은 시간으로 타이머 재개 */
   resumeTimers(now = Date.now()) {
-    for (const room of this.rooms.values()) if (room.turnDeadline) this.resetTimer(room, room.turnDeadline - now);
+    this.frozen = false;
+    for (const room of this.rooms.values()) {
+      if (room.turnDeadline) this.resetTimer(room, room.turnDeadline - now);
+      this.scheduleBots(room);
+    }
   }
 
   // ---------- 무중단 배포: 방 상태 넘겨주기/받기 ----------
@@ -540,6 +742,7 @@ export class Rooms {
       members: r.members.map((m) => ({ ...m, connections: 0, emoteTimes: [] })),
       match: r.match,
       paused: r.paused,
+      listed: r.listed,
       turnRemainingMs: r.turnDeadline ? Math.max(0, r.turnDeadline - now) : null,
       idleMs: now - r.lastActive,
     }));
@@ -567,9 +770,12 @@ export class Rooms {
         timer: null,
         lastActive: now - Math.max(0, Number(s.idleMs) || 0),
         failedPasswords: [],
+        listed: s.listed ?? true,
+        botTimer: null,
       };
       this.rooms.set(room.code, room);
       if (s.turnRemainingMs !== null && s.turnRemainingMs !== undefined) this.resetTimer(room, s.turnRemainingMs);
+      this.scheduleBots(room);
       imported++;
     }
     return { imported, skipped };
@@ -582,7 +788,10 @@ export class Rooms {
     if (host && host.connections > 0) return;
     const next = room.members.find((m) => m.connections > 0 && m.role === 'player') ?? room.members.find((m) => m.connections > 0);
     if (next) room.hostId = next.id;
-    else if (!host && room.members[0]) room.hostId = room.members[0].id;
+    else if (!host) {
+      const human = room.members.find((m) => !m.bot);
+      if (human) room.hostId = human.id;
+    }
   }
 
   private requireHost(room: Room, m: Member) {
@@ -594,6 +803,7 @@ export class Rooms {
 
   private touch(room: Room) {
     room.lastActive = Date.now();
+    this.scheduleBots(room);
   }
 
   /** 게임 규칙 오류(RuleError)를 사용자용 RoomError로 */
@@ -608,6 +818,7 @@ export class Rooms {
 
   remove(room: Room, reason: 'closed' | 'empty' | 'idle' = 'closed') {
     this.clearTimer(room);
+    this.clearBotTimer(room);
     if (this.rooms.delete(room.code)) this.c.removed({ reason });
   }
 
@@ -629,6 +840,7 @@ export class Rooms {
     return {
       code: room.code,
       hasPassword: !!room.password,
+      listed: room.listed,
       you: member.id,
       hostId: room.hostId,
       members: room.members.map((m) => ({
@@ -636,10 +848,11 @@ export class Rooms {
         name: m.name,
         role: m.role,
         seat: m.seat,
-        connected: m.connections > 0,
-        inResults: this.inResults(room, m),
-        awayMs: m.connections > 0 || m.disconnectedAt === null ? null : Date.now() - m.disconnectedAt,
+        connected: !!m.bot || m.connections > 0,
+        inResults: !m.bot && this.inResults(room, m),
+        awayMs: m.bot || m.connections > 0 || m.disconnectedAt === null ? null : Date.now() - m.disconnectedAt,
         isHost: m.id === room.hostId,
+        bot: m.bot ?? null,
       })),
       config: room.config,
       lobby: {
@@ -656,6 +869,7 @@ export class Rooms {
       // 매치가 끝난 뒤 로비로 돌아온 사람에게는 게임 대신 대기 로비를 보여준다
       game: showGame ? this.game.viewFor(room.match, member.seat ?? -1) : null,
       seats,
+      actors: room.match && this.game.status(room.match) === 'playing' ? this.actors(room.match) : [],
       turnRemainingMs: room.turnDeadline ? Math.max(0, room.turnDeadline - Date.now()) : null,
       nudgeInMs: this.nudgeInMs(room),
     };

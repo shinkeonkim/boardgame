@@ -2,7 +2,7 @@ import { createServer } from 'node:http';
 import { networkInterfaces } from 'node:os';
 import { join, resolve } from 'node:path';
 import { Server, Socket } from 'socket.io';
-import { AnyGameModule, DRAIN_MESSAGE, EmoteDef } from '@bg/core';
+import { AnyGameModule, DRAIN_MESSAGE, EmoteDef, isBotLevel } from '@bg/core';
 import { pullFromPeer, serveHandoff } from './handoff';
 import { Metrics } from './metrics';
 import { Member, Room, RoomError, Rooms, normalizeCode } from './rooms';
@@ -65,6 +65,12 @@ export function createGameServer(opts: GameServerOptions) {
       const ok = ready && !draining;
       return void res.writeHead(ok ? 200 : 503, { 'content-type': 'text/plain' }).end(ok ? 'ready' : draining ? 'draining' : 'starting');
     }
+    if (local === '/api/rooms') {
+      // 첫 화면 「친구 방에 들어가기」 목록 (목록에 보이기를 끈 방·사람이 없는 방은 빠짐)
+      return void res
+        .writeHead(200, { 'content-type': 'application/json', 'cache-control': 'no-store' })
+        .end(JSON.stringify({ rooms: draining ? [] : rooms.listing(), maxRooms: rooms.maxRooms, total: rooms.rooms.size }));
+    }
     if (local === '/api/info') {
       return void res
         .writeHead(200, { 'content-type': 'application/json' })
@@ -77,7 +83,11 @@ export function createGameServer(opts: GameServerOptions) {
   });
   const io = new Server(http, { path: `${BASE}/socket.io`, cors: { origin: process.env.CORS_ORIGIN ?? false } });
   const metrics = new Metrics({ game: opts.game.id });
-  const rooms = new Rooms(opts.game, (room) => broadcast(room), { extraEmotes: opts.extraEmotes, metrics });
+  const rooms = new Rooms(opts.game, (room) => broadcast(room), {
+    extraEmotes: opts.extraEmotes,
+    metrics,
+    onEmote: (room, e) => io.to(`r:${room.code}`).emit('emote', e),
+  });
   const serverErrors = metrics.counter('bg_server_errors_total', '처리하지 못한 서버 오류');
   const handoffRooms = metrics.counter('bg_handoff_rooms_total', '무중단 배포로 넘겨준(out)/넘겨받은(in) 방');
   serverErrors({}, 0);
@@ -88,6 +98,8 @@ export function createGameServer(opts: GameServerOptions) {
     const people = { player: { true: 0, false: 0 }, spectator: { true: 0, false: 0 } };
     const bySize: Record<number, number> = {};
     let withPassword = 0;
+    let listed = 0;
+    const bots = { easy: 0, normal: 0, hard: 0 };
     let longest = 0;
     for (const room of rooms.rooms.values()) {
       if (room.paused && !room.match) state.paused++;
@@ -96,7 +108,11 @@ export function createGameServer(opts: GameServerOptions) {
       if (room.password) withPassword++;
       const players = room.members.filter((m) => m.role === 'player').length;
       bySize[players] = (bySize[players] ?? 0) + 1;
-      for (const m of room.members) people[m.role][String(m.connections > 0) as 'true']++;
+      for (const m of room.members) {
+        if (m.bot) bots[m.bot]++;
+        else people[m.role][String(m.connections > 0) as 'true']++;
+      }
+      if (room.listed) listed++;
       if (room.match && room.startedAt) longest = Math.max(longest, (Date.now() - room.startedAt) / 1000);
     }
     metrics.set('bg_rooms', '지금 있는 방 수', rooms.rooms.size);
@@ -105,6 +121,8 @@ export function createGameServer(opts: GameServerOptions) {
     for (const role of ['player', 'spectator'] as const)
       for (const c of ['true', 'false'] as const) metrics.set('bg_members', '방에 있는 사람 (role, connected)', people[role][c], { role, connected: c });
     metrics.set('bg_rooms_with_password', '암호가 걸린 방', withPassword);
+    metrics.set('bg_rooms_listed', '첫 화면 목록에 보이는 방', listed);
+    for (const [level, v] of Object.entries(bots)) metrics.set('bg_bots', '자리에 앉은 봇 (level)', v, { level });
     metrics.set('bg_room_capacity', '동시에 열 수 있는 방 수(MAX_ROOMS)', rooms.maxRooms);
     metrics.set('bg_longest_match_seconds', '지금 진행 중인 가장 긴 게임의 시간', longest);
     metrics.set('bg_sockets', '열린 소켓 연결', io.engine.clientsCount);
@@ -264,6 +282,9 @@ export function createGameServer(opts: GameServerOptions) {
       rooms.next(r, m, { round: typeof p.round === 'number' ? p.round : undefined, status: typeof p.status === 'string' ? p.status : undefined }),
     );
     act('nudge', (r, m) => rooms.nudge(r, m));
+    act<{ level: string }>('addBot', (r, m, p) => void rooms.addBot(r, m, isBotLevel(p.level) ? p.level : 'normal'));
+    act<{ id: string; level: string }>('botLevel', (r, m, p) => rooms.setBotLevel(r, m, String(p.id), isBotLevel(p.level) ? p.level : 'normal'));
+    act<{ listed: boolean }>('listed', (r, m, p) => rooms.setListed(r, m, p.listed !== false));
     act('stop', (r, m) => rooms.stop(r, m));
     act('resume', (r, m) => rooms.resume(r, m));
 

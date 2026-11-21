@@ -119,3 +119,58 @@
   }
 }
 
+
+/* ---------- 봇 ---------- */
+.members li.is-bot .name-cell {
+  color: var(--ink);
+}
+.tag.bot {
+  background: color-mix(in srgb, var(--info) 14%, transparent);
+  color: var(--info);
+  border-color: color-mix(in srgb, var(--info) 35%, transparent);
+}
+.tag.bot.hard {
+  background: color-mix(in srgb, var(--danger) 12%, transparent);
+  color: var(--danger);
+  border-color: color-mix(in srgb, var(--danger) 35%, transparent);
+}
+.tag.bot.easy {
+  background: color-mix(in srgb, var(--ok) 14%, transparent);
+  color: var(--ok);
+  border-color: color-mix(in srgb, var(--ok) 35%, transparent);
+}
+.bot-level {
+  font: inherit;
+  font-size: 0.8rem;
+  padding: 2px 4px;
+  border-radius: var(--r-sm, 6px);
+  border: 1px solid var(--line);
+  background: var(--panel);
+  color: var(--ink);
+}
+.bot-add {
+  margin-top: var(--sp-3, 12px);
+  padding: var(--sp-3, 12px);
+  border: 1px dashed var(--line);
+  border-radius: var(--r-md, 10px);
+  display: grid;
+  gap: 8px;
+}
+.bot-add p {
+  margin: 0;
+}
+.bot-btn.easy {
+  border-color: color-mix(in srgb, var(--ok) 50%, var(--line));
+}
+.bot-btn.normal {
+  border-color: color-mix(in srgb, var(--info) 50%, var(--line));
+}
+.bot-btn.hard {
+  border-color: color-mix(in srgb, var(--danger) 50%, var(--line));
+}
+.members .name-cell {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 6px;
+}

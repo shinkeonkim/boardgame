@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import QRCode from 'qrcode';
-import type { EmoteEvent, RoomView } from '@bg/core';
-import { ConfirmButton, EmoteBubble, EmoteButton, EmoteFeed, Notice, ThemeToggle } from '@bg/ui';
+import { BOT_LEVELS, BotLevel, EmoteEvent, RoomView, botLevelLabel } from '@bg/core';
+import { ConfirmButton, EmoteBubble, EmoteButton, EmoteFeed, Notice, ThemeToggle, Toggle } from '@bg/ui';
 import { useGameClient } from './App';
 import type { Act } from './client';
 import { GuideButton } from './Guide';
@@ -81,12 +81,13 @@ export function Lobby({ view, act, onLeave, emotes, onEmote }: { view: RoomView;
           </h2>
           <ol className="members">
             {players.map((m, i) => (
-              <li key={m.id} className={m.connected ? '' : 'away'}>
+              <li key={m.id} className={`${m.connected ? '' : 'away'} ${m.bot ? 'is-bot' : ''}`}>
                 <span className="seat">{client.seatBadge ? client.seatBadge(i) : i + 1}</span>
                 <span className="grow name-cell">
                   <EmoteBubble e={emoteOf(m.id)} />
                   {m.name}
                   {client.seatLabel && <span className="muted small">{client.seatLabel(i)}</span>}
+                  {m.bot && <span className={`tag bot ${m.bot}`}>🤖 {botLevelLabel(m.bot)}</span>}
                   {m.isHost && <span className="tag">방장</span>}
                   {m.id === view.you && <span className="tag mine">나</span>}
                   {teams && <span className="tag">{i % 2 === 0 ? 'A팀' : 'B팀'}</span>}
@@ -96,6 +97,15 @@ export function Lobby({ view, act, onLeave, emotes, onEmote }: { view: RoomView;
                 </span>
                 {isHost && (
                   <span className="mini-actions">
+                    {m.bot && (
+                      <select className="bot-level" aria-label={`${m.name} 난이도`} value={m.bot} onChange={(e) => act('botLevel', { id: m.id, level: e.target.value })}>
+                        {BOT_LEVELS.map((l) => (
+                          <option key={l.id} value={l.id}>
+                            {l.label}
+                          </option>
+                        ))}
+                      </select>
+                    )}
                     <button className="icon-btn" aria-label="위로" disabled={i === 0} onClick={() => act('reorder', { id: m.id, dir: -1 })}>
                       ↑
                     </button>
@@ -103,7 +113,7 @@ export function Lobby({ view, act, onLeave, emotes, onEmote }: { view: RoomView;
                       ↓
                     </button>
                     {m.id !== view.you && (
-                      <button className="icon-btn" aria-label="내보내기" onClick={() => act('kick', { id: m.id })}>
+                      <button className="icon-btn" aria-label={m.bot ? '봇 빼기' : '내보내기'} onClick={() => act('kick', { id: m.id })}>
                         ✕
                       </button>
                     )}
@@ -112,6 +122,7 @@ export function Lobby({ view, act, onLeave, emotes, onEmote }: { view: RoomView;
               </li>
             ))}
           </ol>
+          {isHost && players.length < maxPlayers && <AddBot act={act} />}
           <EmoteFeed items={emotes.filter((e) => spectators.some((s) => s.id === e.from))} />
           {spectators.length > 0 && <p className="muted small">관전 중: {spectators.map((m) => m.name).join(', ')}</p>}
           <div className="row">
@@ -167,6 +178,34 @@ export function Lobby({ view, act, onLeave, emotes, onEmote }: { view: RoomView;
         )}
       </div>
     </main>
+  );
+}
+
+/** 방장 전용: 빈자리에 봇 넣기 (난이도를 바로 골라 한 번에) */
+function AddBot({ act }: { act: Act }) {
+  const [last, setLast] = useState<BotLevel | null>(null);
+  return (
+    <div className="bot-add">
+      <div className="bot-add-head">
+        <span aria-hidden>🤖</span> <b>빈자리에 봇 넣기</b>
+        <span className="muted small"> · 사람이 모자랄 때 함께해요</span>
+      </div>
+      <div className="row tight">
+        {BOT_LEVELS.map((l) => (
+          <button
+            key={l.id}
+            className={`btn small-btn bot-btn ${l.id}`}
+            title={l.hint}
+            onClick={async () => {
+              if (await act('addBot', { level: l.id })) setLast(l.id);
+            }}
+          >
+            + {l.label}
+          </button>
+        ))}
+      </div>
+      <p className="muted small">{BOT_LEVELS.find((l) => l.id === (last ?? 'normal'))!.hint}. 난이도는 넣은 뒤에도 바꿀 수 있어요.</p>
+    </div>
   );
 }
 
@@ -259,6 +298,14 @@ function ShareBox({ view, isHost, act }: { view: RoomView; isHost: boolean; act:
           </label>
         )}
       </div>
+      {isHost && (
+        <Toggle
+          label="첫 화면 방 목록에 보이기"
+          hint={view.listed ? '누구나 목록에서 이 방을 찾을 수 있어요' : '코드나 링크를 아는 사람만 들어올 수 있어요'}
+          checked={view.listed}
+          onChange={(v) => act('listed', { listed: v })}
+        />
+      )}
       {isHost &&
         (editingPw ? (
           <div className="row">

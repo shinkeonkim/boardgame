@@ -1,4 +1,5 @@
 /** 서버 ↔ 클라이언트 공용 타입 (모든 게임 공통) */
+import type { BotLevel } from './bot';
 
 export interface MemberPublic {
   id: string;
@@ -11,6 +12,8 @@ export interface MemberPublic {
   /** 연결이 끊긴 지 몇 ms 지났는지 (접속 중이면 null) */
   awayMs: number | null;
   isHost: boolean;
+  /** 봇이면 난이도 (사람이면 null) */
+  bot: BotLevel | null;
 }
 
 export interface PausedInfo {
@@ -30,6 +33,8 @@ export interface PausedInfo {
 export interface RoomView<GameView = unknown, Config = unknown> {
   code: string;
   hasPassword: boolean;
+  /** 친구 방 목록(첫 화면)에 보이는지 */
+  listed: boolean;
   you: string;
   hostId: string;
   members: MemberPublic[];
@@ -55,6 +60,8 @@ export interface RoomView<GameView = unknown, Config = unknown> {
   seats: string[];
   /** 턴 제한시간이 있을 때 남은 ms (서버 기준 — 기기 시계 오차 무관) */
   turnRemainingMs: number | null;
+  /** 지금 둘 수 있는 좌석들 (동시 진행 게임이면 여럿) */
+  actors: number[];
   /** 차례인 사람이 끊겨서 다른 사람이 대신 진행할 수 있기까지 남은 ms (해당 없으면 null) */
   nudgeInMs: number | null;
 }
@@ -111,4 +118,22 @@ export interface EmoteEvent {
   id: string;
   /** 같은 이모트를 구분하기 위한 일련번호 */
   n: number;
+}
+
+/** 첫 화면 「친구 방에 들어가기」의 방 목록 한 줄 (GET <base>/api/rooms) */
+export interface RoomListing {
+  code: string;
+  host: string;
+  players: number;
+  maxPlayers: number;
+  bots: number;
+  spectators: number;
+  hasPassword: boolean;
+  /** lobby=대기실, playing=게임 중, paused=멈춤 */
+  state: 'lobby' | 'playing' | 'paused';
+  /** 게임 중이면 판 (1부터) / 전체 판 */
+  round: number | null;
+  rounds: number;
+  /** 빈자리가 있어 플레이어로 들어갈 수 있는지 */
+  open: boolean;
 }
