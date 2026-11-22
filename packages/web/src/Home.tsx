@@ -1,3 +1,4 @@
+import { SiteNotice } from './site-notice';
 import { useEffect, useState } from 'react';
 import type { RoomListing } from '@bg/core';
 import { ORIGINAL_NOTE, originalLabel } from '@bg/core';
@@ -160,14 +161,16 @@ export function Home({ onEnter, flash }: { onEnter: (code: string) => void; flas
 function RoomList({ onPick }: { onPick: (code: string) => void }) {
   const [rooms, setRooms] = useState<RoomListing[] | null>(null);
   const [failed, setFailed] = useState(false);
+  const [notice, setNotice] = useState<{ text: string | null; maintenance: boolean }>({ text: null, maintenance: false });
   useEffect(() => {
     let alive = true;
     const load = () =>
       fetch(`${BASE}/api/rooms`, { cache: 'no-store' })
         .then((r) => r.json())
-        .then((d: { rooms: RoomListing[] }) => {
+        .then((d: { rooms: RoomListing[]; notice?: string | null; maintenance?: boolean }) => {
           if (!alive) return;
           setRooms(d.rooms);
+          setNotice({ text: d.notice ?? null, maintenance: !!d.maintenance });
           setFailed(false);
         })
         .catch(() => alive && setFailed(true));
@@ -181,6 +184,7 @@ function RoomList({ onPick }: { onPick: (code: string) => void }) {
   if (failed && !rooms) return null;
   return (
     <div className="room-list">
+      <SiteNotice text={notice.text} maintenance={notice.maintenance} />
       <div className="room-list-head">
         <span>지금 열린 방</span>
         <span className="muted small">{rooms ? `${rooms.length}개` : '불러오는 중…'}</span>

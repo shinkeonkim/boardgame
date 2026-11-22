@@ -5,6 +5,7 @@ import { Server, Socket } from 'socket.io';
 import { AnyGameModule, DRAIN_MESSAGE, EmoteDef, isBotLevel } from '@bg/core';
 import { pullFromPeer, serveHandoff } from './handoff';
 import { Metrics } from './metrics';
+import { adminHandler } from './admin';
 import { Member, Room, RoomError, Rooms, normalizeCode } from './rooms';
 import { serveStatic } from './static';
 
@@ -69,7 +70,7 @@ export function createGameServer(opts: GameServerOptions) {
       // 첫 화면 「친구 방에 들어가기」 목록 (목록에 보이기를 끈 방·사람이 없는 방은 빠짐)
       return void res
         .writeHead(200, { 'content-type': 'application/json', 'cache-control': 'no-store' })
-        .end(JSON.stringify({ rooms: draining ? [] : rooms.listing(), maxRooms: rooms.maxRooms, total: rooms.rooms.size }));
+        .end(JSON.stringify({ rooms: draining ? [] : rooms.listing(), maxRooms: rooms.maxRooms, total: rooms.rooms.size, notice: rooms.notice, maintenance: rooms.maintenance }));
     }
     if (local === '/api/info') {
       return void res
@@ -130,7 +131,24 @@ export function createGameServer(opts: GameServerOptions) {
     metrics.set('bg_draining', '무중단 배포로 방을 넘겨준 뒤 종료 대기 중(1)', draining ? 1 : 0);
   });
   const METRICS_PORT = Number(process.env.METRICS_PORT ?? 9464) || 0;
-  if (METRICS_PORT) metrics.serve(METRICS_PORT);
+  // 같은 내부 포트에 관리자 API (admin.ts)
+  const admin = adminHandler({
+    game: opts.game.id,
+    rooms,
+    sockets: () => io.engine.clientsCount,
+    broadcastAll: () => {
+      for (const room of rooms.rooms.values()) broadcast(room);
+    },
+    closed: (code, reason) => {
+      io.in(`r:${code}`).emit('kicked', reason);
+      io.in(`r:${code}`).socketsLeave(`r:${code}`);
+    },
+    refresh: (code) => {
+      const room = rooms.rooms.get(code);
+      if (room) broadcast(room);
+    },
+  });
+  if (METRICS_PORT) metrics.serve(METRICS_PORT, admin);
 
   function broadcast(room: Room) {
     for (const m of room.members) io.to(`m:${room.code}:${m.id}`).emit('room', rooms.view(room, m));
@@ -334,7 +352,8 @@ export function createGameServer(opts: GameServerOptions) {
         rooms.resumeTimers();
         console.log('handoff: 종료되지 않아 다시 진행을 받음');
       }, 60_000).unref();
-      return { game: opts.game.id, rooms: snap };
+      // 관리자 공지·점검 모드도 새 파드로
+      return { game: opts.game.id, rooms: snap, notice: rooms.notice, maintenance: rooms.maintenance };
     });
   }
 
@@ -354,10 +373,12 @@ export function createGameServer(opts: GameServerOptions) {
   http.listen(PORT, async () => {
     console.log(`${opts.game.id} listening on :${PORT}${BASE}/ (static: ${STATIC_DIR})`);
     if (HANDOFF_PEER) {
-      const body = await pullFromPeer<{ game?: string; rooms: unknown }>(HANDOFF_PEER, HANDOFF_SECRET);
+      const body = await pullFromPeer<{ game?: string; rooms: unknown; notice?: string | null; maintenance?: boolean }>(HANDOFF_PEER, HANDOFF_SECRET);
       if (body && body.game && body.game !== opts.game.id) console.log(`handoff: 다른 게임(${body.game})의 상태라 무시`);
       else if (body) {
         const { imported } = rooms.importAll(body.rooms);
+        rooms.notice = typeof body.notice === 'string' ? body.notice : null;
+        rooms.maintenance = body.maintenance === true;
         handoffRooms({ direction: 'in' }, imported);
         console.log(`handoff: 이전 파드에서 방 ${imported}개를 넘겨받음`);
       }

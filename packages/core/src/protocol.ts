@@ -32,6 +32,10 @@ export interface PausedInfo {
 
 export interface RoomView<GameView = unknown, Config = unknown> {
   code: string;
+  /** 관리자 공지 (모든 방에 띠로 보임) */
+  notice: string | null;
+  /** 점검 중 — 새 방을 만들 수 없음 (지금 방은 그대로) */
+  maintenance: boolean;
   hasPassword: boolean;
   /** 친구 방 목록(첫 화면)에 보이는지 */
   listed: boolean;
@@ -138,4 +142,26 @@ export interface RoomListing {
   rounds: number;
   /** 빈자리가 있어 플레이어로 들어갈 수 있는지 */
   open: boolean;
+}
+
+/** 관리자 화면용 방 요약 (게임 서버 내부 포트 /admin/state) */
+export interface AdminRoom {
+  code: string;
+  state: 'lobby' | 'playing' | 'round-over' | 'match-over' | 'paused';
+  round: number | null;
+  hasPassword: boolean;
+  listed: boolean;
+  createdAt: number | null;
+  startedAt: number | null;
+  lastActive: number;
+  members: { id: string; name: string; role: 'player' | 'spectator'; bot: string | null; connected: boolean; host: boolean }[];
+}
+export interface AdminGameState {
+  game: string;
+  rooms: AdminRoom[];
+  maxRooms: number;
+  notice: string | null;
+  maintenance: boolean;
+  sockets: number;
+  uptimeSec: number;
 }

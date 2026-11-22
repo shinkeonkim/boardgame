@@ -1,3 +1,4 @@
+import { SiteNotice } from './site-notice';
 import { useRelocate } from './switch-game';
 import { createContext, useCallback, useContext, useEffect, useState, ReactNode } from 'react';
 import { createRoot } from 'react-dom/client';
@@ -231,6 +232,7 @@ function RoomPage({ code, onExit }: { code: string; onExit: (msg?: string) => vo
         </div>
       )}
       {!connected && <div className="offline">연결이 끊겼어요. 다시 연결하는 중이에요…</div>}
+      <SiteNotice text={view.notice} maintenance={view.maintenance} />
       {relocating && (
         <div className="overlay" role="alertdialog" aria-label="게임 바꾸는 중">
           <div className="panel sheet center">

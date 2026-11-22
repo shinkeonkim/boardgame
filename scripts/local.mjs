@@ -20,7 +20,9 @@ function start(name, script, env) {
   children.push(p);
 }
 
-start('portal', 'apps/portal/dist-server/server.cjs', { PORT: '3000', STATIC_DIR: 'apps/portal/dist', METRICS_PORT: '9460' });
+// 관리자 페이지(/admin): 로컬에서는 Cloudflare Access 없이(ADMIN_DEV), 게임 서버 내부 포트는 9461부터
+const adminUrls = Object.fromEntries(games.map((id, i) => [id, `http://localhost:${9461 + i}`]));
+start('portal', 'apps/portal/dist-server/server.cjs', { PORT: '3000', STATIC_DIR: 'apps/portal/dist', METRICS_PORT: '9460', ADMIN_DEV: '1', ADMIN_GAME_URLS: JSON.stringify(adminUrls) });
 games.forEach((id, i) => {
   const port = 3101 + i;
   routes.set(id, port);

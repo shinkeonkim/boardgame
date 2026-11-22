@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { Suspense, lazy, useEffect } from 'react';
 import { ThemeToggle, Icon } from '@bg/ui';
 import { Link, useRoute } from './router';
 import { HomePage } from './pages/Home';
@@ -6,6 +6,9 @@ import { SearchPage } from './pages/Search';
 import { GamePage } from './pages/Game';
 import { DesignPage } from './pages/Design';
 import { gameById } from './catalog';
+
+// 관리자 화면은 따로 불러옴 (일반 방문자 묶음에 넣지 않음)
+const AdminPage = lazy(() => import('./pages/Admin').then((m) => ({ default: m.AdminPage })));
 
 export function App() {
   const { path, search } = useRoute();
@@ -22,6 +25,13 @@ export function App() {
   } else if (path === '/design' || path === '/design/') {
     page = <DesignPage />;
     title = '디자인 시스템 · 보드게임 테이블';
+  } else if (path === '/admin' || path === '/admin/') {
+    page = (
+      <Suspense fallback={<p className="muted">불러오는 중…</p>}>
+        <AdminPage />
+      </Suspense>
+    );
+    title = '관리자 · 보드게임 테이블';
   } else page = <NotFound />;
   useEffect(() => {
     document.title = title;

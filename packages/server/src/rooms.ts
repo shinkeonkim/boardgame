@@ -1,5 +1,5 @@
 import { randomBytes, randomInt, scryptSync, timingSafeEqual } from 'node:crypto';
-import { AnyGameModule, BASE_EMOTES, BotLevel, EmoteDef, EmoteEvent, PausedInfo, RoomListing, RoomView, isRuleError } from '@bg/core';
+import { AnyGameModule, BASE_EMOTES, BotLevel, EmoteDef, EmoteEvent, AdminRoom, PausedInfo, RoomListing, RoomView, isRuleError } from '@bg/core';
 import { Metrics, noMetrics } from './metrics';
 
 const CODE_ALPHABET = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
@@ -52,6 +52,8 @@ export interface Room<Config = unknown, Match = unknown> {
   listed: boolean;
   /** 봇이 두기까지 기다리는 타이머 */
   botTimer?: NodeJS.Timeout | null;
+  /** 만든 시각 (관리자 화면) */
+  createdAt?: number;
   /** 방장이 다른 게임의 새 방으로 옮김 (모두에게 그 방 주소를 알림) */
   relocate?: { game: string; code: string; title: string } | null;
 }
@@ -168,8 +170,10 @@ export class Rooms {
       this.c.createRejected();
       throw new RoomError(`지금은 방이 모두 찼어요(최대 ${this.maxRooms}개). 친구 방에 들어가거나 조금 뒤 다시 만들어 주세요`);
     }
+    if (this.maintenance) throw new RoomError('지금은 점검 중이라 새 방을 만들 수 없어요. 하던 게임은 그대로 이어져요');
     const member = makeMember(name, 'player');
     const room: Room = {
+      createdAt: Date.now(),
       code: this.newCode(),
       password: password ? hashPassword(password) : null,
       hostId: member.id,
@@ -665,6 +669,51 @@ export class Rooms {
     return { from: member.id, name: member.name, seat: room.match ? member.seat : null, id: e.id, n: this.emoteSeq };
   }
 
+  // ---------- 관리자 (게임 서버 내부 포트에서만 부름 — admin.ts) ----------
+
+  /** 모든 방에 띠로 보이는 공지 (null이면 지움) */
+  notice: string | null = null;
+  /** 점검 모드: 새 방 만들기를 막음 (지금 방은 끝까지) */
+  maintenance = false;
+
+  adminRooms(): AdminRoom[] {
+    return [...this.rooms.values()].map((room) => ({
+      code: room.code,
+      state: room.paused && !room.match ? 'paused' : room.match ? (this.game.status(room.match) as AdminRoom['state']) : 'lobby',
+      round: room.match ? this.game.round(room.match) : null,
+      hasPassword: !!room.password,
+      listed: room.listed,
+      createdAt: room.createdAt ?? null,
+      startedAt: room.startedAt ?? null,
+      lastActive: room.lastActive,
+      members: room.members.map((m) => ({ id: m.id, name: m.name, role: m.role, bot: m.bot ?? null, connected: m.bot ? true : m.connections > 0, host: m.id === room.hostId })),
+    }));
+  }
+
+  /** 관리자가 방 닫기 */
+  adminClose(code: string) {
+    const room = this.get(normalizeCode(code));
+    this.remove(room, 'closed');
+    return room;
+  }
+
+  /** 관리자가 한 사람 내보내기 — 게임 중인 플레이어는 안 됨(방 닫기를 씀). 방장이면 다른 사람에게 넘김 */
+  adminKick(code: string, memberId: string) {
+    const room = this.get(normalizeCode(code));
+    const target = room.members.find((m) => m.id === memberId);
+    if (!target) throw new RoomError('그 사람은 이미 방에 없어요');
+    if (target.role === 'player' && !this.lobbyOpen(room)) throw new RoomError('게임 중인 플레이어는 내보낼 수 없어요. 방 닫기를 써 주세요');
+    room.members = room.members.filter((m) => m.id !== memberId);
+    if (room.hostId === memberId) {
+      const next = room.members.find((m) => !m.bot && m.connections > 0) ?? room.members.find((m) => !m.bot);
+      if (next) room.hostId = next.id;
+    }
+    if (!room.members.some((m) => !m.bot)) this.remove(room, 'closed');
+    this.c.kicks();
+    this.touch(room);
+    return room;
+  }
+
   /** 방장이 방을 닫는다 — 모두 내보내고 방 해제 */
   close(room: Room, by: Member) {
     this.requireHost(room, by);
@@ -863,6 +912,8 @@ export class Rooms {
     const showGame = room.match && !(this.game.status(room.match) === 'match-over' && member.backInLobby);
     return {
       code: room.code,
+      notice: this.notice,
+      maintenance: this.maintenance,
       hasPassword: !!room.password,
       listed: room.listed,
       you: member.id,

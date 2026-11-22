@@ -289,4 +289,26 @@ describe('Rooms', () => {
     expect(rooms.view(room, others[0]).lobby.relocate).toEqual({ game: 'one-card', code: 'ABCD', title: 'One Card' });
     expect(room.listed).toBe(false);
   });
+  it('관리자: 점검 모드는 새 방만 막고, 공지는 모든 방 화면에, 닫기·내보내기', () => {
+    const { rooms, room, host, others } = lobby(3);
+    rooms.maintenance = true;
+    expect(() => rooms.create('새 방')).toThrow(/점검 중/);
+    expect(() => rooms.join(room.code, { name: '늦게 온 사람' })).not.toThrow();
+    rooms.notice = '10분 뒤 점검해요';
+    expect(rooms.view(room, others[0]).notice).toBe('10분 뒤 점검해요');
+    expect(rooms.view(room, others[0]).maintenance).toBe(true);
+    const list = rooms.adminRooms();
+    expect(list[0].members.find((m) => m.host)?.id).toBe(host.id);
+    // 방장을 내보내면 다른 사람이 방장
+    rooms.adminKick(room.code, host.id);
+    expect(room.hostId).not.toBe(host.id);
+    expect(room.members.some((m) => m.id === host.id)).toBe(false);
+    rooms.adminClose(room.code);
+    expect(rooms.rooms.has(room.code)).toBe(false);
+  });
+  it('관리자: 게임 중인 플레이어는 내보낼 수 없음', () => {
+    const { rooms, room, host, others } = lobby(2);
+    rooms.start(room, host);
+    expect(() => rooms.adminKick(room.code, others[0].id)).toThrow(/방 닫기/);
+  });
 });

@@ -4,7 +4,7 @@
  *   - 게이지: 수집할 때마다 collect 콜백이 지금 상태를 계산 (방 수·접속자 등)
  * 내부 전용 포트(METRICS_PORT, 기본 9464)의 /metrics 로만 내보낸다 — Ingress·터널에 연결하지 않는다.
  */
-import { createServer, Server } from 'node:http';
+import { createServer, IncomingMessage, Server, ServerResponse } from 'node:http';
 import { monitorEventLoopDelay } from 'node:perf_hooks';
 
 type Labels = Record<string, string | number>;
@@ -106,9 +106,10 @@ export class Metrics {
     this.loop.reset();
   }
 
-  /** 내부 포트에 /metrics 띄우기 */
-  serve(port: number): Server {
+  /** 내부 포트에 /metrics 띄우기 (extra: 같은 내부 포트에 붙일 다른 경로 — 관리자 API) */
+  serve(port: number, extra?: (req: IncomingMessage, res: ServerResponse) => boolean): Server {
     const s = createServer((req, res) => {
+      if (extra?.(req, res)) return;
       if (req.url !== '/metrics') return void res.writeHead(404).end();
       res.writeHead(200, { 'content-type': 'text/plain; version=0.0.4; charset=utf-8' }).end(this.render());
     });
