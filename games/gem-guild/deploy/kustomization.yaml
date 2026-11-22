@@ -14,4 +14,4 @@ labels:
 images:
 - name: ghcr.io/shinkeonkim/boardgame-gem-guild
   newName: ghcr.io/shinkeonkim/boardgame-gem-guild
-  newTag: sha-e363d05
+  newTag: sha-d533312
