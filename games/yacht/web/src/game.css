@@ -210,3 +210,15 @@ button.ya-die:hover {
     animation: none;
   }
 }
+
+/* 3D 주사위 판 (dice3d.tsx): 펠트 위에 투명 캔버스 */
+.ya-tray3d {
+  width: 100%;
+  aspect-ratio: 2.3 / 1;
+  max-height: 280px;
+  min-height: 150px;
+  touch-action: manipulation;
+}
+.ya-tray3d canvas {
+  display: block;
+}

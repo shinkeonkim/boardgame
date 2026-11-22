@@ -1,4 +1,15 @@
-import { useEffect, useState } from 'react';
+import { Suspense, lazy, useEffect, useMemo, useState } from 'react';
+
+const DiceTray = lazy(() => import('./dice3d'));
+/** WebGL을 쓸 수 있나 (3D 모듈을 불러오기 전에 가볍게 확인) */
+function webglOk(): boolean {
+  try {
+    const c = document.createElement('canvas');
+    return !!(c.getContext('webgl2') || c.getContext('webgl'));
+  } catch {
+    return false;
+  }
+}
 import type { RoomView } from '@bg/core';
 import { Cat, GameConfig, GameView, LogEntry, UPPER } from '@bg/yacht-engine';
 import { SeatDot, seatColor, Icon, iconize } from '@bg/ui';
@@ -49,6 +60,27 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
     if (!mine || mine.rolled === 0) return t.warn('먼저 주사위를 굴려 주세요');
     act('move', { move: { type: 'score', cat } });
   };
+  const toggleHold = (i: number) => setHold((h) => h.map((x, k) => (k === i ? !x : x)));
+  /** 3D 주사위 판 (물리로 굴림) — WebGL이 없거나 불러오는 동안은 평면 주사위 */
+  const use3d = useMemo(webglOk, []);
+  const flatDice = () => (
+        <div className="ya-dice">
+          {fs.dice.map((d, i) => {
+            const held = focus === me ? hold[i] : fs.held[i];
+            return (
+              <Die
+                key={`${rollKey}-${i}-${held ? 'h' : ''}`}
+                face={d}
+                size={64}
+                held={held && fs.rolled > 0}
+                className={fs.rolled === 0 ? 'blank' : held ? '' : 'rolled'}
+                style={{ animationDelay: `${i * 55}ms` }}
+                onClick={canHold ? () => toggleHold(i) : undefined}
+              />
+            );
+          })}
+        </div>
+  );
   const bestPreview = Object.entries(g.preview).sort((a, b) => (b[1] ?? 0) - (a[1] ?? 0))[0]?.[0] as Cat | undefined;
 
   const describe = (e: LogEntry | undefined) => {
@@ -106,22 +138,29 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
               <SeatDot seat={focus} size={12} /> {focus === me ? '내 주사위' : `${names[focus]} 님의 주사위`}
               {fs.rolled > 0 && <span className="muted"> · {fs.rolled}/{c.rolls}번 굴림</span>}
             </div>
-            <div className="ya-dice">
-              {fs.dice.map((d, i) => {
-                const held = focus === me ? hold[i] : fs.held[i];
-                return (
-                  <Die
-                    key={`${rollKey}-${i}-${held ? 'h' : ''}`}
-                    face={d}
-                    size={64}
-                    held={held && fs.rolled > 0}
-                    className={fs.rolled === 0 ? 'blank' : held ? '' : 'rolled'}
-                    style={{ animationDelay: `${i * 55}ms` }}
-                    onClick={canHold ? () => setHold((h) => h.map((x, k) => (k === i ? !x : x))) : undefined}
-                  />
-                );
-              })}
-            </div>
+            {use3d ? (
+              <Suspense fallback={flatDice()}>
+                <DiceTray
+                  values={fs.dice}
+                  held={fs.dice.map((_, i) => (focus === me ? hold[i] : fs.held[i]) && fs.rolled > 0)}
+                  rollKey={`${focus}-${rollKey}`}
+                  blank={fs.rolled === 0}
+                  onToggle={canHold ? toggleHold : undefined}
+                />
+                {/* 키보드·화면 읽기용 남기기 버튼 (보이지 않음) */}
+                {canHold && (
+                  <div className="sr-only">
+                    {fs.dice.map((d, i) => (
+                      <button key={i} aria-pressed={hold[i]} onClick={() => toggleHold(i)}>
+                        주사위 {d} {hold[i] ? '남겨 둠' : '남기기'}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </Suspense>
+            ) : (
+              flatDice()
+            )}
             {me >= 0 && g.status === 'playing' && (focus === me || !together) && (
               <div className="action-row">
                 <button className="btn primary ya-roll" disabled={!myTurn || left <= 0} onClick={roll}>
