@@ -237,6 +237,7 @@ const P: Record<string, ReactNode> = {
   door: <path d="M5 21V4.5A1.5 1.5 0 0 1 6.5 3H17.5A1.5 1.5 0 0 1 19 4.5V21M3 21h18M14.5 12.5v.2" />,
   plus: <path d="M12 5v14M5 12h14" />,
   chopsticks: <path d="M5 21L16 3M9.5 21L20 4.5" />,
+  pin: <path d="M9 3h6l-1 6 3.5 3.5h-11L10 9zM12 12.5V21" />,
   unlock: (
     <>
       <rect x="5" y="11" width="14" height="10" rx="2" />
@@ -290,7 +291,7 @@ const EMOJI: Record<string, IconName | [IconName, string]> = {
   '🗡': 'dagger', '✉': 'mail', '📨': 'mail', '🗳': 'ballot', '🔮': 'orb', '🧱': 'bricks', '⛵': 'boat', '🎉': 'party', '🥳': 'party', '🎆': 'firework', '🎇': 'firework',
   '💀': 'skull', '⚠': 'warning', '🚫': 'ban', '💔': 'heartBreak', '❤': 'heart', '🛡': 'shield', '🎯': 'target', '😊': 'smile', '🙂': 'smile', '🍵': 'cup', '☕': 'cup',
   '↔': 'swap', '🔄': 'swap', 'ℹ': 'info', '✨': 'sparkle', '🃏': 'cards', '🎴': 'cards', '🔴': ['dot', '#d0453a'], '🔵': ['dot', '#2f6fb0'], '🟢': ['dot', '#2e8b57'], '🟡': ['dot', '#d4a017'],
-  '➡': 'arrowRight', '🚪': 'door', '➕': 'plus', '🥢': 'chopsticks', '🔓': 'unlock',
+  '➡': 'arrowRight', '🚪': 'door', '➕': 'plus', '🥢': 'chopsticks', '🔓': 'unlock', '📌': 'pin', '📍': 'pin',
 };
 
 /** 이모지 한 글자(+변형 선택자·피부색·ZWJ 묶음)와 숫자 키캡 */

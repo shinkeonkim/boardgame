@@ -91,7 +91,8 @@ button.gem:disabled {
   --cw: 58px;
 }
 /* 시장 카드는 남는 너비에 맞춰 크게 (한 줄 = 더미 + 카드 4장) */
-.gg-market {
+/* 카드 크기 기준(cqw)은 테이블 너비 — 시장 상자는 카드만큼만 넓어지므로 기준이 될 수 없음 */
+.table-main {
   container-type: inline-size;
 }
 .gg-market .devcard {
@@ -173,13 +174,18 @@ button.noble {
   display: flex;
   gap: 6px;
   flex-wrap: wrap;
+  justify-content: center;
 }
+/* 시장: 카드 크기는 높이에 맞춰 정해지므로, 상자도 카드만큼만 (넓은 화면에서 오른쪽이 텅 비지 않게) 가운데에 */
 .gg-market {
   display: grid;
   gap: 6px;
   padding: 8px;
   border-radius: 14px;
   background: var(--vault-bg);
+  width: fit-content;
+  max-width: 100%;
+  margin-inline: auto;
 }
 .gg-tier {
   display: flex;

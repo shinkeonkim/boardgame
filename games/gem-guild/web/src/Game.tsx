@@ -122,7 +122,7 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
               </button>
               {g.market.flat().some((x) => x.id === card.id) && (
                 <button className="btn" disabled={(mine?.reservedCount ?? 0) >= c.maxReserve} onClick={() => act('move', { move: { type: 'reserve', cardId: card.id } })}>
-                  📌 예약하기{g.bank[5] > 0 ? ' (+황금)' : ''}
+                  <Icon name="pin" /> 예약하기{g.bank[5] > 0 ? ' (+황금)' : ''}
                 </button>
               )}
               <button className="btn ghost" onClick={() => setCard(null)}>

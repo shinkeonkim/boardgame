@@ -30,7 +30,7 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
   const { bySeat } = emotesBySeat(emotes);
   const [peek, setPeek] = usePeek(`${g.status}-${g.round}`);
   const [seven, setSeven] = useState<Card | null>(null);
-  useEffect(() => setSeven(null), [g.turn, g.log.length]);
+  useEffect(() => setSeven(null), [g.turn, g.log[g.log.length - 1]?.n]);
 
   const tryPlay = (card: Card) => {
     if (g.phase === 'call') return;

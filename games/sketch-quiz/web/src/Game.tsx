@@ -31,7 +31,7 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
   const chat = g.log.filter((e) => e.type === 'guess' || e.type === 'correct' || e.type === 'reveal' || e.type === 'turn' || e.type === 'skip');
   useEffect(() => {
     chatRef.current?.scrollTo({ top: chatRef.current.scrollHeight });
-  }, [chat.length]);
+  }, [chat[chat.length - 1]?.n]);
   const lastReveal = [...g.log].reverse().find((e) => e.type === 'reveal') as Extract<LogEntry, { type: 'reveal' }> | undefined;
 
   const title =

@@ -47,7 +47,7 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
     setPiece(null);
     setHover(null);
     setGrabAt(null);
-  }, [g.color, g.log.length]);
+  }, [g.color, g.log[g.log.length - 1]?.n]); // 기록은 최근 30개만 와서 길이는 멈춤 → 마지막 번호
 
   const choose = (id: string) => {
     if (!myTurn) return t.warn(t.waitingMsg);

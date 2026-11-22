@@ -206,10 +206,11 @@
 }
 /* 좌석 줄의 감정 표현: 이름을 가리지 않게 줄 오른쪽(점수 왼쪽)에 */
 .seat-row .emote-bubble {
+  /* 줄 안쪽(점수 왼쪽)에 — 위로 삐져나가면 옆 패널 맨 위 줄에서 잘림 */
   left: auto;
-  right: 0;
+  right: 56px;
   bottom: auto;
-  top: -8px;
+  top: 4px;
 }
 .seat-row .seat-name {
   position: static;

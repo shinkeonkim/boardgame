@@ -28,7 +28,7 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
     turn: g.turn,
     playing: g.status === 'playing',
     simultaneous: together,
-    stepKey: together ? g.step : `${g.turn}-${g.log.filter((e) => e.type === 'score').length}`,
+    stepKey: together ? g.step : `${g.turn}-${[...g.log].reverse().find((e) => e.type === 'score')?.n ?? 0}`,
     mySub: '주사위를 굴려요',
   });
   // 소리: 굴리면 주사위 구르는 소리, 적으면 칩 딸깍(0점은 똑), 요트는 축하
@@ -95,7 +95,8 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
   const ranks = rankOf(g.totals);
   // 점수표 열: 나부터
   const order = me >= 0 ? Array.from({ length: g.players }, (_, k) => (me + k) % g.players) : Array.from({ length: g.players }, (_, k) => k);
-  const rollKey = g.log.filter((e) => e.type === 'roll' && e.seat === focus).length;
+  // 굴릴 때마다 바뀌는 값: 기록은 최근 30개만 오므로 개수를 세면 몇 차례 뒤 멈춘다 → 마지막 굴림의 일련번호(n)
+  const rollKey = [...g.log].reverse().find((e) => e.type === 'roll' && e.seat === focus)?.n ?? 0;
 
   const row = (cat: Cat) => (
     <tr key={cat} className={UPPER.includes(cat) ? 'upper' : ''}>
