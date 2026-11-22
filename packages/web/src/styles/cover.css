@@ -198,3 +198,6 @@
 .cover-frame[data-game='secret-mission'] {
   --cz: 1.5;
 }
+.cover-frame[data-game='one-card'] {
+  --cz: 1.7;
+}
