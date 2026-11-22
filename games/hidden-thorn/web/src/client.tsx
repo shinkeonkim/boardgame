@@ -4,6 +4,7 @@ import { SeatDot } from '@bg/ui';
 import type { GameClient } from '@bg/web';
 import { meta } from '../../meta';
 import { ConfigPanel } from './ConfigPanel';
+import { Cover } from './cover';
 import { Demo } from './Demo';
 import { Game } from './Game';
 import { guide } from './guide';
@@ -29,4 +30,6 @@ export const client: GameClient<GameView, GameConfig> = {
   Game: Game as GameClient<GameView, GameConfig>['Game'],
   seatBadge: (i) => <SeatDot seat={i} size={20} label />,
   guide,
+  accent: meta.accent,
+  Cover,
 };

@@ -3,6 +3,7 @@ import { EXTRA_EMOTES, GameConfig, GameView } from '@bg/cipher-ops-engine';
 import type { GameClient } from '@bg/web';
 import { meta } from '../../meta';
 import { ConfigPanel } from './ConfigPanel';
+import { Cover } from './cover';
 import { Demo } from './Demo';
 import { Game } from './Game';
 import { guide } from './guide';
@@ -30,4 +31,6 @@ export const client: GameClient<GameView, GameConfig> = {
   seatLabel: (i) => `${TEAMS[i % 2].short}${i < 2 ? ' · 첫 판 팀장' : ' · 요원'}`,
   teamsEnabled: () => false,
   guide,
+  accent: meta.accent,
+  Cover,
 };

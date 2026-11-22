@@ -3,6 +3,7 @@ import { EXTRA_EMOTES, GameConfig, GameView } from '@bg/flag-line-engine';
 import type { GameClient } from '@bg/web';
 import { meta } from '../../meta';
 import { ConfigPanel } from './ConfigPanel';
+import { Cover } from './cover';
 import { Demo } from './Demo';
 import { Game } from './Game';
 import { guide } from './guide';
@@ -29,4 +30,6 @@ export const client: GameClient<GameView, GameConfig> = {
   seatBadge: (i) => <span className={`fl-seat side${i % 2}`}>{i % 2 ? '🔵' : '🔴'}</span>,
   seatLabel: (i) => (i % 2 ? '파랑 편' : '빨강 편'),
   guide,
+  accent: meta.accent,
+  Cover,
 };

@@ -1,11 +1,23 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import type { RoomView } from '@bg/core';
-import { Cell, GameConfig, GameView, LogEntry, pieceById, placeProblem } from '@bg/corner-claim-engine';
+import { Cell, GameConfig, GameView, LogEntry, anchors, pieceById, placeProblem } from '@bg/corner-claim-engine';
 import { GameScreenProps, ResultSheet, TableBanner, TableEmotes, TableLayout, TableTopBar, Ticker, rankOf, usePeek, useTable, SideNote, useLogSounds } from '@bg/web';
 import { COLORS, PieceIcon, flip, orientIndex, rotate } from './theme';
 
 type View = RoomView<GameView, GameConfig>;
+
+/** 자석: 가리킨 자리가 안 될 때 살펴볼 바로 옆 자리 (가까운 순) */
+const NEAR: Cell[] = [
+  [1, 0],
+  [-1, 0],
+  [0, 1],
+  [0, -1],
+  [1, 1],
+  [1, -1],
+  [-1, 1],
+  [-1, -1],
+];
 
 export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreenProps<GameView, GameConfig>) {
   const v = view as View;
@@ -22,9 +34,12 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
   const [piece, setPiece] = useState<string | null>(null);
   const [shape, setShape] = useState<Cell[]>([]);
   const [hover, setHover] = useState<[number, number] | null>(null);
+  /** 조각 안에서 잡은 칸 (그 칸이 손가락·포인터 아래 칸에 맞춰짐). null이면 조각 가운데 */
+  const [grabAt, setGrabAt] = useState<Cell | null>(null);
   useEffect(() => {
     setPiece(null);
     setHover(null);
+    setGrabAt(null);
   }, [g.color, g.log.length]);
 
   const choose = (id: string) => {
@@ -32,9 +47,11 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
     if (live.current.piece === id) return; // 이미 든 조각은 돌린 모양 그대로
     setPiece(id);
     setShape(pieceById(id)!.orients[0]);
+    setGrabAt(null);
   };
-  const rot = () => shape.length && setShape(rotate(shape));
-  const flp = () => shape.length && setShape(flip(shape));
+  // 돌리거나 뒤집으면 잡은 칸은 가운데로
+  const rot = () => shape.length && (setShape(rotate(shape)), setGrabAt(null));
+  const flp = () => shape.length && (setShape(flip(shape)), setGrabAt(null));
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'r' || e.key === 'R') rot();
@@ -44,18 +61,41 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
     return () => window.removeEventListener('keydown', onKey);
   });
 
-  /** 조각의 가운데쯤이 가리킨 칸에 오도록 놓을 자리 */
-  const placementFor = (id: string, cells: Cell[], at: [number, number]) => {
-    const cx = Math.floor(Math.max(...cells.map((s) => s[0])) / 2);
-    const cy = Math.floor(Math.max(...cells.map((s) => s[1])) / 2);
-    const x = at[0] - cx;
-    const y = at[1] - cy;
+  /** 잡은 칸 (없으면 조각 가운데에 가장 가까운 칸) */
+  const grabCell = (cells: Cell[], grab: Cell | null): Cell => {
+    if (grab && cells.some(([x, y]) => x === grab[0] && y === grab[1])) return grab;
+    const mx = Math.max(...cells.map((s) => s[0])) / 2;
+    const my = Math.max(...cells.map((s) => s[1])) / 2;
+    return [...cells].sort((a, b) => Math.hypot(a[0] - mx, a[1] - my) - Math.hypot(b[0] - mx, b[1] - my))[0];
+  };
+  /**
+   * 잡은 칸이 가리킨 칸에 오도록 놓을 자리. 딱 그 자리가 안 되면 바로 옆(1칸 안, 8방향)에서 되는 자리로 붙는다 (자석)
+   * → 손가락으로 한 칸 어긋나게 놓아도 원하는 자리에 들어감
+   */
+  const placementFor = (id: string, cells: Cell[], at: [number, number], grab: Cell | null) => {
+    const [gx, gy] = grabCell(cells, grab);
     const orient = orientIndex(id, cells);
-    const problem = placeProblem({ board: g.board, config: c, remaining: g.remaining }, g.color, { piece: id, orient, x, y });
-    return { x, y, orient, problem, cells: new Set(cells.map(([dx, dy]) => (y + dy) * n + (x + dx))) };
+    const check = (x: number, y: number) => placeProblem({ board: g.board, config: c, remaining: g.remaining }, g.color, { piece: id, orient, x, y });
+    let x = at[0] - gx;
+    let y = at[1] - gy;
+    let problem = check(x, y);
+    let snapped = false;
+    if (problem)
+      for (const [dx, dy] of NEAR) {
+        if (!check(x + dx, y + dy)) {
+          x += dx;
+          y += dy;
+          problem = null;
+          snapped = true;
+          break;
+        }
+      }
+    return { x, y, orient, problem, snapped, shape: cells };
   };
   /** 미리보기 */
-  const preview = useMemo(() => (piece && hover && shape.length ? placementFor(piece, shape, hover) : null), [piece, hover, shape, g.board, c, g.remaining, g.color, n]); // eslint-disable-line react-hooks/exhaustive-deps
+  const preview = useMemo(() => (piece && hover && shape.length ? placementFor(piece, shape, hover, grabAt) : null), [piece, hover, shape, grabAt, g.board, c, g.remaining, g.color, n]); // eslint-disable-line react-hooks/exhaustive-deps
+  /** 지금 색이 새 조각을 댈 수 있는 모서리 칸 (판에 점으로) */
+  const anchorSet = useMemo(() => new Set(myTurn && g.status === 'playing' ? anchors({ board: g.board, config: c }, g.color) : []), [myTurn, g.board, g.color, g.status, c]);
 
   const place = () => {
     if (!preview) return;
@@ -66,8 +106,8 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
   // ---------- 끌어다 놓기 ----------
   // 판 칸은 data-i로 찾는다 (화면 맞춤 배율과 상관없이 elementFromPoint로 판정)
   const boardRef = useRef<HTMLElement>(null);
-  const live = useRef({ piece, shape });
-  live.current = { piece, shape };
+  const live = useRef({ piece, shape, grabAt });
+  live.current = { piece, shape, grabAt };
   const [drag, setDrag] = useState<{ x: number; y: number; over: boolean } | null>(null);
   const cellAt = (px: number, py: number): [number, number] | null => {
     const el = document.elementFromPoint(px, py)?.closest<HTMLElement>('.cc-cell[data-i]');
@@ -109,14 +149,27 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
   const grab = (id: string, e: React.PointerEvent) => {
     if (!myTurn) return t.warn(t.waitingMsg);
     if (e.button !== 0) return;
+    const cells = live.current.piece === id ? live.current.shape : pieceById(id)!.orients[0];
     if (live.current.piece !== id) {
       setPiece(id);
-      setShape(pieceById(id)!.orients[0]);
+      setShape(cells);
+    }
+    // 조각 그림에서 잡은 칸을 찾는다 (빈 곳을 잡았으면 가장 가까운 칸)
+    const svg = (e.currentTarget as HTMLElement).querySelector('svg');
+    if (svg) {
+      const r = svg.getBoundingClientRect();
+      const w = Math.max(...cells.map((s) => s[0])) + 1;
+      const h = Math.max(...cells.map((s) => s[1])) + 1;
+      const fx = ((e.clientX - r.left) / r.width) * w;
+      const fy = ((e.clientY - r.top) / r.height) * h;
+      const near = [...cells].sort((a, b) => Math.hypot(a[0] + 0.5 - fx, a[1] + 0.5 - fy) - Math.hypot(b[0] + 0.5 - fx, b[1] + 0.5 - fy))[0];
+      setGrabAt(near);
+      live.current.grabAt = near;
     }
     track(e, (cell) => {
-      const { piece: p, shape: sh } = live.current;
+      const { piece: p, shape: sh, grabAt: ga } = live.current;
       if (!cell || !p) return;
-      const pl = placementFor(p, sh, cell);
+      const pl = placementFor(p, sh, cell, ga);
       setHover(cell);
       if (pl.problem) return t.warn(pl.problem);
       act('move', { move: { type: 'place', piece: p, orient: pl.orient, x: pl.x, y: pl.y } });
@@ -138,6 +191,7 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
       if (Date.now() - last < 140) return;
       last = Date.now();
       setShape((sh) => (e.deltaY < 0 ? rotate(rotate(rotate(sh))) : rotate(sh)));
+      setGrabAt(null);
     };
     el.addEventListener('wheel', onWheel, { passive: false });
     return () => el.removeEventListener('wheel', onWheel);
@@ -193,13 +247,12 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
                 const x = i % n;
                 const y = (i - x) / n;
                 const start = g.starts.findIndex(([sx, sy]) => sx === x && sy === y);
-                const inPreview = preview?.cells.has(i);
                 return (
                   <div
                     key={i}
                     data-i={i}
-                    className={`cc-cell ${cell >= 0 ? 'filled' : ''} ${g.lastCells.includes(i) ? 'last' : ''} ${inPreview ? (preview!.problem ? 'pv-bad' : 'pv-ok') : ''}`}
-                    style={cell >= 0 ? { backgroundColor: COLORS[cell].fill } : inPreview ? { ['--pv' as string]: COLORS[g.color].fill } : undefined}
+                    className={`cc-cell ${cell >= 0 ? 'filled' : ''} ${g.lastCells.includes(i) ? 'last' : ''} ${cell < 0 && anchorSet.has(i) ? 'anchor' : ''} ${start >= 0 && cell < 0 ? 'start' : ''}`}
+                    style={cell >= 0 ? { backgroundColor: COLORS[cell].fill } : start >= 0 ? { ['--sc' as string]: COLORS[start].fill } : anchorSet.has(i) ? { ['--sc' as string]: COLORS[g.color].fill } : undefined}
                     onMouseEnter={() => !isTouch && piece && !drag && setHover([x, y])}
                     onClick={() => {
                       if (!myTurn || !piece) return;
@@ -211,6 +264,16 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
                   </div>
                 );
               })}
+              {preview && (
+                // 놓일 모양 그림자: 조각 전체(판 밖으로 나간 칸까지)를 그 자리에 겹쳐 보여 준다
+                <div className={`cc-shadow ${preview.problem ? 'bad' : 'ok'} ${preview.snapped ? 'snapped' : ''}`} style={{ ['--pc' as string]: COLORS[g.color].fill }} aria-hidden>
+                  {preview.shape.map(([dx, dy], k) => {
+                    const x = preview.x + dx;
+                    const y = preview.y + dy;
+                    return <i key={k} style={{ left: `calc(${x} * (100% - ${n - 1}px) / ${n} + ${x}px)`, top: `calc(${y} * (100% - ${n - 1}px) / ${n} + ${y}px)`, width: `calc((100% - ${n - 1}px) / ${n})` }} />;
+                  })}
+                </div>
+              )}
             </section>
           </div>
           {me >= 0 && g.status === 'playing' && (
@@ -239,6 +302,7 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
                 )}
               </div>
               {piece && myTurn && preview?.problem && <div className="small warn">{preview.problem}</div>}
+              {piece && myTurn && preview?.snapped && !preview.problem && <div className="small muted">가까운 놓을 수 있는 자리에 맞췄어요</div>}
               <div className="cc-pieces">
                 {(myTurn ? g.remaining[g.color] : g.remaining[myColors[0] ?? 0] ?? []).map((id) => (
                   <PieceIcon
@@ -262,7 +326,11 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
             piece &&
             createPortal(
               // 판 밖에서 끌고 있을 때: 손에 든 조각 (판 위에서는 판의 미리보기가 대신 보인다)
-              <div className="cc-ghost" style={{ left: drag.x, top: drag.y }} aria-hidden>
+              <div
+                className="cc-ghost"
+                style={{ left: drag.x - (grabCell(shape, grabAt)[0] + 0.5) * cellPx(), top: drag.y - (grabCell(shape, grabAt)[1] + 0.5) * cellPx() }}
+                aria-hidden
+              >
                 <PieceIcon cells={shape} color={g.color} size={cellPx()} />
               </div>,
               document.body,

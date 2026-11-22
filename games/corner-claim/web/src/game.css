@@ -1,28 +1,35 @@
 /* ---------- Corner Claim 전용 ---------- */
 :root {
-  --grid-bg: #e9ecf1;
-  --grid-line: #cfd5de;
+  --grid-bg: #eef1f5;
+  --grid-line: #c9d0da;
+  --board-rim: #5a6474;
 }
 :root[data-theme='dark'] {
-  --grid-bg: #20242c;
-  --grid-line: #343a45;
+  --grid-bg: #262b34;
+  --grid-line: #3a414d;
+  --board-rim: #151820;
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme='light']) {
-    --grid-bg: #20242c;
-    --grid-line: #343a45;
+    --grid-bg: #262b34;
+    --grid-line: #3a414d;
+    --board-rim: #151820;
   }
 }
 .cc-board {
   --n: 20;
+  position: relative;
   width: min(100cqw, 100cqh);
   aspect-ratio: 1;
   display: grid;
   grid-template-columns: repeat(var(--n), 1fr);
   gap: 1px;
+  /* 판: 짙은 테 + 안쪽 홈 (플라스틱 판 느낌) */
   padding: 2px;
   background: var(--grid-line);
-  border-radius: 8px;
+  border-radius: 10px;
+  outline: 6px solid var(--board-rim);
+  box-shadow: 0 0 0 7px rgba(0, 0, 0, 0.18), 0 10px 24px rgba(0, 0, 0, 0.22);
 }
 .cc-board.demo {
   width: 100%;
@@ -32,6 +39,7 @@
   position: relative;
   background: var(--grid-bg);
   border-radius: 2px;
+  box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.08), inset 0 -1px 0 rgba(255, 255, 255, 0.5);
   display: grid;
   place-items: center;
   cursor: pointer;
@@ -45,12 +53,7 @@
   outline: 2px solid var(--gold);
   z-index: 1;
 }
-.cc-cell.pv-ok {
-  background: color-mix(in srgb, var(--pv) 65%, white);
-}
-.cc-cell.pv-bad {
-  background: color-mix(in srgb, var(--danger) 55%, var(--grid-bg));
-}
+
 .cc-star {
   font-size: 0.7rem;
   line-height: 1;
@@ -161,7 +164,6 @@
   position: fixed;
   z-index: 50;
   pointer-events: none;
-  transform: translate(-50%, -50%) scale(1.04);
   filter: drop-shadow(0 6px 10px rgb(0 0 0 / 0.35));
   opacity: 0.9;
 }
@@ -169,10 +171,7 @@
   padding: 0;
   border: 0;
 }
-.cc-cell.pv-ok,
-.cc-cell.pv-bad {
-  transition: background 0.08s;
-}
+
 /* 방금 놓인 조각: 톡 */
 .cc-cell.last {
   animation: cc-drop 0.35s cubic-bezier(0.2, 0.8, 0.3, 1.3);
@@ -184,6 +183,57 @@
 }
 @media (prefers-reduced-motion: reduce) {
   .cc-cell.last {
+    animation: none;
+  }
+}
+
+/* 시작 귀퉁이: 그 색으로 옅게 칠한 칸 */
+.cc-cell.start {
+  background: color-mix(in srgb, var(--sc) 28%, var(--grid-bg));
+  box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--sc) 70%, transparent);
+}
+/* 지금 색이 조각을 댈 수 있는 모서리 칸: 그 색 점 */
+.cc-cell.anchor::after {
+  content: '';
+  position: absolute;
+  inset: 34%;
+  border-radius: 50%;
+  background: var(--sc);
+  opacity: 0.55;
+}
+/* 놓일 모양 그림자 (판 밖으로 나간 칸까지 보임) */
+.cc-shadow {
+  position: absolute;
+  inset: 2px;
+  pointer-events: none;
+  z-index: 3;
+}
+.cc-shadow i {
+  position: absolute;
+  aspect-ratio: 1;
+  border-radius: 2px;
+  background: var(--pc);
+  background-image: linear-gradient(145deg, rgba(255, 255, 255, 0.45), rgba(255, 255, 255, 0) 50%);
+  box-shadow: inset 0 0 0 1.5px rgba(255, 255, 255, 0.7), 0 2px 6px rgba(0, 0, 0, 0.3);
+  opacity: 0.88;
+  transition: left 0.06s, top 0.06s;
+}
+.cc-shadow.bad i {
+  background: repeating-linear-gradient(45deg, rgba(208, 69, 58, 0.85) 0 4px, rgba(208, 69, 58, 0.55) 4px 8px);
+  box-shadow: inset 0 0 0 1.5px #fff;
+  opacity: 0.8;
+}
+.cc-shadow.snapped i {
+  animation: cc-snap 0.18s ease-out;
+}
+@keyframes cc-snap {
+  from {
+    transform: scale(1.15);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cc-shadow i {
+    transition: none;
     animation: none;
   }
 }

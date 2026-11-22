@@ -10,11 +10,23 @@ export function GameArt({ game, className = '' }: { game: GameMeta; className?: 
   return (
     <div className={`game-art ${className}`} style={{ ['--accent-game' as string]: game.accent }}>
       {!failed ? (
-        <img src={`/covers/${game.id}.jpg`} alt={`${game.title} 게임 화면`} loading="lazy" onError={() => setFailed(true)} />
+        <img src={`/covers/${game.id}.jpg`} alt={`${game.title} 표지`} loading="lazy" onError={() => setFailed(true)} />
       ) : (
         <svg viewBox="0 0 64 64" className="game-art-icon" aria-hidden dangerouslySetInnerHTML={{ __html: game.icon }} />
       )}
     </div>
+  );
+}
+
+/** 실제 게임 화면 캡처 (봇끼리 두는 장면). 없으면 숨김 */
+export function GameShot({ game }: { game: GameMeta }) {
+  const [failed, setFailed] = useState(false);
+  if (failed) return null;
+  return (
+    <figure className="game-shot">
+      <img src={`/covers/${game.id}-play.jpg`} alt={`${game.title} 실제 게임 화면`} loading="lazy" onError={() => setFailed(true)} />
+      <figcaption className="muted small">실제 게임 화면</figcaption>
+    </figure>
   );
 }
 

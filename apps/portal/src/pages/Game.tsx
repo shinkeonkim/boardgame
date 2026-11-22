@@ -1,6 +1,6 @@
 import { ORIGINAL_NOTE, TAG_LABELS, originalLabel } from '@bg/core';
 import { GAMES, gameById } from '../catalog';
-import { GameArt, GameCard, GameIcon, GameStats } from '../GameCard';
+import { GameArt, GameCard, GameIcon, GameShot, GameStats } from '../GameCard';
 import { Link } from '../router';
 import { GuideCard } from '../GuideCard';
 
@@ -55,6 +55,7 @@ export function GamePage({ id }: { id: string }) {
           {g.description.map((p, i) => (
             <p key={i}>{p}</p>
           ))}
+          <GameShot game={g} />
           <p className="muted small">{g.original ? `원작: ${originalLabel(g.original)}. ${ORIGINAL_NOTE}` : `${g.inspiredBy}에서 영감을 받았어요. 이름·그림·화면은 직접 만들었어요.`}</p>
         </section>
         <div className="gd-side">

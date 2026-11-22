@@ -628,3 +628,19 @@ a.chip {
   font-weight: 700;
   font-size: 0.92rem;
 }
+
+/* 상세: 실제 게임 화면 캡처 */
+.game-shot {
+  margin: 14px 0 6px;
+}
+.game-shot img {
+  display: block;
+  width: 100%;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow);
+}
+.game-shot figcaption {
+  margin-top: 6px;
+  text-align: center;
+}

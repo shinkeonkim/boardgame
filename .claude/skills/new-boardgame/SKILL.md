@@ -238,6 +238,14 @@ scripts/  local.mjs(운영과 같은 경로 게이트웨이) · bundle.mjs(이�
 - 녹화 루프는 페이지가 닫히면 멈추게(`page.isClosed()`) — 안 그러면 한 장면이 실패했을 때 프로세스가 영원히 안 끝난다.
 - 헤드리스에는 커서가 안 보이므로 가짜 커서·탭 표시를 주입한다. 데스크톱 녹화는 1280×800(세로가 너무 길면 고정 레이아웃이 텅 빈다).
 
+## 9-0. 포털 표지(키 아트)
+
+- `web/src/cover.tsx`의 `Cover`에 실제 카드·칩을 크게 배치한다. 부채꼴은 `CoverFan`을 쓴다.
+- client.tsx에 `Cover`, `accent: meta.accent`를 넣는다.
+- `/<id>/?cover`로 열면 표지 화면만 보인다. 왼쪽 아래 제목·원작, 오른쪽 64%에 도구가 놓인다.
+- `node scripts/media/covers.mjs <id>`로 `covers/<id>.jpg`(1280×720)를 만든다. 구성이 작거나 넘치면 `cover.css`의 `[data-game]` 배율(`--cz`)을 조절한다.
+- 실제 게임 화면 캡처(`covers/<id>-play.jpg`)는 bots-scene이 만들고, 상세 페이지 「실제 게임 화면」에 나온다.
+
 ## 9-1. 봇 장면으로 표지·영상 (새 게임은 이걸로 충분)
 
 `npm run local`(PORT=8099) 상태에서 `node scripts/media/bots-scene.mjs <id>`.

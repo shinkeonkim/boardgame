@@ -1,6 +1,6 @@
 // 봇끼리 두는 장면으로 표지·게임 방법 영상 만들기 (새 게임 공통):
 //   npm run build && node scripts/media/bots-scene.mjs [게임id …]
-//   → apps/portal/public/covers/<id>.jpg, games/<id>/web/public/guide/play.mp4, docs/media/<id>/gif/play.gif
+//   → apps/portal/public/covers/<id>-play.jpg(게임 화면), games/<id>/web/public/guide/play.mp4, docs/media/<id>/gif/play.gif
 // 방장(브라우저)은 관전자로 바꾸고 봇을 넣어 실제 게임을 그대로 녹화한다. 로컬 게이트웨이(npm run local)가 떠 있어야 한다.
 import { existsSync, mkdirSync } from 'node:fs';
 import { join } from 'node:path';
@@ -55,12 +55,12 @@ try {
     // 표지 (포털 카드) · 게임 방법 영상 · README용 GIF
     const covers = join(ROOT, 'apps/portal/public/covers');
     mkdirSync(covers, { recursive: true });
-    await run('ffmpeg', ['-y', '-loglevel', 'error', '-ss', String(conf.cover), '-i', clipPath(id, 'play'), '-frames:v', '1', '-vf', 'scale=1280:-1', '-q:v', '3', join(covers, `${id}.jpg`)]);
+    await run('ffmpeg', ['-y', '-loglevel', 'error', '-ss', String(conf.cover), '-i', clipPath(id, 'play'), '-frames:v', '1', '-vf', 'scale=1280:-1', '-q:v', '3', join(covers, `${id}-play.jpg`)]);
     const guide = join(ROOT, `games/${id}/web/public/guide`);
     mkdirSync(guide, { recursive: true });
     await run('ffmpeg', ['-y', '-loglevel', 'error', '-i', clipPath(id, 'play'), '-vf', 'scale=960:-2:flags=lanczos', '-c:v', 'libx264', '-preset', 'slow', '-crf', '24', '-pix_fmt', 'yuv420p', '-movflags', '+faststart', '-an', join(guide, 'play.mp4')]);
     await gif(id, 'play', 720, 8, 1);
-    console.log(`  ✓ ${id}: ${existsSync(join(covers, `${id}.jpg`)) ? '표지' : '표지 없음'} · 영상 · GIF`);
+    console.log(`  ✓ ${id}: ${existsSync(join(covers, `${id}-play.jpg`)) ? "게임 화면" : "게임 화면 없음"} · 영상 · GIF`);
   }
 } finally {
   await browser.close();

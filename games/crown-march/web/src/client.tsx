@@ -3,6 +3,7 @@ import { BASE_EMOTES } from '@bg/core';
 import type { GameClient } from '@bg/web';
 import { meta } from '../../meta';
 import { ConfigPanel } from './ConfigPanel';
+import { Cover } from './cover';
 import { DemoBoard } from './Demo';
 import { Game } from './Game';
 import { guide } from './guide';
@@ -36,4 +37,6 @@ export const client: GameClient<GameView, GameConfig> = {
   seatLabel: seatName,
   teamsEnabled: (c, n) => c.teams && n === 4,
   guide,
+  accent: meta.accent,
+  Cover,
 };

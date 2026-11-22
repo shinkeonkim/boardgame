@@ -1,0 +1,194 @@
+/* ---------- 표지(키 아트) 화면: /<id>/?cover — scripts/media/covers.mjs가 1280×720으로 촬영 ---------- */
+.cover-frame {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  background:
+    radial-gradient(ellipse 70% 80% at 68% 45%, color-mix(in srgb, var(--cover-accent) 55%, #fff6e8) 0%, transparent 70%),
+    radial-gradient(circle at 15% 110%, color-mix(in srgb, var(--cover-accent) 60%, #000) 0%, transparent 55%),
+    linear-gradient(150deg, color-mix(in srgb, var(--cover-accent) 30%, #2a2230), #1a1620);
+  color: #fff;
+}
+/* 테이블보 무늬 */
+.cover-frame::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.06) 1px, transparent 1.5px) 0 0 / 18px 18px;
+}
+.cover-pieces {
+  position: absolute;
+  /* 제목(왼쪽 아래)과 겹치지 않게 오른쪽 64%에만 */
+  inset: calc(24px / var(--cz, 2)) calc(28px / var(--cz, 2)) calc(24px / var(--cz, 2)) calc(36% / var(--cz, 2) * var(--cz, 2));
+  display: grid;
+  place-items: center;
+  zoom: var(--cz, 2);
+}
+.cover-title {
+  position: absolute;
+  left: 56px;
+  bottom: 52px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.5);
+}
+.cover-logo svg {
+  width: 96px;
+  height: 96px;
+  filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.45));
+}
+.cover-title h1 {
+  margin: 0;
+  font-size: 64px;
+  line-height: 1;
+  letter-spacing: -0.02em;
+}
+.cover-title p {
+  margin: 8px 0 0;
+  font-size: 26px;
+  font-weight: 700;
+  opacity: 0.92;
+}
+.cover-original {
+  display: inline-block;
+  margin-top: 10px;
+  padding: 3px 12px;
+  border-radius: 999px;
+  font-size: 15px;
+  font-weight: 700;
+  background: rgba(255, 255, 255, 0.16);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+/* 표지 구성 도우미: 부채꼴로 펼친 카드 */
+.cover-fan {
+  display: flex;
+  align-items: flex-end;
+}
+.cover-fan > span > * {
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.4) !important;
+}
+.cover-row {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  justify-content: center;
+}
+.cover-stack {
+  display: grid;
+  gap: 14px;
+  justify-items: center;
+}
+/* 게임별 표지 배치 도우미 */
+.cover-cipher {
+  display: grid;
+  grid-template-columns: repeat(3, 120px);
+  gap: 10px;
+  transform: rotate(-4deg);
+}
+.cover-cipher .co-card {
+  width: 120px;
+}
+.cover-coins .coins {
+  transform: scale(2.2);
+  color: #fff;
+}
+.cover-plates {
+  position: relative;
+  width: 380px;
+  height: 380px;
+  display: grid;
+  place-items: center;
+}
+.cover-plates > span {
+  position: absolute;
+}
+.cover-plates-center {
+  position: relative !important;
+}
+.cover-disc-stack {
+  display: inline-flex;
+}
+.cover-disc-stack > * + * {
+  margin-left: -42px;
+}
+.cover-factory {
+  width: 104px;
+  height: 104px;
+}
+.cover-wall {
+  display: grid;
+  grid-template-columns: repeat(5, 30px);
+  gap: 4px;
+  padding: 10px;
+  border-radius: 12px;
+  background: rgba(255, 248, 236, 0.85);
+}
+.cover-wall-slot {
+  width: 30px;
+  height: 30px;
+  border-radius: 5px;
+  background: rgba(0, 0, 0, 0.08);
+}
+.cover-pieces-grid {
+  display: grid;
+  grid-template-columns: repeat(4, auto);
+  gap: 18px;
+  align-items: center;
+  justify-items: center;
+  padding: 18px;
+  border-radius: 16px;
+  background: rgba(238, 241, 245, 0.9);
+  box-shadow: 0 0 0 6px #5a6474, 0 12px 30px rgba(0, 0, 0, 0.35);
+  transform: rotate(-5deg);
+}
+
+/* 게임별 표지 배율 (구성 크기가 달라서) */
+.cover-frame[data-game='row-six'] {
+  --cz: 2.5;
+}
+.cover-frame[data-game='flare-signals'] {
+  --cz: 2.6;
+}
+.cover-frame[data-game='cipher-ops'] {
+  --cz: 1.45;
+}
+.cover-frame[data-game='bluff-dice'] {
+  --cz: 1.9;
+}
+.cover-frame[data-game='number-vault'] {
+  --cz: 1.9;
+}
+.cover-frame[data-game='sealed-letter'] {
+  --cz: 1.55;
+}
+.cover-frame[data-game='court-intrigue'] {
+  --cz: 1.45;
+}
+.cover-frame[data-game='pass-the-plate'] {
+  --cz: 1.3;
+}
+.cover-frame[data-game='hidden-thorn'] {
+  --cz: 1.35;
+}
+.cover-frame[data-game='flag-line'] {
+  --cz: 2.5;
+}
+.cover-frame[data-game='gem-guild'] {
+  --cz: 1.45;
+}
+.cover-frame[data-game='tile-atelier'] {
+  --cz: 1.55;
+}
+.cover-frame[data-game='corner-claim'] {
+  --cz: 1.4;
+}
+.cover-frame[data-game='number-runs'] {
+  --cz: 1.9;
+}
+.cover-frame[data-game='crown-march'] {
+  --cz: 2.1;
+}
+.cover-frame[data-game='expedition-lines'] {
+  --cz: 2.5;
+}

@@ -61,4 +61,8 @@ export interface GameClient<V = unknown, C = unknown> {
   Globals?: ComponentType;
   /** 게임 방법 모달 */
   guide: GuideDef;
+  /** 대표 색 (meta.ts accent) — 표지 바탕 */
+  accent?: string;
+  /** 표지(키 아트) 구성: 실제 카드·칩을 크게 배치. /<id>/?cover 로 열면 이것만 보인다 */
+  Cover?: ComponentType;
 }

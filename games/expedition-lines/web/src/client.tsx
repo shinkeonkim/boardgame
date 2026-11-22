@@ -4,6 +4,7 @@ import type { GameClient } from '@bg/web';
 import { meta } from '../../meta';
 import { CardDefs } from './cards';
 import { ConfigPanel } from './ConfigPanel';
+import { Cover } from './cover';
 import { DemoBoard } from './Demo';
 import { Game } from './Game';
 import { guide } from './guide';
@@ -35,4 +36,6 @@ export const client: GameClient<GameView, GameConfig> = {
   teamsEnabled: (c, n) => c.teams && n === 4,
   Globals: CardDefs,
   guide,
+  accent: meta.accent,
+  Cover,
 };

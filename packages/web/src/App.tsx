@@ -1,4 +1,4 @@
-import { createContext, useCallback, useContext, useEffect, useState } from 'react';
+import { createContext, useCallback, useContext, useEffect, useState, ReactNode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { DRAIN_MESSAGE, type EmoteEvent, type RoomView } from '@bg/core';
 import { EmotesContext, applySkin, applyTheme, getTheme } from '@bg/ui';
@@ -13,6 +13,26 @@ export function useGameClient<V = unknown, C = unknown>(): GameClient<V, C> {
   return useContext(ClientContext) as GameClient<V, C>;
 }
 
+/** 표지(1280×720): 왼쪽 아래 제목, 오른쪽 크게 게임 도구 (client.Cover) */
+function CoverFrame({ client }: { client: GameClient<any, any> }) {
+  const Cover = client.Cover!;
+  return (
+    <div className="cover-frame" data-game={client.id} style={{ ['--cover-accent' as string]: client.accent ?? '#c0612a' }}>
+      <div className="cover-pieces">
+        <Cover />
+      </div>
+      <div className="cover-title">
+        <span className="cover-logo">{client.logo}</span>
+        <div>
+          <h1>{client.title}</h1>
+          <p>{client.subtitle.split(' · ')[0]}</p>
+          {client.original && <span className="cover-original">원작 · {client.original.ko}</span>}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 /** 게임 웹 앱을 #root에 띄운다 */
 export function mountGame(client: GameClient<any, any>) {
   setGameId(client.id);
@@ -23,7 +43,8 @@ export function mountGame(client: GameClient<any, any>) {
     <ClientContext.Provider value={client}>
       <EmotesContext.Provider value={client.emotes}>
         {client.Globals && <client.Globals />}
-        <App />
+        {/* ?cover: 포털 표지(키 아트) 촬영용 화면 — 실제 카드·칩을 크게 배치 */}
+        {client.Cover && new URLSearchParams(location.search).has('cover') ? <CoverFrame client={client} /> : <App />}
       </EmotesContext.Provider>
     </ClientContext.Provider>,
   );
@@ -264,5 +285,19 @@ function JoinForm({
         첫 화면으로
       </button>
     </HomeShell>
+  );
+}
+
+/** 표지용 부채꼴: 아이들을 가운데를 기준으로 기울여 펼친다 */
+export function CoverFan({ children, spread = 8 }: { children: ReactNode[]; spread?: number }) {
+  const mid = (children.length - 1) / 2;
+  return (
+    <div className="cover-fan">
+      {children.map((ch, i) => (
+        <span key={i} style={{ ['--i' as string]: i, ['--mid' as string]: mid, ['--d' as string]: Math.abs(i - mid) ** 1.6, transform: `rotate(${(i - mid) * spread}deg) translateY(${Math.abs(i - mid) ** 1.6 * 6}px)`, display: 'inline-block', transformOrigin: '50% 120%', marginLeft: i ? -18 : 0 }}>
+          {ch}
+        </span>
+      ))}
+    </div>
   );
 }
