@@ -14,4 +14,4 @@ labels:
 images:
 - name: ghcr.io/shinkeonkim/boardgame-cipher-ops
   newName: ghcr.io/shinkeonkim/boardgame-cipher-ops
-  newTag: sha-e7ef166
+  newTag: sha-c40e1ba
