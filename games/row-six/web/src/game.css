@@ -552,3 +552,54 @@ button.ncard.can:focus-visible {
   opacity: 1;
   text-shadow: 0 0 2px rgba(0, 0, 0, 0.85), 0 0 1px rgba(0, 0, 0, 0.9);
 }
+
+/* ---------- 놓기 재생 (replay.ts) ---------- */
+/* 지금 놓일 카드: 공개 줄에서 들어 올림 */
+.reveal-item.active .ncard {
+  transform: translateY(-8px) scale(1.12);
+  box-shadow: 0 0 0 3px var(--gold), 0 10px 18px rgba(0, 0, 0, 0.25);
+  transition: transform 0.25s ease-out, box-shadow 0.25s;
+}
+.reveal-item.active {
+  opacity: 1;
+}
+/* 가져갈 줄: 빨갛게 번쩍이며 흔들림 */
+.row-line.taking {
+  border-color: var(--danger);
+  background: color-mix(in srgb, var(--danger) 12%, var(--panel));
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--danger) 55%, transparent);
+  animation: rs-taking 0.65s ease-in-out;
+}
+@keyframes rs-taking {
+  0%,
+  100% {
+    transform: none;
+  }
+  20%,
+  60% {
+    transform: translateX(-4px);
+  }
+  40%,
+  80% {
+    transform: translateX(4px);
+  }
+}
+/* 가져간 사람 자리에 「+N 벌점」 */
+.pen-pop {
+  background: var(--danger) !important;
+  color: #fff !important;
+  font-weight: 800;
+  animation: rs-pop 0.5s cubic-bezier(0.2, 0.8, 0.3, 1.4);
+}
+@keyframes rs-pop {
+  from {
+    transform: scale(0.3);
+    opacity: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .row-line.taking,
+  .pen-pop {
+    animation: none;
+  }
+}

@@ -17,6 +17,7 @@ import {
   waitingText,
   useLogSounds,
 } from '@bg/web';
+import { useReplay } from './replay';
 import { CardBack, NumberCard, Penalty } from './theme';
 
 type View = RoomView<GameView, GameConfig>;
@@ -36,12 +37,15 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
   const g = v.game!;
   const c = g.config;
   const flat = c.penalty === 'flat';
+  // 놓기 재생 (끝날 때까지 「고를 차례!」를 미뤄서, 재생이 끝나면 띄움)
+  const rp = useReplay(g.rows, g.log);
   const t = useTable(view, notify, {
     title: 'Row Six',
     turn: g.chooser ?? g.actors[0] ?? 0,
     playing: g.status === 'playing',
     simultaneous: g.phase === 'pick',
-    stepKey: `${g.round}-${g.turn}-${g.phase}`,
+    stepKey: rp.replaying ? 'replaying' : `${g.round}-${g.turn}-${g.phase}`,
+    quiet: rp.replaying,
     mySub: g.phase === 'take' ? '가져갈 줄을 골라 주세요' : '모두 고르면 한꺼번에 공개돼요',
   });
   // 소리: 공개는 카드를 한꺼번에 뒤집고, 놓을 때마다 탁, 줄을 가져가면 쓸어 모음
@@ -59,6 +63,9 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
   /** 이번 차례에 놓인 카드 → 강조 */
   const fresh = useMemo(() => new Set(g.placed.map((p) => p.card)), [g.placed]);
   const placedBy = useMemo(() => new Map(g.placed.map((p) => [p.card, p.seat])), [g.placed]);
+
+  /** 공개 줄의 카드가 줄에 놓였나: 재생 중이면 재생된 만큼만 */
+  const isDone = (x: { card: number; done: boolean }) => (rp.replaying ? rp.landed.has(x.card) : x.done);
 
   const pick = async (card: number) => {
     if (g.status !== 'playing') return;
@@ -141,13 +148,14 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
       main={
         <>
           <section className={`rows ${choosing ? 'choosing' : ''}`} style={{ ['--limit' as string]: c.rowLimit }} aria-label="줄">
-            {g.rows.map((row, i) => {
-              const target = focus !== null && focusPreview?.row === i;
+            {rp.shown.map((row, i) => {
+              const target = focus !== null && focusPreview?.row === i && !rp.replaying;
               const willTake = target && focusPreview?.take;
               return (
                 <div
                   key={i}
-                  className={`row-line ${target ? 'target' : ''} ${willTake ? 'will-take' : ''} ${choosing ? 'pickable' : ''}`}
+                  data-row={i}
+                  className={`row-line ${target ? 'target' : ''} ${willTake ? 'will-take' : ''} ${choosing ? 'pickable' : ''} ${rp.taking === i ? 'taking' : ''}`}
                   onClick={choosing ? () => take(i) : undefined}
                   role={choosing ? 'button' : undefined}
                   aria-label={`${i + 1}번 줄, 벌점 ${g.rowPenalties[i]}${choosing ? ', 눌러서 가져가기' : ''}`}
@@ -189,17 +197,17 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
               {[...g.placed.map((p) => ({ seat: p.seat, card: p.card, done: true, took: p.took.length > 0, pen: p.penalty })), ...g.queue.map((q) => ({ ...q, done: false, took: false, pen: 0 }))]
                 .sort((a, b) => a.card - b.card)
                 .map((x) => (
-                  <span key={x.card} className={`reveal-item ${x.done ? 'done' : 'waiting'} ${x.took ? 'took' : ''}`}>
-                    <NumberCard n={x.card} flat={flat} size="sm" flip={x.done ? undefined : `c${x.card}`} />
+                  <span key={x.card} className={`reveal-item ${isDone(x) ? 'done' : 'waiting'} ${x.took && isDone(x) ? 'took' : ''} ${rp.active === x.card ? 'active' : ''}`}>
+                    <NumberCard n={x.card} flat={flat} size="sm" flip={isDone(x) ? undefined : `c${x.card}`} />
                     <span className="reveal-who">
                       <SeatDot seat={x.seat} size={12} /> {names[x.seat]}
-                      {x.took && <b className="took-pen"> +{x.pen}</b>}
+                      {x.took && isDone(x) && <b className="took-pen"> +{x.pen}</b>}
                     </span>
                   </span>
                 ))}
             </section>
           )}
-          <Ticker text={describe(g.log[g.log.length - 1], names)} />
+          <Ticker text={describe(rp.cur ?? g.log[g.log.length - 1], names)} />
           {me >= 0 && g.status === 'playing' && (
             <section className="hand-panel" aria-label="내 카드">
               <div className="hand-panel-head small">
@@ -260,10 +268,14 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
             rows={g.picked.map((pk, seat) => ({
               seat,
               accent: seatColor(seat),
-              score: <Penalty v={g.totals[seat] + (g.status === 'playing' ? g.penalties[seat] ?? 0 : 0)} />,
+              score: <Penalty v={g.totals[seat] + (g.status === 'playing' ? g.penalties[seat] ?? 0 : 0) - (g.penalties[seat] === null ? 0 : rp.penLag(seat))} />,
               scoreLabel: '누적 벌점 (이번 판 포함)',
               badge:
-                g.status === 'playing' && g.phase === 'pick' ? (
+                rp.pop?.seat === seat ? (
+                  <span key={rp.pop.key} className="tag pen-pop">
+                    +{rp.pop.pen} 벌점
+                  </span>
+                ) : g.status === 'playing' && g.phase === 'pick' ? (
                   <span className={`tag ${pk ? 'ready' : ''}`}>{pk ? '골랐어요 ✓' : '고르는 중…'}</span>
                 ) : g.chooser === seat ? (
                   <span className="tag results">줄 고르는 중</span>
@@ -276,7 +288,7 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
                     ))}
                   </span>
                   <span className="muted small">
-                    이번 판 {g.penalties[seat] === null ? '비공개' : `벌점 ${g.penalties[seat]}`} · 가져간 카드 {g.takenCounts[seat]}장
+                    이번 판 {g.penalties[seat] === null ? '비공개' : `벌점 ${g.penalties[seat]! - rp.penLag(seat)}`} · 가져간 카드 {g.takenCounts[seat] - rp.cardLag(seat)}장
                   </span>
                   {c.teams && <span className="tag">{Math.floor(seat / 2) + 1}팀</span>}
                 </>
@@ -291,6 +303,7 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
       }
       overlay={
         g.status !== 'playing' &&
+        !rp.replaying &&
         (peek ? (
           <button className="btn primary peek-btn" onClick={() => setPeek(false)}>
             점수 보기

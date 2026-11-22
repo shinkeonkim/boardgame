@@ -276,6 +276,7 @@ export function SeatList({ t, view, rows, emotes, onSeat, className = '' }: { t:
         return (
           <div
             key={r.seat}
+            data-seat={r.seat}
             className={`seat-row ${active ? 'active' : ''} ${r.seat === t.me ? 'mine' : ''} ${r.dim ? 'dim' : ''} ${onSeat ? 'clickable' : ''}`}
             style={r.accent ? ({ ['--seat' as string]: r.accent } as CSSProperties) : undefined}
             onClick={onSeat ? () => onSeat(r.seat) : undefined}
