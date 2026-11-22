@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import type { RoomView } from '@bg/core';
 import { Disc, GameConfig, GameView, LogEntry } from '@bg/hidden-thorn-engine';
 import { AlertBanner, EmoteBubble, SeatDot, seatColor } from '@bg/ui';
-import { GameScreenProps, ResultSheet, TableBanner, TableEmotes, TableLayout, TableTopBar, Ticker, emotesBySeat, rankOf, usePeek, useTable, waitingText } from '@bg/web';
+import { GameScreenProps, ResultSheet, TableBanner, TableEmotes, TableLayout, TableTopBar, Ticker, emotesBySeat, rankOf, usePeek, useTable, waitingText, SideNote } from '@bg/web';
 import { DiscView } from './theme';
 
 type View = RoomView<GameView, GameConfig>;
@@ -194,13 +194,12 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
       side={
         <>
           {me >= 0 && g.ownedCounts[me] === 1 && g.status === 'playing' && <AlertBanner icon="⚠️" title="원판이 하나 남았어요" critical sub="한 번 더 찔리면 탈락이에요" />}
-          <section className="panel small ht-ref">
-            <b>규칙 요약</b>
+          <SideNote title="규칙 요약" className="ht-ref">
             <div>· 처음엔 모두 한 장씩 몰래 놓아요</div>
             <div>· 차례에 한 장 더 놓거나 「몇 장 뒤집을게」 도전</div>
             <div>· 가장 높게 부른 사람이 자기 원판부터 뒤집고, 남은 수만큼 남의 맨 위를 뒤집어요</div>
             <div>· 모두 장미면 성공 ({c.winPoints}번이면 우승), 가시가 나오면 원판 하나를 잃어요</div>
-          </section>
+          </SideNote>
           {g.log.length > 0 && (
             <section className="panel log-list small" aria-label="기록">
               {[...g.log]

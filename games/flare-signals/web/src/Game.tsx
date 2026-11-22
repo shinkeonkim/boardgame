@@ -1,8 +1,8 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, useLayoutEffect, useRef } from 'react';
 import type { RoomView } from '@bg/core';
 import { Card, GameConfig, GameView, LogEntry, copiesOf, hintColors, possibilities, touchesColor } from '@bg/flare-signals-engine';
 import { AlertBanner, EmoteBubble, SeatDot } from '@bg/ui';
-import { GameScreenProps, ResultSheet, TableBanner, TableEmotes, TableLayout, TableTopBar, Ticker, emotesBySeat, usePeek, useTable } from '@bg/web';
+import { GameScreenProps, ResultSheet, TableBanner, TableEmotes, TableLayout, TableTopBar, Ticker, emotesBySeat, usePeek, useTable, flyClone } from '@bg/web';
 import { COLORS, ClueMarks, FlareCard, MysteryCard, RATING, colorName, colorStyle } from './theme';
 
 type View = RoomView<GameView, GameConfig>;
@@ -28,6 +28,24 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
   const g = v.game!;
   const c = g.config;
   const t = useTable(view, notify, { title: 'Flare Signals', turn: g.turn, playing: g.status === 'playing', mySub: '힌트 · 내기 · 버리기 중 하나' });
+
+  // 카드를 내거나 버리면: 그 카드가 있던 자리 → 불꽃 더미(또는 버린 카드 칸)로 날아감
+  const cardRects = useRef(new Map<string, DOMRect>());
+  const lastAct = [...g.log].reverse().find((e) => e.type === 'play' || e.type === 'discard');
+  useLayoutEffect(() => {
+    if (!lastAct || (lastAct.type !== 'play' && lastAct.type !== 'discard')) return;
+    const from = cardRects.current.get(lastAct.card.id);
+    const pileCard = document.querySelector(`[data-pile="${lastAct.card.color}"] .fcard`);
+    if (lastAct.type === 'play' && lastAct.ok) flyClone(from, pileCard);
+    else flyClone(from, document.querySelector(`[data-dg="${lastAct.card.color}-${lastAct.card.value}"]`), { like: pileCard });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [lastAct?.n]);
+  // 렌더마다 카드 자리를 기억 (다음에 사라질 카드의 출발점)
+  useLayoutEffect(() => {
+    const m = new Map<string, DOMRect>();
+    document.querySelectorAll<HTMLElement>('[data-flip^="f"]').forEach((el) => m.set(el.dataset.flip!.slice(1), el.getBoundingClientRect()));
+    cardRects.current = m;
+  });
   const names = t.names;
   const me = t.me;
   const myTurn = t.myTurn;
@@ -122,7 +140,7 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
                 const gone = g.discard.filter((d) => d.color === color && d.value === value).length;
                 const played = g.piles[color] >= value;
                 return (
-                  <td key={value} className={`${gone >= total && !played ? 'lost' : ''} ${played ? 'played' : ''} ${gone === total - 1 && !played ? 'last' : ''}`} title={`${colorName(c, color)} ${value}: ${total}장 중 ${gone}장 버림`}>
+                  <td key={value} data-dg={`${color}-${value}`} className={`${gone >= total && !played ? 'lost' : ''} ${played ? 'played' : ''} ${gone === total - 1 && !played ? 'last' : ''}`} title={`${colorName(c, color)} ${value}: ${total}장 중 ${gone}장 버림`}>
                     {value}
                     {gone > 0 && <sub>{'×'.repeat(gone)}</sub>}
                   </td>
@@ -156,7 +174,7 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
         <>
           <section className="sky" aria-label="쏘아 올린 불꽃">
             {g.piles.map((top, color) => (
-              <div key={color} className={`pile ${top === 5 ? 'done' : ''}`} style={colorStyle(c, color)}>
+              <div key={color} data-pile={color} className={`pile ${top === 5 ? 'done' : ''}`} style={colorStyle(c, color)}>
                 {top > 0 ? <FlareCard c={c} color={color} value={top} size="sm" /> : <span className="pile-empty">{colorName(c, color)}</span>}
                 <span className="pile-dots" aria-hidden>
                   {[1, 2, 3, 4, 5].map((k) => (

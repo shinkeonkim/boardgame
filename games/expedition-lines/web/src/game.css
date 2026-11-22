@@ -818,6 +818,21 @@ button.card:focus-visible {
   .game-scroll > * {
     align-self: start;
   }
+  /* 2인: 왼쪽 열에 상대 하나만 있으면 텅 비므로 마주 앉은 한 줄 (상대 → 탁자 → 나) */
+  .game-scroll.duo {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: none;
+    max-width: 980px;
+    width: 100%;
+    margin: 0 auto;
+    align-content: center;
+    row-gap: 10px;
+  }
+  .game-scroll.duo > .opponents,
+  .game-scroll.duo > :not(.opponents) {
+    grid-column: 1;
+    grid-row: auto;
+  }
 }
 /* 부채꼴 손패가 화면 아래에서 잘리지 않게 */
 .game > .hand-area {

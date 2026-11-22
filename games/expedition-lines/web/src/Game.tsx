@@ -326,7 +326,7 @@ export function Game({
         </AlertBanner>
       )}
 
-      <div className="game-scroll">
+      <div className={`game-scroll ${others.length === 1 ? 'duo' : ''}`}>
       <section className="opponents">
         {others.map((p) => (
           <PlayerBoard

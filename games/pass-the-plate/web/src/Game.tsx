@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import type { RoomView } from '@bg/core';
 import { DISH, Dish, GROUPS, GameConfig, GameView, Played } from '@bg/pass-the-plate-engine';
 import { AlertBanner, SeatDot, seatColor } from '@bg/ui';
-import { GameScreenProps, ResultSheet, SeatList, TableBanner, TableEmotes, TableLayout, TableTopBar, Ticker, rankOf, usePeek, useTable, waitingText } from '@bg/web';
+import { GameScreenProps, ResultSheet, SeatList, TableBanner, TableEmotes, TableLayout, TableTopBar, Ticker, rankOf, usePeek, useTable, waitingText, SideNote } from '@bg/web';
 import { DishCard } from './theme';
 
 type View = RoomView<GameView, GameConfig>;
@@ -116,9 +116,10 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
                   </button>
                 )}
               </div>
-              <div className="hand-row">
-                {g.hand.map((h) => (
-                  <DishCard key={h.id} flip={`d${h.id}`} dish={h.dish} size="md" selected={picked.has(h.id) || first === h.id} onClick={() => pick(h.id)} badge={first === h.id ? '1' : undefined} />
+              {/* 옆 사람에게서 넘어온 접시: 넘기는 방향의 반대쪽에서 밀려 들어옴 (차례마다 다시 그림) */}
+              <div className={`hand-row pp-incoming ${g.dir === 1 ? 'from-left' : 'from-right'}`} key={`${g.round}-${g.turn}`}>
+                {g.hand.map((h, i) => (
+                  <DishCard key={h.id} flip={`d${h.id}`} noEnter className="pp-in" style={{ animationDelay: `${i * 40}ms` }} dish={h.dish} size="md" selected={picked.has(h.id) || first === h.id} onClick={() => pick(h.id)} badge={first === h.id ? '1' : undefined} />
                 ))}
               </div>
             </section>
@@ -142,12 +143,11 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
               children: seat !== me && g.tableaus[seat] ? <Tableau t={g.tableaus[seat]!} size="xs" /> : seat !== me ? <span className="muted small">먹은 접시 비공개</span> : undefined,
             }))}
           />
-          <section className="panel small pp-ref">
-            <b>점수</b>
+          <SideNote title="점수" className="pp-ref">
             <div>🍙 김밥 줄 수 1등 6 · 2등 3 · 🍤 튀김 2개 5 · 🐟 회 3개 10</div>
             <div>🥟 만두 1·3·6·10·15 · 🍣 초밥 1·2·3 (🌿 겨자 위면 ×3)</div>
             <div>🍮 푸딩: 게임 끝에 가장 많으면 +6, 가장 적으면 −6</div>
-          </section>
+          </SideNote>
         </>
       }
       overlay={

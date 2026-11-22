@@ -278,3 +278,52 @@
 .turn-banner.mine .tb-side > .small.muted {
   background: rgba(255, 255, 255, 0.2);
 }
+
+/* 접는 규칙 요약 */
+.side-note > summary {
+  cursor: pointer;
+  list-style: none;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.side-note > summary::-webkit-details-marker {
+  display: none;
+}
+.side-note > summary::after {
+  content: '▾';
+  color: var(--muted);
+  transition: transform 0.2s;
+}
+.side-note:not([open]) > summary::after {
+  transform: rotate(-90deg);
+}
+.side-note-body {
+  display: grid;
+  gap: 4px;
+  margin-top: 6px;
+}
+
+/* 낮은 가로 화면: 정보 패널은 접어 두고 버튼으로 (테이블을 화면 전체 너비로) */
+.side-toggle {
+  display: none;
+}
+@media (max-height: 560px) and (min-aspect-ratio: 1/1) {
+  .table-game:not(.side-open) .table-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .table-game:not(.side-open) .table-side {
+    display: none;
+  }
+  .side-toggle {
+    display: inline-flex;
+    position: absolute;
+    right: 12px;
+    bottom: calc(10px + env(safe-area-inset-bottom));
+    z-index: 20;
+    box-shadow: var(--shadow);
+  }
+  .page.game.table-game {
+    position: relative;
+  }
+}

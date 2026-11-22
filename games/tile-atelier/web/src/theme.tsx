@@ -51,7 +51,7 @@ export function BoardView({
     <div className="ta-board" style={{ ['--ts' as string]: `${size}px` }}>
       <div className="ta-lines">
         {b.lines.map((l, i) => (
-          <div key={i} className={`ta-line ${highlightLines?.has(i) ? 'can' : ''} ${pendingRow === i ? 'pending' : ''}`} onClick={onLine && highlightLines?.has(i) ? () => onLine(i) : undefined} role={onLine ? 'button' : undefined} aria-label={`${i + 1}번째 줄`}>
+          <div key={i} data-line={i} className={`ta-line ${highlightLines?.has(i) ? 'can' : ''} ${pendingRow === i ? 'pending' : ''}`} onClick={onLine && highlightLines?.has(i) ? () => onLine(i) : undefined} role={onLine ? 'button' : undefined} aria-label={`${i + 1}번째 줄`}>
             {Array.from({ length: i + 1 }, (_, k) => (k < l.count && l.color !== null ? <TileView key={k} color={l.color} size={size} /> : <span key={k} className="ta-slot" style={{ width: size, height: size }} />))}
           </div>
         ))}
@@ -75,7 +75,7 @@ export function BoardView({
           }),
         )}
       </div>
-      <div className={`ta-floor ${onFloor ? 'can' : ''}`} onClick={onFloor} role={onFloor ? 'button' : undefined} aria-label="바닥">
+      <div data-floor className={`ta-floor ${onFloor ? 'can' : ''}`} onClick={onFloor} role={onFloor ? 'button' : undefined} aria-label="바닥">
         {c.floor.map((pen, i) => (
           <span key={i} className="ta-floor-slot" style={{ width: size, height: size }}>
             {b.floor[i] !== undefined ? <TileView color={b.floor[i]} first={b.floor[i] === -1} size={size - 4} /> : null}

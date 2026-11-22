@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import type { RoomView } from '@bg/core';
 import { FORMATIONS, GameConfig, GameView, LogEntry, Side, formationRank } from '@bg/flag-line-engine';
 import { EmoteBubble, SeatDot } from '@bg/ui';
-import { GameScreenProps, ResultSheet, TableBanner, TableEmotes, TableLayout, TableTopBar, Ticker, emotesBySeat, usePeek, useTable } from '@bg/web';
+import { GameScreenProps, ResultSheet, TableBanner, TableEmotes, TableLayout, TableTopBar, Ticker, emotesBySeat, usePeek, useTable, SideNote } from '@bg/web';
 import { FlagIcon, TROOP_NAMES, Troop } from './theme';
 
 type View = RoomView<GameView, GameConfig>;
@@ -161,15 +161,14 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
               );
             })}
           </section>
-          <section className="panel small fl-ref">
-            <b>대형 (강한 순)</b>
+          <SideNote title="대형 (강한 순)" className="fl-ref">
             <div>쐐기: 같은 색 연속 (예: 파랑 4·5·6)</div>
             <div>방진: 같은 숫자 (예: 7·7·7)</div>
             <div>대대: 같은 색</div>
             <div>산개: 연속 숫자 (색 상관없음)</div>
             <div>무리: 아무거나 — 같은 대형이면 합이 큰 쪽, 그래도 같으면 먼저 완성한 쪽</div>
             <div className="muted">상대가 남은 카드로 절대 못 이기면 깃발을 차지해요{c.autoClaim ? ' (자동)' : ' (「차지」 버튼)'}</div>
-          </section>
+          </SideNote>
           {g.log.length > 0 && (
             <section className="panel log-list small" aria-label="기록">
               {[...g.log]

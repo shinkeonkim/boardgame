@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import type { RoomView } from '@bg/core';
 import { Cell, GameConfig, GameView, LogEntry, pieceById, placeProblem } from '@bg/corner-claim-engine';
-import { GameScreenProps, ResultSheet, TableBanner, TableEmotes, TableLayout, TableTopBar, Ticker, rankOf, usePeek, useTable } from '@bg/web';
+import { GameScreenProps, ResultSheet, TableBanner, TableEmotes, TableLayout, TableTopBar, Ticker, rankOf, usePeek, useTable, SideNote } from '@bg/web';
 import { COLORS, PieceIcon, flip, orientIndex, rotate } from './theme';
 
 type View = RoomView<GameView, GameConfig>;
@@ -297,12 +297,11 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
               </div>
             ))}
           </section>
-          <section className="panel small cc-ref">
-            <b>규칙</b>
+          <SideNote title="규칙" className="cc-ref">
             <div>· 첫 조각은 내 귀퉁이 ★을 덮어요</div>
             <div>· 내 색끼리는 모서리만 닿고 변은 닿으면 안 돼요 (남의 색은 상관없음)</div>
             <div>· 놓을 곳이 없으면 그 색은 끝 · 남은 칸 −1점, 다 놓으면 +15 (마지막이 1칸이면 +20)</div>
-          </section>
+          </SideNote>
         </>
       }
       overlay={

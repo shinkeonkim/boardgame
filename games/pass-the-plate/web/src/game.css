@@ -204,3 +204,28 @@ button.dcard:hover {
     display: none;
   }
 }
+
+/* 넘어온 접시가 옆에서 밀려 들어옴 */
+.pp-incoming .dcard.pp-in {
+  animation: pp-in 0.42s cubic-bezier(0.2, 0.8, 0.25, 1) both;
+}
+.pp-incoming.from-right .dcard.pp-in {
+  animation-name: pp-in-r;
+}
+@keyframes pp-in {
+  from {
+    transform: translateX(-60px) rotate(-6deg);
+    opacity: 0;
+  }
+}
+@keyframes pp-in-r {
+  from {
+    transform: translateX(60px) rotate(6deg);
+    opacity: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pp-incoming .dcard.pp-in {
+    animation: none;
+  }
+}

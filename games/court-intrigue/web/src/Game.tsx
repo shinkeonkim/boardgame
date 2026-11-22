@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import type { RoomView } from '@bg/core';
 import { ACTION_DEFS, ActionKind, GameConfig, GameView, LogEntry, ROLE_DEFS, ROLES, Role } from '@bg/court-intrigue-engine';
 import { AlertBanner, EmoteBubble, SeatDot, seatColor } from '@bg/ui';
-import { GameScreenProps, ResultSheet, TableBanner, TableEmotes, TableLayout, TableTopBar, Ticker, emotesBySeat, rankOf, usePeek, useTable } from '@bg/web';
+import { GameScreenProps, ResultSheet, TableBanner, TableEmotes, TableLayout, TableTopBar, Ticker, emotesBySeat, rankOf, usePeek, useTable, SideNote } from '@bg/web';
 import { Coins, RoleCard } from './theme';
 
 type View = RoomView<GameView, GameConfig>;
@@ -247,8 +247,7 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
       side={
         <>
           {me >= 0 && g.influence[me] === 1 && g.status === 'playing' && <AlertBanner icon="⚠️" title="영향력이 하나 남았어요" critical sub="한 번만 더 잃으면 탈락이에요" />}
-          <section className="panel ci-ref small" aria-label="역할">
-            <b>역할 (각 {c.copies}장)</b>
+          <SideNote title={`역할 (각 ${c.copies}장)`} className="ci-ref">
             {ROLES.map((r) => (
               <div key={r} className="ci-ref-row">
                 <span>
@@ -263,7 +262,7 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
             <div className="muted">
               누구나: 소득 +1 · 원조 +2 · 쿠데타(금화 {c.coupCost}, {c.mustCoup}개 이상이면 반드시)
             </div>
-          </section>
+          </SideNote>
           {g.log.length > 0 && (
             <section className="panel log-list small" aria-label="기록">
               {[...g.log]

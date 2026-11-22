@@ -1,8 +1,8 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useState } from 'react';
 import type { RoomView } from '@bg/core';
 import { FIRST, GameConfig, GameView, LogEntry, lineProblem } from '@bg/tile-atelier-engine';
 import { AlertBanner, SeatDot, seatColor } from '@bg/ui';
-import { GameScreenProps, ResultSheet, SeatList, TableBanner, TableEmotes, TableLayout, TableTopBar, Ticker, rankOf, usePeek, useTable } from '@bg/web';
+import { GameScreenProps, ResultSheet, SeatList, TableBanner, TableEmotes, TableLayout, TableTopBar, Ticker, rankOf, usePeek, useTable, SideNote, flyClone } from '@bg/web';
 import { BoardView, TILE, TileView } from './theme';
 
 type View = RoomView<GameView, GameConfig>;
@@ -19,6 +19,18 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
     stepKey: `${g.stage}-${g.phase}-${g.turn}`,
     mySub: g.phase === 'wall' ? '벽에 놓을 칸을 골라요' : '공장에서 한 색을 가져와요',
   });
+  // 누가 공장에서 타일을 가져가면: 공장(가운데) → 그 사람의 줄(바닥)로 날아감
+  const lastTake = [...g.log].reverse().find((e) => e.type === 'take' || e.type === 'round');
+  const takeKey = lastTake?.type === 'take' ? lastTake.n : null;
+  useLayoutEffect(() => {
+    if (!lastTake || lastTake.type !== 'take') return;
+    const from = document.querySelector(`[data-factory="${lastTake.source}"]`);
+    const board = document.querySelector(`[data-board="${lastTake.seat}"]`);
+    const row = board?.querySelector(lastTake.line >= 0 ? `[data-line="${lastTake.line}"]` : '[data-floor]');
+    const tiles = row ? [...row.querySelectorAll('.tile')] : [];
+    tiles.slice(-lastTake.count).forEach((el, j) => flyClone(from, el, { delay: j * 70 }));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [takeKey]);
   const names = t.names;
   const me = t.me;
   const myTurn = t.myTurn;
@@ -98,13 +110,13 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
         <>
           <section className="ta-factories" aria-label="공장">
             {g.factories.map((f, i) => (
-              <div key={i} className={`ta-factory ${f.length ? '' : 'empty'}`}>
+              <div key={i} data-factory={i} className={`ta-factory ${f.length ? '' : 'empty'}`}>
                 {f.map((col, k) => (
                   <TileView key={k} color={col} size={32} selected={sel?.source === i && sel.color === col} onClick={() => pickTile(i, col)} />
                 ))}
               </div>
             ))}
-            <div className="ta-center" aria-label="가운데">
+            <div className="ta-center" data-factory={-1} aria-label="가운데">
               {g.center.length === 0 && <span className="muted small">가운데</span>}
               {[...g.center]
                 .sort((a, b) => a - b)
@@ -114,7 +126,7 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
             </div>
           </section>
           {myBoard && (
-            <section className="hand-panel ta-mine" aria-label="내 작업대">
+            <section className="hand-panel ta-mine" data-board={me} aria-label="내 작업대">
               <div className="hand-panel-head small">
                 <span>
                   <SeatDot seat={me} size={14} /> 내 작업대 · <b>{myBoard.score}점</b>
@@ -153,17 +165,21 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
               accent: seatColor(seat),
               score: `${b.score}점`,
               badge: g.nextFirst === seat && g.phase === 'draft' ? <span className="tag">1번</span> : null,
-              children: seat !== me ? <BoardView c={c} b={b} size={13} /> : undefined,
+              children:
+                seat !== me ? (
+                  <span data-board={seat}>
+                    <BoardView c={c} b={b} size={13} />
+                  </span>
+                ) : undefined,
             }))}
           />
-          <section className="panel small ta-ref">
-            <b>점수</b>
+          <SideNote title="점수" className="ta-ref">
             <div>벽에 놓을 때: 혼자면 1점, 가로·세로로 이어진 타일 수만큼</div>
             <div>바닥: {c.floor.join(' ')}</div>
             <div>
               끝 보너스: 가로줄 +{c.rowBonus} · 세로줄 +{c.colBonus} · 한 색 모두 +{c.colorBonus}
             </div>
-          </section>
+          </SideNote>
         </>
       }
       overlay={

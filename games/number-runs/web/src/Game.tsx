@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom';
 import type { RoomView } from '@bg/core';
 import { GameConfig, GameView, LogEntry, Tile, analyze, arrange, setValue, tableProblem } from '@bg/number-runs-engine';
 import { AlertBanner, seatColor } from '@bg/ui';
-import { GameScreenProps, ResultSheet, fitZoom, SeatList, TableBanner, TableEmotes, TableLayout, TableTopBar, Ticker, rankOf, usePeek, useTable } from '@bg/web';
+import { GameScreenProps, ResultSheet, fitZoom, SeatList, TableBanner, TableEmotes, TableLayout, TableTopBar, Ticker, rankOf, usePeek, useTable, SideNote } from '@bg/web';
 import { TileFace } from './theme';
 
 
@@ -238,14 +238,13 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
               children: g.roundScores.length ? <span className="muted small">누적 {g.totals[seat]}점</span> : undefined,
             }))}
           />
-          <section className="panel small nr-ref">
-            <b>규칙</b>
+          <SideNote title="규칙" className="nr-ref">
             <div>· 줄: 같은 색 연속 3장 이상 (예: 빨강 4·5·6)</div>
             <div>· 무리: 같은 숫자 다른 색 3~4장</div>
             <div>· ☺ 조커는 아무 타일로나, 남으면 30점 감점</div>
             <div>· 등록 뒤에는 테이블 묶음을 나누고 합쳐도 돼요 — 끝에 모든 묶음이 맞기만 하면</div>
             <div>· 더미 {g.poolCount}장</div>
-          </section>
+          </SideNote>
         </>
       }
       overlay={

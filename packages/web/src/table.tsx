@@ -444,13 +444,18 @@ export function TableLayout({ className = '', top, main, side, mine, splash, ove
   const zoom = useFitZoom();
   const root = useRef<HTMLElement>(null);
   useFlip(root);
+  // 낮은 가로 화면(휴대폰 눕힘)에서는 정보 패널을 접어 테이블을 넓게 (버튼으로 펼침)
+  const [sideOpen, setSideOpen] = useState(false);
   return (
-    <main ref={root} className={`page game table-game ${mine ? 'my-turn' : ''} ${className}`} style={{ '--z': zoom } as CSSProperties}>
+    <main ref={root} className={`page game table-game ${mine ? 'my-turn' : ''} ${sideOpen ? 'side-open' : ''} ${className}`} style={{ '--z': zoom } as CSSProperties}>
       {top}
       <div className="table-layout">
         <section className="table-main">{main}</section>
         <aside className="table-side">{side}</aside>
       </div>
+      <button className="side-toggle btn small" onClick={() => setSideOpen((x) => !x)} aria-expanded={sideOpen}>
+        {sideOpen ? '정보 닫기 ✕' : '👥 정보'}
+      </button>
       <TurnSplash splash={splash ?? null} />
       {overlay}
     </main>
@@ -463,5 +468,18 @@ export function Ticker({ text }: { text: ReactNode }) {
     <div className="ticker small muted" aria-live="polite">
       {text || ' '}
     </div>
+  );
+}
+
+/** 접을 수 있는 규칙 요약 (넓고 높은 화면은 펼친 채, 좁거나 낮은 화면은 접힌 채 시작) */
+export function SideNote({ title, className = '', children }: { title: ReactNode; className?: string; children: ReactNode }) {
+  const [open] = useState(() => typeof matchMedia === 'undefined' || matchMedia('(min-width: 760px) and (min-aspect-ratio: 1/1) and (min-height: 620px)').matches);
+  return (
+    <details className={`panel small side-note ${className}`} open={open}>
+      <summary>
+        <b>{title}</b>
+      </summary>
+      <div className="side-note-body">{children}</div>
+    </details>
   );
 }

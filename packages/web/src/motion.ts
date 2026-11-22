@@ -76,3 +76,62 @@ export function useFlip(root: RefObject<HTMLElement>) {
     };
   }, [root]);
 }
+
+/**
+ * 고유 id가 없는 것(공장의 타일, 불꽃 더미 등)을 「날려 보내는」 움직임.
+ * 도착한 요소(to)의 모양을 복제해 문서 맨 위(배율 밖)에 띄우고 from 자리에서 to 자리로 보낸다.
+ * count개면 조금씩 늦게 차례로. 끝나면 복제본은 지운다.
+ */
+export function flyClone(
+  from: Element | DOMRect | null | undefined,
+  to: Element | null | undefined,
+  opts: { count?: number; delay?: number; duration?: number; /** 도착 요소 대신 이 요소의 모양으로 날림 (도착 칸 가운데에 내려앉음) */ like?: Element | null } = {},
+) {
+  if (!from || !to || reduced() || typeof document === 'undefined') return;
+  const a = from instanceof Element ? from.getBoundingClientRect() : from;
+  const look = (opts.like ?? to) as HTMLElement;
+  const tb = to.getBoundingClientRect();
+  const lb = look.getBoundingClientRect();
+  if (!tb.width || !a.width || !lb.width) return;
+  // 모양 요소 크기로, 도착 칸 가운데에
+  const b = opts.like ? new DOMRect(tb.left + tb.width / 2 - lb.width / 2, tb.top + tb.height / 2 - lb.height / 2, lb.width, lb.height) : tb;
+  const n = Math.max(1, Math.min(opts.count ?? 1, 6));
+  for (let i = 0; i < n; i++) {
+    const ghost = look.cloneNode(true) as HTMLElement;
+    ghost.removeAttribute('data-flip');
+    Object.assign(ghost.style, {
+      position: 'fixed',
+      left: `${b.left}px`,
+      top: `${b.top}px`,
+      width: `${b.width}px`,
+      height: `${b.height}px`,
+      margin: '0',
+      zIndex: '60',
+      pointerEvents: 'none',
+      boxSizing: 'border-box',
+      animation: 'none',
+    });
+    // 배율(zoom) 안의 크기 그대로 보이게: 복제본은 배율 밖이므로 원래 글자·테두리 크기를 배율만큼 키운다
+    const z = look.offsetWidth ? lb.width / look.offsetWidth : 1;
+    if (Math.abs(z - 1) > 0.02) ghost.style.zoom = String(z);
+    if (Math.abs(z - 1) > 0.02) Object.assign(ghost.style, { left: `${b.left / z}px`, top: `${b.top / z}px`, width: `${b.width / z}px`, height: `${b.height / z}px` });
+    document.body.appendChild(ghost);
+    const dx = (a.left + a.width / 2 - (b.left + b.width / 2)) / z + (i - (n - 1) / 2) * 6;
+    const dy = (a.top + a.height / 2 - (b.top + b.height / 2)) / z;
+    const anim = ghost.animate(
+      [
+        { transform: `translate(${dx}px, ${dy}px) scale(0.9)`, opacity: 0.95 },
+        { transform: `translate(${dx * 0.4}px, ${dy * 0.4 - 24}px) scale(1.1)`, opacity: 1, offset: 0.55 },
+        { transform: 'translate(0, 0) scale(1)', opacity: 1 },
+      ],
+      { duration: opts.duration ?? 520, delay: (opts.delay ?? 0) + i * 70, easing: 'cubic-bezier(0.25, 0.8, 0.3, 1)', fill: 'backwards' },
+    );
+    // 날아가는 동안 진짜 도착 요소는 잠깐 숨긴다 (두 개로 보이지 않게)
+    const target = to as HTMLElement;
+    if (i === 0 && !opts.like) target.style.visibility = 'hidden';
+    anim.onfinish = anim.oncancel = () => {
+      ghost.remove();
+      if (i === n - 1 && !opts.like) target.style.visibility = '';
+    };
+  }
+}
