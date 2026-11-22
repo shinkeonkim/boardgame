@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import type { RoomView } from '@bg/core';
 import { DISH, Dish, GROUPS, GameConfig, GameView, Played } from '@bg/pass-the-plate-engine';
 import { AlertBanner, SeatDot, seatColor } from '@bg/ui';
-import { GameScreenProps, ResultSheet, SeatList, TableBanner, TableEmotes, TableLayout, TableTopBar, Ticker, rankOf, usePeek, useTable, waitingText, SideNote } from '@bg/web';
+import { GameScreenProps, ResultSheet, SeatList, TableBanner, TableEmotes, TableLayout, TableTopBar, Ticker, rankOf, usePeek, useTable, waitingText, SideNote, useChangeSound } from '@bg/web';
 import { DishCard } from './theme';
 
 type View = RoomView<GameView, GameConfig>;
@@ -32,6 +32,8 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
   const g = v.game!;
   const c = g.config;
   const t = useTable(view, notify, { title: 'Pass the Plate', turn: g.actors[0] ?? 0, playing: g.status === 'playing', simultaneous: true, stepKey: `${g.round}-${g.turn}`, mySub: '한 접시 골라요' });
+  // 소리: 모두 고르면 접시를 내려놓는 쨍, 손패가 넘어오면 미끄러짐
+  useChangeSound(`${g.round}-${g.turn}`, 'plate', g.status === 'playing');
   const names = t.names;
   const me = t.me;
   const [peek, setPeek] = usePeek(`${g.status}-${g.round}`);

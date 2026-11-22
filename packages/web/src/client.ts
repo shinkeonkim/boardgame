@@ -1,5 +1,5 @@
 import type { ComponentType, ReactNode } from 'react';
-import type { EmoteDef, EmoteEvent, RoomView } from '@bg/core';
+import type { EmoteDef, EmoteEvent, RoomView, OriginalGame } from '@bg/core';
 
 /** 서버 요청 (실패하면 토스트를 띄우고 false) */
 export type Act = (event: string, payload?: object) => Promise<boolean>;
@@ -35,6 +35,8 @@ export interface GameClient<V = unknown, C = unknown> {
   title: string;
   /** 첫 화면 브랜드 아래 한 줄 */
   subtitle: string;
+  /** 원작 게임 (meta.ts의 original) — 첫 화면·게임 방법에 「원작」으로 표시 */
+  original?: OriginalGame;
   /** 브랜드 아이콘 (48×48 정도 SVG) */
   logo: ReactNode;
   /** 첫 화면 소개 문단 */

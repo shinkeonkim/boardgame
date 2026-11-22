@@ -1,3 +1,5 @@
+import { Fx, playFx } from './fx';
+
 // 짧은 알림음 (WebAudio로 합성 — 음원 파일 없음). 음소거 설정은 기기에만 저장.
 let ctx: AudioContext | null = null;
 
@@ -37,26 +39,17 @@ export const sound = {
       /* 지원 안 함 */
     }
   },
+  /** 알림음: 내 차례(마림바 세 음) · 남의 차례(나무 똑) · 감정 표현 */
   play(kind: 'myTurn' | 'turn' | 'emote') {
+    sound.fx(kind === 'myTurn' ? 'myTurn' : kind === 'turn' ? 'tick' : 'pop');
+  },
+  /** 효과음 (fx.ts): 카드·칩·주사위·타일… 게임 도구에 맞는 소리 */
+  fx(name: Fx, delay = 0) {
     if (muted) return;
     try {
       ctx ??= new AudioContext();
       if (ctx.state === 'suspended') return; // 아직 사용자 조작 전
-      const notes = kind === 'myTurn' ? [660, 880, 1175] : kind === 'turn' ? [520] : [990];
-      const vol = kind === 'myTurn' ? 0.16 : 0.06;
-      notes.forEach((f, i) => {
-        const t = ctx!.currentTime + i * 0.11;
-        const o = ctx!.createOscillator();
-        const g = ctx!.createGain();
-        o.type = 'sine';
-        o.frequency.value = f;
-        g.gain.setValueAtTime(0.0001, t);
-        g.gain.exponentialRampToValueAtTime(vol, t + 0.02);
-        g.gain.exponentialRampToValueAtTime(0.0001, t + 0.28);
-        o.connect(g).connect(ctx!.destination);
-        o.start(t);
-        o.stop(t + 0.3);
-      });
+      playFx(ctx, name, delay);
     } catch {
       /* ignore */
     }

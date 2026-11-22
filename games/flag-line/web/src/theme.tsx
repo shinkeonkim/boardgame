@@ -4,8 +4,8 @@ export const TROOP_NAMES = ['빨강', '노랑', '초록', '파랑', '보라', '�
 export function Troop({ color, value, size = 'md', selected, onClick, className = '', flip }: { color: number; value: number; size?: 'xs' | 'sm' | 'md'; selected?: boolean; onClick?: () => void; className?: string; flip?: string }) {
   const Tag = onClick ? 'button' : 'div';
   return (
-    <Tag data-flip={flip} className={`troop ${size} ${selected ? 'selected' : ''} ${className}`} style={{ ['--tc' as string]: TROOP_COLORS[color] }} onClick={onClick} aria-label={`${TROOP_NAMES[color]} ${value}`}>
-      <span className="troop-num">{value}</span>
+    <Tag data-flip={flip} className={`troop pc ${size} ${selected ? 'selected' : ''} ${className}`} style={{ ['--tc' as string]: TROOP_COLORS[color] }} onClick={onClick} aria-label={`${TROOP_NAMES[color]} ${value}`}>
+      <span className="troop-num pc-num">{value}</span>
       <span className="troop-pip" aria-hidden />
     </Tag>
   );

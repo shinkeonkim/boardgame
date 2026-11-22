@@ -2,6 +2,7 @@ import { BASE_EMOTES } from '@bg/core';
 import { EXTRA_EMOTES, GameConfig, GameView } from '@bg/gem-guild-engine';
 import { SeatDot } from '@bg/ui';
 import type { GameClient } from '@bg/web';
+import { meta } from '../../meta';
 import { ConfigPanel } from './ConfigPanel';
 import { Demo } from './Demo';
 import { Game } from './Game';
@@ -12,6 +13,7 @@ export const client: GameClient<GameView, GameConfig> = {
   id: 'gem-guild',
   title: 'Gem Guild',
   subtitle: '보석 상단 · 2~6명이 하는 보석 엔진 만들기',
+  original: meta.original,
   logo: <Logo />,
   lead: (
     <>

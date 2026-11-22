@@ -1,6 +1,7 @@
 import { BASE_EMOTES } from '@bg/core';
 import { EXTRA_EMOTES, GameConfig, GameView } from '@bg/flag-line-engine';
 import type { GameClient } from '@bg/web';
+import { meta } from '../../meta';
 import { ConfigPanel } from './ConfigPanel';
 import { Demo } from './Demo';
 import { Game } from './Game';
@@ -11,6 +12,7 @@ export const client: GameClient<GameView, GameConfig> = {
   id: 'flag-line',
   title: 'Flag Line',
   subtitle: '깃발 전선 · 2명(또는 2:2)이 하는 포커 같은 진지전',
+  original: meta.original,
   logo: <Logo />,
   lead: (
     <>

@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import type { RoomView } from '@bg/core';
 import { CARD_DEFS, GameConfig, GameView, Kind, LogEntry, deckSpec } from '@bg/sealed-letter-engine';
 import { AlertBanner, SeatDot, seatColor } from '@bg/ui';
-import { GameScreenProps, ResultSheet, SeatList, TableBanner, TableEmotes, TableLayout, TableTopBar, Ticker, rankOf, usePeek, useTable } from '@bg/web';
+import { GameScreenProps, ResultSheet, SeatList, TableBanner, TableEmotes, TableLayout, TableTopBar, Ticker, rankOf, usePeek, useTable, useLogSounds } from '@bg/web';
 import { CardBackMini, LetterCard, Seal } from './theme';
 
 type View = RoomView<GameView, GameConfig>;
@@ -32,6 +32,8 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
   // 이번 판에서 가장 최근에 낸 카드 (가운데에 크게)
   const lastEvent = [...g.log].reverse().find((e) => e.type === 'play' || e.type === 'round');
   const lastPlay = lastEvent?.type === 'play' ? lastEvent : null;
+  // 소리: 편지(카드)를 내면 종이, 탈락은 쿵, 판이 끝나면 축하
+  useLogSounds(g.log, (e) => (e.type === 'play' ? ['paper', 'card'] : e.type === 'out' ? 'thud' : e.type === 'round' ? 'success' : null));
   const names = t.names;
   const me = t.me;
   const myTurn = t.myTurn;

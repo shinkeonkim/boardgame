@@ -1,6 +1,7 @@
 import { BASE_EMOTES } from '@bg/core';
 import { EXTRA_EMOTES, GameConfig, GameView } from '@bg/cipher-ops-engine';
 import type { GameClient } from '@bg/web';
+import { meta } from '../../meta';
 import { ConfigPanel } from './ConfigPanel';
 import { Demo } from './Demo';
 import { Game } from './Game';
@@ -11,6 +12,7 @@ export const client: GameClient<GameView, GameConfig> = {
   id: 'cipher-ops',
   title: 'Cipher Ops',
   subtitle: '암호 작전 · 4~10명이 두 팀으로 하는 단어 연상 게임',
+  original: meta.original,
   logo: <Logo />,
   lead: (
     <>

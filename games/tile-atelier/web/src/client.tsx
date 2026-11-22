@@ -2,6 +2,7 @@ import { BASE_EMOTES } from '@bg/core';
 import { EXTRA_EMOTES, GameConfig, GameView } from '@bg/tile-atelier-engine';
 import { SeatDot } from '@bg/ui';
 import type { GameClient } from '@bg/web';
+import { meta } from '../../meta';
 import { ConfigPanel } from './ConfigPanel';
 import { Demo } from './Demo';
 import { Game } from './Game';
@@ -12,6 +13,7 @@ export const client: GameClient<GameView, GameConfig> = {
   id: 'tile-atelier',
   title: 'Tile Atelier',
   subtitle: '타일 공방 · 2~4명이 벽을 꾸미는 타일 드래프트',
+  original: meta.original,
   logo: <Logo />,
   lead: (
     <>

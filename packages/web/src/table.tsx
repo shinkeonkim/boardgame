@@ -20,6 +20,7 @@ import type { Act } from './client';
 import { GuideButton } from './Guide';
 import { CloseRoomButton, StopGameButton } from './Lobby';
 import { sound } from './sound';
+import type { Fx } from './fx';
 
 export interface TableOptions {
   /** 탭 제목 (게임 이름) */
@@ -482,4 +483,39 @@ export function SideNote({ title, className = '', children }: { title: ReactNode
       <div className="side-note-body">{children}</div>
     </details>
   );
+}
+
+/**
+ * 기록(log)에 새 항목이 생길 때마다 소리. pick이 그 항목에 맞는 효과음(들)을 고른다.
+ * 처음 화면을 열었을 때(이미 쌓인 기록)는 울리지 않는다. 한 번에 여러 개 생기면 조금씩 늦게 (최대 6개).
+ */
+export function useLogSounds<E extends { n: number }>(log: E[], pick: (e: E) => Fx | Fx[] | null | undefined) {
+  const last = useRef<number | null>(null);
+  const lastN = log.length ? log[log.length - 1].n : 0;
+  useEffect(() => {
+    const prev = last.current;
+    last.current = lastN;
+    if (prev === null || lastN <= prev) return;
+    const fresh = log.filter((e) => e.n > prev).slice(-6);
+    let delay = 0;
+    for (const e of fresh) {
+      const f = pick(e);
+      for (const name of f ? (Array.isArray(f) ? f : [f]) : []) {
+        sound.fx(name, delay);
+        delay += 0.05;
+      }
+      delay += 0.12;
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [lastN]);
+}
+
+/** 값이 바뀔 때 소리 한 번 (기록이 없는 변화: 새 판의 주사위 굴림, 접시 넘기기 등) */
+export function useChangeSound(key: unknown, fx: Fx | null, when = true) {
+  const prev = useRef(key);
+  useEffect(() => {
+    if (prev.current !== key && when && fx) sound.fx(fx);
+    prev.current = key;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [key]);
 }

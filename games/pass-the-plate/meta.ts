@@ -15,6 +15,7 @@ export const meta: GameMeta = {
   weight: 1,
   tags: ['drafting', 'set-collection', 'simultaneous', 'card', 'party', 'big-group'],
   inspiredBy: 'Sushi Go! (Phil Walker-Harding) 메커니즘',
+  original: { ko: '스시 고!', en: 'Sushi Go!', by: 'Phil Walker-Harding' },
   accent: '#d79a1e',
   icon: '<rect width="64" height="64" rx="14" fill="#2b2420"/><ellipse cx="32" cy="38" rx="22" ry="9" fill="#f6efe2"/><ellipse cx="32" cy="36" rx="16" ry="6" fill="#e8dcc2"/><rect x="22" y="26" width="20" height="9" rx="4" fill="#f4a261"/><rect x="22" y="31" width="20" height="4" rx="2" fill="#fff"/><path d="M48 14 L28 30" stroke="#c0703a" stroke-width="2.5" stroke-linecap="round"/>',
   status: 'live',

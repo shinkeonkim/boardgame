@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import type { RoomView } from '@bg/core';
 import { GameConfig, GameView, Key, LogEntry, clueProblem } from '@bg/cipher-ops-engine';
 import { AlertBanner, EmoteBubble } from '@bg/ui';
-import { GameScreenProps, ResultSheet, TableBanner, TableEmotes, TableLayout, TableTopBar, Ticker, emotesBySeat, usePeek, useTable } from '@bg/web';
+import { GameScreenProps, ResultSheet, TableBanner, TableEmotes, TableLayout, TableTopBar, Ticker, emotesBySeat, usePeek, useTable, useLogSounds } from '@bg/web';
 import { TEAMS } from './theme';
 
 type View = RoomView<GameView, GameConfig>;
@@ -43,6 +43,10 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
     stepKey: `${g.round}-${g.team}-${g.phase}-${g.clues.length}`,
     mySub: g.phase === 'clue' ? '한 단어와 숫자로 힌트를 주세요' : `「${g.clue?.word}」 힌트로 단어를 골라요`,
   });
+  // 소리: 힌트는 쪽지, 단어를 고르면 카드 뒤집기 + 맞으면 띵/틀리면 둔탁, 암살자는 쿵
+  useLogSounds(g.log, (e) =>
+    e.type === 'clue' ? 'paper' : e.type === 'guess' ? (e.key === 'X' ? ['flip', 'thud'] : e.key === e.team ? ['flip', 'bell'] : ['flip', 'fail']) : e.type === 'win' ? 'win' : null,
+  );
   const names = t.names;
   const me = t.me;
   const { bySeat } = emotesBySeat(emotes);
@@ -169,7 +173,7 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
                 return (
                   <button
                     key={i}
-                    className={`co-card ${cardClass(g.key[i], open, g.spymaster)} ${armed === i ? 'armed' : ''} ${canGuess && !open ? 'can' : ''}`}
+                    className={`co-card pc light ${cardClass(g.key[i], open, g.spymaster)} ${armed === i ? 'armed' : ''} ${canGuess && !open ? 'can' : ''}`}
                     onClick={() => tap(i)}
                     aria-label={`${w}${open ? ' (공개됨)' : ''}`}
                     disabled={open}

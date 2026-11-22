@@ -4,3 +4,4 @@ export * from './game';
 export * from './config';
 export * from './skins';
 export * from './skin-picker';
+export * from './pieces';

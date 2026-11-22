@@ -33,7 +33,7 @@ export function NumberCard({
   const Tag = onClick ? 'button' : 'div';
   return (
     <Tag
-      className={`ncard ${size} ${PENALTY_TONE[p] ?? 'p1'} ${className}`}
+      className={`ncard pc light ${size} ${PENALTY_TONE[p] ?? 'p1'} ${className}`}
       data-flip={flip}
       style={style}
       onClick={onClick}
@@ -46,7 +46,7 @@ export function NumberCard({
           <i key={i} />
         ))}
       </span>
-      <span className="ncard-num">{n}</span>
+      <span className="ncard-num pc-num">{n}</span>
       <span className="ncard-corner" aria-hidden>
         {n}
       </span>
@@ -57,7 +57,7 @@ export function NumberCard({
 /** 카드 뒷면 */
 export function CardBack({ size = 'sm', className = '' }: { size?: 'xs' | 'sm' | 'md'; className?: string }) {
   return (
-    <div className={`ncard back ${size} ${className}`} aria-hidden>
+    <div className={`ncard pc back ${size} ${className}`} aria-hidden>
       <span className="ncard-back-mark">6</span>
     </div>
   );

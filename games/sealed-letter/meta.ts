@@ -15,6 +15,7 @@ export const meta: GameMeta = {
   weight: 1,
   tags: ['card', 'deduction', 'bluffing', 'player-elimination', 'quick', 'hidden-info'],
   inspiredBy: 'Love Letter (Seiji Kanai) 메커니즘',
+  original: { ko: '러브레터', en: 'Love Letter', by: 'Seiji Kanai' },
   accent: '#c0392b',
   icon: '<rect width="64" height="64" rx="14" fill="#3a2430"/><rect x="12" y="18" width="40" height="28" rx="3" fill="#f6efe2"/><path d="M12 20 L32 34 L52 20" fill="none" stroke="#c8b89a" stroke-width="2.5"/><circle cx="32" cy="36" r="7" fill="#c0392b"/>',
   status: 'live',

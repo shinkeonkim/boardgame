@@ -26,7 +26,7 @@
   aspect-ratio: 5 / 7;
   border-radius: calc(var(--w) * 0.14);
   background: var(--card-tex), var(--fbg, var(--fc));
-  color: #fff;
+  color: var(--fink, #fff);
   border: 2px solid color-mix(in srgb, var(--fc) 70%, black);
   display: grid;
   place-items: center;
@@ -501,4 +501,24 @@ button.fcard:hover {
   .clue-marks {
     min-height: 8px;
   }
+}
+
+.fcard[style*='--fink'] .fcard-num {
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.55);
+}
+
+/* 카드 키트(pc): 색 카드는 가운데가 밝게 빛나는 불꽃 그라디언트 */
+.fcard.pc:not(.mystery) {
+  background: var(--card-tex), var(--fbg, radial-gradient(circle at 50% 38%, color-mix(in srgb, var(--fc) 45%, white), var(--fc) 55%, color-mix(in srgb, var(--fc) 65%, black))) !important;
+}
+.fcard.pc .fcard-num {
+  font-size: calc(var(--w) * 0.56);
+  text-shadow: 0 0 2px rgba(0, 0, 0, 0.7), 0 0 1px rgba(0, 0, 0, 0.9), 0 2px 3px rgba(0, 0, 0, 0.45);
+}
+.fcard.pc[style*='--fink'] .fcard-num {
+  text-shadow: 0 0 2px rgba(255, 250, 220, 0.9), 0 0 1px rgba(255, 250, 220, 1);
+}
+.fcard.pc.mystery .fcard-num {
+  position: relative;
+  z-index: 4;
 }

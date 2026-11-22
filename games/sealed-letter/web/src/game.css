@@ -254,3 +254,35 @@ button.lcard:hover {
     animation: none;
   }
 }
+/* 작은 카드의 숫자도 10px 이상 (가독성 검사) */
+.lcard.sm .lcard-val {
+  font-size: 12px;
+}
+
+/* 카드 키트(pc): 편지지 — 윗단 역할 색 띠 + 상아색 종이 + 밀랍 도장 숫자 */
+.lcard.pc:not(.back) {
+  border-top-width: 1.5px !important;
+  background: var(--card-tex), linear-gradient(180deg, var(--tone) 0 9%, color-mix(in srgb, var(--tone) 55%, black) 9% calc(9% + 1.5px), #fffaf0 calc(9% + 1.5px), #f2e6cc) !important;
+  color: #2a2118;
+}
+.lcard.pc .lcard-val {
+  display: grid;
+  place-items: center;
+  width: calc(var(--w) * 0.24);
+  height: calc(var(--w) * 0.24);
+  min-width: 18px;
+  min-height: 18px;
+  border-radius: 50%;
+  color: #fff;
+  background: radial-gradient(circle at 35% 30%, color-mix(in srgb, var(--tone) 60%, white), var(--tone) 60%, color-mix(in srgb, var(--tone) 60%, black));
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.45), inset 0 0 0 1.5px rgba(255, 255, 255, 0.35);
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.6), 0 0 2px rgba(0, 0, 0, 0.6);
+  font-size: max(11px, calc(var(--w) * 0.14));
+  z-index: 4;
+}
+.lcard.pc .lcard-icon {
+  filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.25));
+}
+.lcard.pc .lcard-name {
+  font-family: Georgia, 'Nanum Myeongjo', serif;
+}

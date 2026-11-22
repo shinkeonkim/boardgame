@@ -1,6 +1,7 @@
 import { EXTRA_EMOTES, GameConfig, GameView } from '@bg/crown-march-engine';
 import { BASE_EMOTES } from '@bg/core';
 import type { GameClient } from '@bg/web';
+import { meta } from '../../meta';
 import { ConfigPanel } from './ConfigPanel';
 import { DemoBoard } from './Demo';
 import { Game } from './Game';
@@ -11,6 +12,7 @@ export const client: GameClient<GameView, GameConfig> = {
   id: 'crown-march',
   title: 'Crown March',
   subtitle: '왕관 행진 · 2~4명이 하는 땅따먹기',
+  original: meta.original,
   logo: (
     <svg viewBox="0 0 64 64" aria-hidden>
       <rect width="64" height="64" rx="14" fill="var(--ink)" />

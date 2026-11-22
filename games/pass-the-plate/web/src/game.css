@@ -229,3 +229,18 @@ button.dcard:hover {
     animation: none;
   }
 }
+
+/* 카드 키트(pc): 도자기 접시 — 흰 가운데 + 메뉴 색 테 + 아래 이름 띠 */
+.dcard.pc {
+  background: var(--card-tex), radial-gradient(ellipse 62% 48% at 50% 40%, #ffffff 0 55%, color-mix(in srgb, var(--tone) 22%, #f3ece0) 56% 74%, color-mix(in srgb, var(--tone) 55%, #f3ece0) 75% 79%, #fbf7ef 80%) !important;
+  outline: 1.5px solid color-mix(in srgb, var(--tone) 55%, black);
+}
+.dcard.pc .dcard-icon {
+  filter: drop-shadow(0 3px 2px rgba(0, 0, 0, 0.28));
+}
+.dcard.pc .dcard-name {
+  font-family: Georgia, 'Nanum Myeongjo', serif;
+}
+.dcard.pc.selected {
+  outline: 3px solid var(--gold);
+}

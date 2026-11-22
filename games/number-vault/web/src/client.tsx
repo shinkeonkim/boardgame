@@ -2,6 +2,7 @@ import { BASE_EMOTES } from '@bg/core';
 import { EXTRA_EMOTES, GameConfig, GameView } from '@bg/number-vault-engine';
 import { SeatDot } from '@bg/ui';
 import type { GameClient } from '@bg/web';
+import { meta } from '../../meta';
 import { ConfigPanel } from './ConfigPanel';
 import { Demo } from './Demo';
 import { Game } from './Game';
@@ -12,6 +13,7 @@ export const client: GameClient<GameView, GameConfig> = {
   id: 'number-vault',
   title: 'Number Vault',
   subtitle: '숫자 금고 · 2~6명이 하는 숫자 추리 게임',
+  original: meta.original,
   logo: <Logo />,
   lead: (
     <>

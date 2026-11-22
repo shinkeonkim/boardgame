@@ -1,4 +1,5 @@
 import type { DevCard, Noble } from '@bg/gem-guild-engine';
+import { ChipSvg, CountBadge } from '@bg/ui';
 
 export const GEM_INFO = [
   { name: '다이아몬드', short: '흰', fill: '#f4f4f6', ink: '#333', stroke: '#b9bcc6' },
@@ -9,22 +10,20 @@ export const GEM_INFO = [
   { name: '황금', short: '금', fill: '#e3b04a', ink: '#3a2a00', stroke: '#a17a1e' },
 ];
 
+/** 보석 칩: 카지노 칩 + 가운데 보석. 개수는 칩 위가 아니라 옆의 흰 알약(CountBadge)으로 */
 export function GemToken({ gem, n, size = 34, selected, onClick, disabled, label }: { gem: number; n?: number; size?: number; selected?: boolean; onClick?: () => void; disabled?: boolean; label?: string }) {
   const g = GEM_INFO[gem];
   const Tag = onClick ? 'button' : 'span';
+  const light = gem === 0 || gem === 5;
   return (
     <Tag className={`gem ${selected ? 'selected' : ''}`} onClick={onClick} disabled={onClick ? disabled : undefined} aria-label={label ?? `${g.name}${n !== undefined ? ` ${n}개` : ''}`} style={{ width: size, height: size }}>
-      <svg viewBox="0 0 40 40" width={size} height={size} aria-hidden>
-        <circle cx="20" cy="20" r="18" fill={g.fill} stroke={g.stroke} strokeWidth="2.5" />
-        <path d="M20 9 L29 17 L20 31 L11 17 Z" fill="rgb(255 255 255 / .35)" stroke="rgb(255 255 255 / .55)" strokeWidth="1.2" />
-      </svg>
+      <ChipSvg fill={g.fill} edge={light ? g.stroke : '#fff'} size={size}>
+        {/* 깎은 보석 */}
+        <path d="M20 12.5 L26.5 17.5 L20 28 L13.5 17.5 Z" fill={light ? g.stroke : '#fff'} opacity={0.9} />
+        <path d="M13.5 17.5 H26.5 M20 12.5 L17 17.5 L20 28 L23 17.5 Z" fill="none" stroke={g.fill} strokeWidth="0.9" opacity={0.85} />
+      </ChipSvg>
       <i className="chip-tex" aria-hidden />
-      {n !== undefined && (
-        // 개수가 바뀌면 살짝 튐
-        <b key={n} style={{ color: g.ink }}>
-          {n}
-        </b>
-      )}
+      {n !== undefined && <CountBadge n={n} />}
     </Tag>
   );
 }
@@ -34,7 +33,7 @@ export function CostDots({ cost }: { cost: number[] }) {
     <span className="cost">
       {cost.map((n, i) =>
         n > 0 ? (
-          <span key={i} className="cost-dot" style={{ background: GEM_INFO[i].fill, color: GEM_INFO[i].ink, borderColor: GEM_INFO[i].stroke }}>
+          <span key={i} className="cost-dot" style={{ background: i === 0 || i === 5 ? GEM_INFO[i].fill : GEM_INFO[i].stroke, color: GEM_INFO[i].ink, borderColor: GEM_INFO[i].stroke }}>
             {n}
           </span>
         ) : null,
@@ -47,7 +46,7 @@ export function DevCardView({ card, onClick, selected, affordable, size = 'md' }
   const g = GEM_INFO[card.bonus];
   const Tag = onClick ? 'button' : 'div';
   return (
-    <Tag data-flip={`g${card.id}`} className={`devcard t${card.tier} ${size} ${selected ? 'selected' : ''} ${affordable ? 'affordable' : ''}`} style={{ ['--bonus' as string]: g.fill, ['--bonus-ink' as string]: g.ink }} onClick={onClick} aria-label={`${card.tier}단계 ${g.name} 카드, ${card.points}점`}>
+    <Tag data-flip={`g${card.id}`} className={`devcard pc light t${card.tier} ${size} ${selected ? 'selected' : ''} ${affordable ? 'affordable' : ''}`} style={{ ['--bonus' as string]: g.fill, ['--bonus-ink' as string]: g.ink }} onClick={onClick} aria-label={`${card.tier}단계 ${g.name} 카드, ${card.points}점`}>
       <div className="devcard-top">
         <b className="devcard-pts">{card.points || ''}</b>
         <GemToken gem={card.bonus} size={size === 'sm' ? 16 : 22} />
@@ -61,7 +60,7 @@ export function DevCardView({ card, onClick, selected, affordable, size = 'md' }
 export function NobleView({ noble, onClick, size = 'md' }: { noble: Noble; onClick?: () => void; size?: 'sm' | 'md' }) {
   const Tag = onClick ? 'button' : 'div';
   return (
-    <Tag className={`noble ${size}`} onClick={onClick} aria-label={`귀족 ${noble.points}점`}>
+    <Tag className={`noble pc light ${size}`} onClick={onClick} aria-label={`귀족 ${noble.points}점`}>
       <b>{noble.points}</b>
       <span className="noble-icon" aria-hidden>
         🎩

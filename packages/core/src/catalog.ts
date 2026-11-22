@@ -2,6 +2,17 @@
  * 포털(홈페이지)의 게임 목록·검색·상세 페이지에 쓰는 게임 소개 정보.
  * 게임마다 games/<id>/meta.ts 에 하나씩 두고, apps/portal 이 모아서 보여 준다.
  */
+export interface OriginalGame {
+  ko: string;
+  en: string;
+  by: string;
+}
+
+/** 원작 표시 한 줄: 「스플렌더 (Splendor · Marc André)」 */
+export const originalLabel = (o: OriginalGame) => `${o.ko} (${o.en} · ${o.by})`;
+/** 원작 표시 아래 안내 */
+export const ORIGINAL_NOTE = '원작의 규칙을 바탕으로 이름·그림·화면을 직접 만든 팬 제작 버전이에요. 원작 및 권리자와는 관계가 없어요.';
+
 export interface GameMeta {
   /** URL 경로·패키지 이름에 쓰는 식별자 (예: 'expedition-lines' → /expedition-lines/) */
   id: string;
@@ -21,6 +32,8 @@ export interface GameMeta {
   tags: string[];
   /** 원작 메커니즘 출처 (이름·그림은 자체 제작) */
   inspiredBy: string;
+  /** 원작 게임 이름 (한국어 · 원어 · 디자이너) — 포털·첫 화면·게임 방법에 「원작」으로 표시 */
+  original?: OriginalGame;
   /** 카드·상세 페이지 색 (CSS 색) */
   accent: string;
   /** 브랜드 아이콘 SVG 마크업 (viewBox 0 0 64 64) */

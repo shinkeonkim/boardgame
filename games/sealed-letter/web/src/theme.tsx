@@ -37,8 +37,8 @@ export function LetterCard({
   const d = CARD_DEFS[kind];
   const Tag = onClick ? 'button' : 'div';
   return (
-    <Tag data-flip={flip} className={`lcard ${size} ${selected ? 'selected' : ''} ${className}`} style={{ ['--tone' as string]: TONE[kind] }} onClick={onClick} disabled={onClick ? disabled : undefined} title={title ?? `${value} ${d.name}: ${d.text}`} aria-label={`${value} ${d.name}`}>
-      <span className="lcard-val">{value}</span>
+    <Tag data-flip={flip} className={`lcard pc light ${size} ${selected ? 'selected' : ''} ${className}`} style={{ ['--tone' as string]: TONE[kind] }} onClick={onClick} disabled={onClick ? disabled : undefined} title={title ?? `${value} ${d.name}: ${d.text}`} aria-label={`${value} ${d.name}`}>
+      <span className="lcard-val pc-num">{value}</span>
       <span className="lcard-icon" aria-hidden>
         {d.icon}
       </span>
@@ -49,7 +49,7 @@ export function LetterCard({
 }
 
 export function CardBackMini() {
-  return <span className="lcard back xs" aria-hidden />;
+  return <span className="lcard pc back xs" aria-hidden />;
 }
 
 export function Seal({ on }: { on: boolean }) {

@@ -3,7 +3,7 @@ import type { Clue, GameConfig } from '@bg/flare-signals-engine';
 
 export const COLORS = [
   { name: '빨강', short: '빨', hex: '#e0483c' },
-  { name: '노랑', short: '노', hex: '#e6b422' },
+  { name: '노랑', short: '노', hex: '#e6b422', ink: '#3a2a00' },
   { name: '초록', short: '초', hex: '#2fa865' },
   { name: '파랑', short: '파', hex: '#3b7be0' },
   { name: '보라', short: '보', hex: '#9b5ad6' },
@@ -13,7 +13,9 @@ export const RAINBOW = 'conic-gradient(from 30deg, #e0483c, #e6b422, #2fa865, #3
 
 export const colorName = (c: GameConfig, color: number) => (color === 5 && c.sixth === 'rainbow' ? '무지개' : COLORS[color]?.name ?? '?');
 export const colorStyle = (c: GameConfig, color: number): CSSProperties =>
-  color === 5 && c.sixth === 'rainbow' ? { ['--fc' as string]: '#d46ab8', ['--fbg' as string]: RAINBOW } : { ['--fc' as string]: COLORS[color].hex };
+  color === 5 && c.sixth === 'rainbow'
+    ? { ['--fc' as string]: '#d46ab8', ['--fbg' as string]: RAINBOW }
+    : { ['--fc' as string]: COLORS[color].hex, ...((COLORS[color] as { ink?: string }).ink ? { ['--fink' as string]: (COLORS[color] as { ink?: string }).ink } : {}) };
 
 /** 불꽃 카드 (색·숫자를 아는 카드) */
 export function FlareCard({
@@ -37,8 +39,8 @@ export function FlareCard({
 }) {
   const Tag = onClick ? 'button' : 'div';
   return (
-    <Tag className={`fcard ${size} ${color === 5 && c.sixth === 'rainbow' ? 'rainbow' : ''} ${className}`} style={colorStyle(c, color)} onClick={onClick} title={title} aria-label={`${colorName(c, color)} ${value}`}>
-      <span className="fcard-num">{value}</span>
+    <Tag className={`fcard pc ${size} ${color === 5 && c.sixth === 'rainbow' ? 'rainbow' : ''} ${className}`} style={colorStyle(c, color)} onClick={onClick} title={title} aria-label={`${colorName(c, color)} ${value}`}>
+      <span className="fcard-num pc-num">{value}</span>
       <Burst value={value} />
       {children}
     </Tag>
@@ -61,6 +63,9 @@ function Burst({ value }: { value: number }) {
 }
 
 /** 내 카드 (뒷면 + 받은 힌트 표시) */
+/** 아무 힌트도 없는 내 카드는 뒷면 무늬로 */
+const knownColorIsNull = (clue: Clue, show: boolean) => !(show && clue.colors.length);
+
 export function MysteryCard({
   c,
   clue,
@@ -83,7 +88,7 @@ export function MysteryCard({
   const knownColor = show && clue.colors.length ? (clue.colors.length > 1 && c.sixth === 'rainbow' ? 5 : clue.colors[0]) : null;
   const style = knownColor !== null ? colorStyle(c, knownColor) : undefined;
   return (
-    <button className={`fcard mystery ${size} ${knownColor !== null ? 'tinted' : ''} ${selected ? 'selected' : ''} ${className}`} style={style} onClick={onClick} aria-label={label}>
+    <button className={`fcard pc mystery ${knownColorIsNull(clue, show) ? 'back' : ''} ${size} ${knownColor !== null ? 'tinted' : ''} ${selected ? 'selected' : ''} ${className}`} style={style} onClick={onClick} aria-label={label}>
       <span className="fcard-num">{show && clue.value !== null ? clue.value : '?'}</span>
       {show && clue.touched && <span className={`clue-flag ${clue.focus && !clue.focusOnChop && clue.value !== 5 ? 'play' : 'keep'}`} aria-hidden />}
       {show && (clue.notColors.length > 0 || clue.notValues.length > 0) && (

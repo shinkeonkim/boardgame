@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import type { RoomView } from '@bg/core';
 import { Disc, GameConfig, GameView, LogEntry } from '@bg/hidden-thorn-engine';
 import { AlertBanner, EmoteBubble, SeatDot, seatColor } from '@bg/ui';
-import { GameScreenProps, ResultSheet, TableBanner, TableEmotes, TableLayout, TableTopBar, Ticker, emotesBySeat, rankOf, usePeek, useTable, waitingText, SideNote } from '@bg/web';
+import { GameScreenProps, ResultSheet, TableBanner, TableEmotes, TableLayout, TableTopBar, Ticker, emotesBySeat, rankOf, usePeek, useTable, waitingText, SideNote, useLogSounds, useChangeSound } from '@bg/web';
 import { DiscView } from './theme';
 
 type View = RoomView<GameView, GameConfig>;
@@ -39,6 +39,9 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
     stepKey: `${g.phase}-${g.turn}-${g.log.length ? g.log[g.log.length - 1].n : 0}`,
     mySub: g.phase === 'flip' ? '뒤집을 원판을 골라요' : g.phase === 'bidding' ? '더 부르거나 포기' : '원판을 놓거나 도전',
   });
+  // 소리: 원판(칩) 놓기·호가는 딸깍, 뒤집어 장미면 뒤집기, 가시면 쿵, 성공은 축하
+  useLogSounds(g.log, (e) => (e.type === 'bid' ? 'chip' : e.type === 'pass' ? 'tick' : e.type === 'flip' ? (e.disc === 'thorn' ? ['flip', 'thud'] : 'flip') : e.type === 'success' ? 'success' : e.type === 'fail' ? 'fail' : e.type === 'win' ? 'win' : null));
+  useChangeSound(g.matCounts.reduce((a, b) => a + b, 0), 'chip', g.status === 'playing');
   const names = t.names;
   const me = t.me;
   const myTurn = t.myTurn;

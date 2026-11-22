@@ -2,6 +2,7 @@ import { BASE_EMOTES } from '@bg/core';
 import { EXTRA_EMOTES, GameConfig, GameView } from '@bg/flare-signals-engine';
 import { SeatDot } from '@bg/ui';
 import type { GameClient } from '@bg/web';
+import { meta } from '../../meta';
 import { ConfigPanel } from './ConfigPanel';
 import { Demo } from './Demo';
 import { Game } from './Game';
@@ -12,6 +13,7 @@ export const client: GameClient<GameView, GameConfig> = {
   id: 'flare-signals',
   title: 'Flare Signals',
   subtitle: '불꽃 신호 · 2~6명이 함께 만드는 협력 불꽃놀이',
+  original: meta.original,
   logo: <Logo />,
   lead: (
     <>

@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import type { RoomView } from '@bg/core';
 import { DevCard, GameConfig, GameView, LogEntry } from '@bg/gem-guild-engine';
 import { AlertBanner, SeatDot, seatColor } from '@bg/ui';
-import { GameScreenProps, ResultSheet, SeatList, TableBanner, TableEmotes, TableLayout, TableTopBar, Ticker, rankOf, usePeek, useTable } from '@bg/web';
+import { GameScreenProps, ResultSheet, SeatList, TableBanner, TableEmotes, TableLayout, TableTopBar, Ticker, rankOf, usePeek, useTable, useLogSounds } from '@bg/web';
 import { DevCardView, GEM_INFO, GemToken, NobleView } from './theme';
 
 type View = RoomView<GameView, GameConfig>;
@@ -12,6 +12,8 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
   const g = v.game!;
   const c = g.config;
   const t = useTable(view, notify, { title: 'Gem Guild', turn: g.turn, playing: g.status === 'playing', mySub: '보석 · 예약 · 사기 중 하나' });
+  // 소리: 보석 가져오기·버리기는 칩 여러 개, 사기는 카드 + 동전, 예약은 카드, 귀족은 축하
+  useLogSounds(g.log, (e) => (e.type === 'take' || e.type === 'discard' ? 'chips' : e.type === 'buy' ? ['card', 'coins'] : e.type === 'reserve' ? 'deal' : e.type === 'noble' ? 'success' : e.type === 'final' ? 'bell' : null));
   const names = t.names;
   const me = t.me;
   const myTurn = t.myTurn;
@@ -103,7 +105,7 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
           <section className="gg-market" aria-label="시장">
             {[2, 1, 0].map((tier) => (
               <div key={tier} className="gg-tier">
-                <button className={`gg-deck t${tier + 1}`} disabled={!myTurn || !g.deckCounts[tier] || (mine?.reservedCount ?? 0) >= c.maxReserve} onClick={() => act('move', { move: { type: 'reserve', tier: tier + 1 } })} title="맨 위 카드를 몰래 예약">
+                <button className={`gg-deck pc back t${tier + 1}`} disabled={!myTurn || !g.deckCounts[tier] || (mine?.reservedCount ?? 0) >= c.maxReserve} onClick={() => act('move', { move: { type: 'reserve', tier: tier + 1 } })} title="맨 위 카드를 몰래 예약">
                   <b>{tier + 1}단계</b>
                   <small>{g.deckCounts[tier]}장</small>
                 </button>

@@ -46,7 +46,12 @@ export function PieceIcon({
     <Tag className={`piece ${selected ? 'selected' : ''} ${dragging ? 'dragging' : ''} ${onPointerDown ? 'grabbable' : ''}`} onClick={onClick} onPointerDown={onPointerDown} disabled={onClick ? disabled : undefined} title={title} aria-label={title}>
       <svg width={w * size} height={h * size} viewBox={`0 0 ${w} ${h}`} aria-hidden>
         {cells.map(([x, y], i) => (
-          <rect key={i} x={x + 0.06} y={y + 0.06} width="0.88" height="0.88" rx="0.15" fill={COLORS[color].fill} />
+          <g key={i}>
+            <rect x={x + 0.06} y={y + 0.06} width="0.88" height="0.88" rx="0.15" fill={COLORS[color].fill} />
+            {/* 블록 광택·그림자 */}
+            <rect x={x + 0.06} y={y + 0.06} width="0.88" height="0.36" rx="0.15" fill="#fff" opacity="0.28" />
+            <rect x={x + 0.06} y={y + 0.8} width="0.88" height="0.14" rx="0.07" fill="#000" opacity="0.18" />
+          </g>
         ))}
       </svg>
     </Tag>

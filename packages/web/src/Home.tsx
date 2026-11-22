@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import type { RoomListing } from '@bg/core';
+import { ORIGINAL_NOTE, originalLabel } from '@bg/core';
 import { ThemeToggle } from '@bg/ui';
 import { useGameClient } from './App';
 import { GuideButton } from './Guide';
@@ -15,6 +16,11 @@ export function Brand({ small }: { small?: boolean }) {
       <div>
         <h1>{client.title}</h1>
         <p className="muted">{client.subtitle}</p>
+        {client.original && !small && (
+          <p className="brand-original" title={ORIGINAL_NOTE}>
+            원작 · {originalLabel(client.original)}
+          </p>
+        )}
       </div>
     </div>
   );

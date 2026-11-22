@@ -15,6 +15,7 @@ export const meta: GameMeta = {
   weight: 2,
   tags: ['bluffing', 'deduction', 'player-elimination', 'hidden-info', 'party', 'card'],
   inspiredBy: 'Coup (Rikki Tahta) 메커니즘',
+  original: { ko: '쿠', en: 'Coup', by: 'Rikki Tahta' },
   accent: '#8a5cd0',
   icon: '<rect width="64" height="64" rx="14" fill="#231c2e"/><path d="M20 44 L22 24 L28 32 L32 20 L36 32 L42 24 L44 44 Z" fill="#d79a1e"/><rect x="18" y="46" width="28" height="5" rx="2" fill="#d79a1e"/><circle cx="47" cy="18" r="7" fill="#8a5cd0"/>',
   status: 'live',

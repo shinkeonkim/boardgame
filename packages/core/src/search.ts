@@ -30,7 +30,7 @@ export function searchGames(games: GameMeta[], query: GameQuery, tagLabels: Reco
     if (query.weight === 'heavy' && g.weight < 3.5) return false;
     if (query.tags?.length && !query.tags.every((t) => g.tags.includes(t))) return false;
     if (words.length) {
-      const hay = norm([g.title, g.subtitle, g.tagline, g.inspiredBy, ...g.description, ...g.tags, ...g.tags.map((t) => tagLabels[t] ?? '')].join(' '));
+      const hay = norm([g.title, g.subtitle, g.tagline, g.inspiredBy, g.original?.ko ?? '', g.original?.en ?? '', ...g.description, ...g.tags, ...g.tags.map((t) => tagLabels[t] ?? '')].join(' '));
       if (!words.every((w) => hay.includes(w))) return false;
     }
     return true;

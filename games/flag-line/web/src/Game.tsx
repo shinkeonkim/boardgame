@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import type { RoomView } from '@bg/core';
 import { FORMATIONS, GameConfig, GameView, LogEntry, Side, formationRank } from '@bg/flag-line-engine';
 import { EmoteBubble, SeatDot } from '@bg/ui';
-import { GameScreenProps, ResultSheet, TableBanner, TableEmotes, TableLayout, TableTopBar, Ticker, emotesBySeat, usePeek, useTable, SideNote } from '@bg/web';
+import { GameScreenProps, ResultSheet, TableBanner, TableEmotes, TableLayout, TableTopBar, Ticker, emotesBySeat, usePeek, useTable, SideNote, useLogSounds } from '@bg/web';
 import { FlagIcon, TROOP_NAMES, Troop } from './theme';
 
 type View = RoomView<GameView, GameConfig>;
@@ -12,6 +12,8 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
   const g = v.game!;
   const c = g.config;
   const t = useTable(view, notify, { title: 'Flag Line', turn: g.turn, playing: g.status === 'playing', mySub: '카드를 깃발에 놓아요' });
+  // 소리: 카드를 깃발 앞에 탁, 깃발을 차지하면 축하
+  useLogSounds(g.log, (e) => (e.type === 'play' ? 'card' : e.type === 'claim' ? 'success' : e.type === 'win' ? 'win' : null));
   const names = t.names;
   const me = t.me;
   const myTurn = t.myTurn;

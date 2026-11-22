@@ -15,6 +15,7 @@ export const meta: GameMeta = {
   weight: 2,
   tags: ['number', 'tile-placement', 'hand-management', 'set-collection'],
   inspiredBy: 'Rummikub (Ephraim Hertzano) 메커니즘',
+  original: { ko: '루미큐브', en: 'Rummikub', by: 'Ephraim Hertzano' },
   accent: '#2b4a3e',
   icon: '<rect width="64" height="64" rx="14" fill="#2b4a3e"/><rect x="9" y="18" width="14" height="20" rx="3" fill="#fbf6ea"/><rect x="25" y="18" width="14" height="20" rx="3" fill="#fbf6ea"/><rect x="41" y="18" width="14" height="20" rx="3" fill="#fbf6ea"/><text x="16" y="32.5" text-anchor="middle" font-size="11" font-weight="900" fill="#d0453a" font-family="system-ui">7</text><text x="32" y="32.5" text-anchor="middle" font-size="11" font-weight="900" fill="#2f6fd0" font-family="system-ui">8</text><text x="48" y="32.5" text-anchor="middle" font-size="11" font-weight="900" fill="#d88a12" font-family="system-ui">9</text>',
   status: 'live',

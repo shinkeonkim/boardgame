@@ -2,6 +2,7 @@ import { BASE_EMOTES } from '@bg/core';
 import { EXTRA_EMOTES, GameConfig, GameView } from '@bg/court-intrigue-engine';
 import { SeatDot } from '@bg/ui';
 import type { GameClient } from '@bg/web';
+import { meta } from '../../meta';
 import { ConfigPanel } from './ConfigPanel';
 import { Demo } from './Demo';
 import { Game } from './Game';
@@ -12,6 +13,7 @@ export const client: GameClient<GameView, GameConfig> = {
   id: 'court-intrigue',
   title: 'Court Intrigue',
   subtitle: '궁정 음모 · 2~6명이 허풍으로 겨루는 15분 게임',
+  original: meta.original,
   logo: <Logo />,
   lead: (
     <>

@@ -2,6 +2,7 @@ import { BASE_EMOTES } from '@bg/core';
 import { EXTRA_EMOTES, GameConfig, GameView } from '@bg/corner-claim-engine';
 import { SeatDot } from '@bg/ui';
 import type { GameClient } from '@bg/web';
+import { meta } from '../../meta';
 import { ConfigPanel } from './ConfigPanel';
 import { Demo } from './Demo';
 import { Game } from './Game';
@@ -12,6 +13,7 @@ export const client: GameClient<GameView, GameConfig> = {
   id: 'corner-claim',
   title: 'Corner Claim',
   subtitle: '모서리 땅따먹기 · 2~4명이 조각을 펼치는 공간 퍼즐',
+  original: meta.original,
   logo: <Logo />,
   lead: (
     <>

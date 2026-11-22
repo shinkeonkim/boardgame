@@ -2,6 +2,7 @@ import { BASE_EMOTES } from '@bg/core';
 import { EXTRA_EMOTES, GameConfig, GameView } from '@bg/sealed-letter-engine';
 import { SeatDot } from '@bg/ui';
 import type { GameClient } from '@bg/web';
+import { meta } from '../../meta';
 import { ConfigPanel } from './ConfigPanel';
 import { Demo } from './Demo';
 import { Game } from './Game';
@@ -12,6 +13,7 @@ export const client: GameClient<GameView, GameConfig> = {
   id: 'sealed-letter',
   title: 'Sealed Letter',
   subtitle: '비밀 편지 · 2~6명이 하는 16장 추리 카드 게임',
+  original: meta.original,
   logo: <Logo />,
   lead: (
     <>

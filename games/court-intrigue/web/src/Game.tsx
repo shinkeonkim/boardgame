@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import type { RoomView } from '@bg/core';
 import { ACTION_DEFS, ActionKind, GameConfig, GameView, LogEntry, ROLE_DEFS, ROLES, Role } from '@bg/court-intrigue-engine';
 import { AlertBanner, EmoteBubble, SeatDot, seatColor } from '@bg/ui';
-import { GameScreenProps, ResultSheet, TableBanner, TableEmotes, TableLayout, TableTopBar, Ticker, emotesBySeat, rankOf, usePeek, useTable, SideNote } from '@bg/web';
+import { GameScreenProps, ResultSheet, TableBanner, TableEmotes, TableLayout, TableTopBar, Ticker, emotesBySeat, rankOf, usePeek, useTable, SideNote, useLogSounds } from '@bg/web';
 import { Coins, RoleCard } from './theme';
 
 type View = RoomView<GameView, GameConfig>;
@@ -45,6 +45,26 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
     stepKey: `${g.turn}-${g.phase}-${g.log.length ? g.log[g.log.length - 1].n : 0}`,
     mySub: reaction ? '도전하거나 통과해요' : g.phase === 'lose' ? '잃을 카드를 골라요' : '행동을 골라요',
   });
+  // 소리: 소득·원조·세금·약탈은 동전, 도전은 경고, 막기는 방패(나무), 영향력을 잃으면 뒤집기, 암살·쿠데타는 쿵
+  useLogSounds(g.log, (e) =>
+    e.type === 'act'
+      ? e.action === 'coup' || e.action === 'assassinate'
+        ? 'thud'
+        : e.action === 'exchange'
+          ? 'shuffle'
+          : 'coins'
+      : e.type === 'challenge'
+        ? ['alert', e.ok ? 'success' : 'fail']
+        : e.type === 'block'
+          ? 'wood'
+          : e.type === 'lose'
+            ? 'flip'
+            : e.type === 'out'
+              ? 'thud'
+              : e.type === 'win'
+                ? 'win'
+                : null,
+  );
   const names = t.names;
   const me = t.me;
   const myTurn = t.myTurn;

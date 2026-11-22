@@ -15,6 +15,7 @@ export const meta: GameMeta = {
   weight: 1,
   tags: ['party', 'simultaneous', 'card', 'luck', 'big-group'],
   inspiredBy: '6 nimmt! (Wolfgang Kramer) 메커니즘',
+  original: { ko: '젝스님트', en: '6 nimmt!', by: 'Wolfgang Kramer' },
   accent: '#d0533f',
   icon: '<rect width="64" height="64" rx="14" fill="#1d1a24"/><rect x="9" y="18" width="7" height="20" rx="1.6" fill="#f6efe2" opacity=".55"/><rect x="18" y="18" width="7" height="20" rx="1.6" fill="#f6efe2" opacity=".64"/><rect x="27" y="18" width="7" height="20" rx="1.6" fill="#f6efe2" opacity=".73"/><rect x="36" y="18" width="7" height="20" rx="1.6" fill="#f6efe2" opacity=".82"/><rect x="45" y="18" width="7" height="20" rx="1.6" fill="#f6efe2" opacity=".91"/><rect x="52" y="14" width="8" height="28" rx="1.8" fill="#d0533f" transform="rotate(12 56 28)"/>',
   status: 'live',

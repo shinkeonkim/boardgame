@@ -2,6 +2,7 @@ import { BASE_EMOTES } from '@bg/core';
 import { EXTRA_EMOTES, GameConfig, GameView } from '@bg/pass-the-plate-engine';
 import { SeatDot } from '@bg/ui';
 import type { GameClient } from '@bg/web';
+import { meta } from '../../meta';
 import { ConfigPanel } from './ConfigPanel';
 import { Demo } from './Demo';
 import { Game } from './Game';
@@ -12,6 +13,7 @@ export const client: GameClient<GameView, GameConfig> = {
   id: 'pass-the-plate',
   title: 'Pass the Plate',
   subtitle: '접시 돌리기 · 2~8명이 동시에 고르는 요리 모으기',
+  original: meta.original,
   logo: <Logo />,
   lead: (
     <>

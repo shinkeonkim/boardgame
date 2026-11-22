@@ -24,11 +24,8 @@
   border-radius: 50%;
   transition: transform 0.15s;
 }
-.gem b {
-  position: absolute;
-  font-size: 0.85rem;
-  font-weight: 900;
-  animation: gem-bump 0.4s ease-out;
+.gem .count-badge {
+  font-size: 0.8rem;
 }
 @keyframes gem-bump {
   40% {
@@ -303,4 +300,51 @@ button.noble {
   .gg-tier {
     gap: 4px;
   }
+}
+
+/* 카드 앞면: 윗단은 보너스 보석 색 띠, 아래는 상아색 종이 */
+.devcard.pc {
+  background: var(--card-tex), linear-gradient(180deg, color-mix(in srgb, var(--bonus) 55%, white) 0 28%, color-mix(in srgb, var(--bonus) 70%, black) 28% calc(28% + 2px), #fffaf0 calc(28% + 2px), #f4ead7) !important;
+  color: #2a241a;
+}
+.devcard.pc .devcard-pts {
+  font-family: Georgia, 'Times New Roman', serif;
+  color: #2a241a;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.8);
+}
+.devcard.pc .devcard-pts:empty {
+  visibility: hidden;
+}
+.devcard.t2.pc {
+  --pc-edge: #f5e2b0;
+}
+.devcard.t3.pc {
+  --pc-edge: #e7d08a;
+}
+.devcard .cost-dot {
+  border-width: 2px;
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+}
+.noble.pc {
+  background: var(--card-tex), linear-gradient(160deg, #fff6dc, #ecd49a) !important;
+  color: #3a2a00;
+}
+.gg-deck.pc {
+  color: #fff;
+}
+.gg-deck.pc b,
+.gg-deck.pc small {
+  position: relative;
+  z-index: 4;
+}
+.gem .chip-tex {
+  inset: 4% 4% 7% 4%;
+}
+.gg-mine-cell .gem {
+  margin-bottom: 4px;
+}
+.gg-bonus {
+  border: 1.5px solid rgba(0, 0, 0, 0.35);
+  min-width: 2.2em;
+  text-align: center;
 }

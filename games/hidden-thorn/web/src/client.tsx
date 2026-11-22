@@ -2,6 +2,7 @@ import { BASE_EMOTES } from '@bg/core';
 import { EXTRA_EMOTES, GameConfig, GameView } from '@bg/hidden-thorn-engine';
 import { SeatDot } from '@bg/ui';
 import type { GameClient } from '@bg/web';
+import { meta } from '../../meta';
 import { ConfigPanel } from './ConfigPanel';
 import { Demo } from './Demo';
 import { Game } from './Game';
@@ -12,6 +13,7 @@ export const client: GameClient<GameView, GameConfig> = {
   id: 'hidden-thorn',
   title: 'Hidden Thorn',
   subtitle: '숨은 가시 · 2~8명이 하는 순수 블러핑',
+  original: meta.original,
   logo: <Logo />,
   lead: (
     <>

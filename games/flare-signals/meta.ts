@@ -15,6 +15,7 @@ export const meta: GameMeta = {
   weight: 2,
   tags: ['cooperative', 'hidden-info', 'deduction', 'card', 'memory', 'bot-friendly'],
   inspiredBy: 'Hanabi (Antoine Bauza) 메커니즘',
+  original: { ko: '하나비', en: 'Hanabi', by: 'Antoine Bauza' },
   accent: '#3b7be0',
   icon: '<rect width="64" height="64" rx="14" fill="#141628"/><g stroke-width="4" stroke-linecap="round"><line x1="32" y1="22" x2="32" y2="8" stroke="#e0483c"/><line x1="37.7" y1="26.1" x2="51" y2="21.8" stroke="#e6b422"/><line x1="35.5" y1="32.9" x2="43.8" y2="44.2" stroke="#2fa865"/><line x1="28.5" y1="32.9" x2="20.2" y2="44.2" stroke="#3b7be0"/><line x1="26.3" y1="26.1" x2="13" y2="21.8" stroke="#9b5ad6"/></g><circle cx="32" cy="28" r="4" fill="#fff4c2"/>',
   status: 'live',

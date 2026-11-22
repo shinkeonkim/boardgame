@@ -15,6 +15,7 @@ import {
   usePeek,
   useTable,
   waitingText,
+  useLogSounds,
 } from '@bg/web';
 import { CardBack, NumberCard, Penalty } from './theme';
 
@@ -43,6 +44,8 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
     stepKey: `${g.round}-${g.turn}-${g.phase}`,
     mySub: g.phase === 'take' ? '가져갈 줄을 골라 주세요' : '모두 고르면 한꺼번에 공개돼요',
   });
+  // 소리: 공개는 카드를 한꺼번에 뒤집고, 놓을 때마다 탁, 줄을 가져가면 쓸어 모음
+  useLogSounds(g.log, (e) => (e.type === 'reveal' ? 'shuffle' : e.type === 'place' ? (e.took.length ? ['card', 'sweep'] : 'card') : e.type === 'round' ? 'shuffle' : null));
   const names = t.names;
   const me = t.me;
   const [peek, setPeek] = usePeek(`${g.status}-${g.round}`);

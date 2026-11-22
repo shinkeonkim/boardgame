@@ -15,6 +15,7 @@ export const meta: GameMeta = {
   weight: 2,
   tags: ['card', 'hand-management', 'set-collection', 'push-your-luck', 'two-player', 'teams', 'hidden-info'],
   inspiredBy: '로스트 시티 (Reiner Knizia) 메커니즘',
+  original: { ko: '로스트 시티', en: 'Lost Cities', by: 'Reiner Knizia' },
   accent: '#e2a72e',
   icon: '<rect width="64" height="64" rx="14" fill="#1b1a17"/><path d="M14 46 L26 26 L34 36 L42 22 L52 46 Z" fill="#e2a72e"/><circle cx="46" cy="16" r="5" fill="#f4ece0"/>',
   status: 'live',

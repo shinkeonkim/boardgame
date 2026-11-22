@@ -1,4 +1,4 @@
-import { TAG_LABELS } from '@bg/core';
+import { ORIGINAL_NOTE, TAG_LABELS, originalLabel } from '@bg/core';
 import { GAMES, gameById } from '../catalog';
 import { GameArt, GameCard, GameIcon, GameStats } from '../GameCard';
 import { Link } from '../router';
@@ -20,6 +20,7 @@ export function GamePage({ id }: { id: string }) {
             <div>
               <h1>{g.title}</h1>
               <span className="muted">{g.subtitle}</span>
+              {g.original && <div className="gd-original">원작 · {originalLabel(g.original)}</div>}
             </div>
           </div>
           <p className="gd-tagline">{g.tagline}</p>
@@ -54,7 +55,7 @@ export function GamePage({ id }: { id: string }) {
           {g.description.map((p, i) => (
             <p key={i}>{p}</p>
           ))}
-          <p className="muted small">{g.inspiredBy}에서 영감을 받았어요. 이름·그림·화면은 직접 만들었어요.</p>
+          <p className="muted small">{g.original ? `원작: ${originalLabel(g.original)}. ${ORIGINAL_NOTE}` : `${g.inspiredBy}에서 영감을 받았어요. 이름·그림·화면은 직접 만들었어요.`}</p>
         </section>
         <div className="gd-side">
           <section className="panel">

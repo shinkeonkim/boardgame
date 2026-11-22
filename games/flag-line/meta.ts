@@ -15,6 +15,7 @@ export const meta: GameMeta = {
   weight: 2,
   tags: ['card', 'two-player', 'hand-management', 'teams', 'abstract'],
   inspiredBy: 'Battle Line / Schotten Totten (Reiner Knizia) 메커니즘',
+  original: { ko: '배틀라인', en: 'Battle Line', by: 'Reiner Knizia' },
   accent: '#3a7bd5',
   icon: '<rect width="64" height="64" rx="14" fill="#1e2630"/><g transform="translate(8 18)"><rect x="3" width="1.6" height="26" fill="#cfd6e0"/><path d="M4.6 1 L12 3 L4.6 6 Z" fill="#d0533f"/></g><g transform="translate(30 18)"><rect x="3" width="1.6" height="26" fill="#cfd6e0"/><path d="M4.6 1 L12 3 L4.6 6 Z" fill="#8792a2"/></g><g transform="translate(41 18)"><rect x="3" width="1.6" height="26" fill="#cfd6e0"/><path d="M4.6 1 L12 3 L4.6 6 Z" fill="#3a7bd5"/></g>',
   status: 'live',

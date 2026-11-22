@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import type { RoomView } from '@bg/core';
 import { Cell, GameConfig, GameView, LogEntry, pieceById, placeProblem } from '@bg/corner-claim-engine';
-import { GameScreenProps, ResultSheet, TableBanner, TableEmotes, TableLayout, TableTopBar, Ticker, rankOf, usePeek, useTable, SideNote } from '@bg/web';
+import { GameScreenProps, ResultSheet, TableBanner, TableEmotes, TableLayout, TableTopBar, Ticker, rankOf, usePeek, useTable, SideNote, useLogSounds } from '@bg/web';
 import { COLORS, PieceIcon, flip, orientIndex, rotate } from './theme';
 
 type View = RoomView<GameView, GameConfig>;
@@ -13,6 +13,8 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
   const c = g.config;
   const n = c.size;
   const t = useTable(view, notify, { title: 'Corner Claim', turn: g.owners[g.color], playing: g.status === 'playing', stepKey: `${g.color}-${g.log.length ? g.log[g.log.length - 1].n : 0}`, mySub: `${COLORS[g.color].name} 조각을 놓아요` });
+  // 소리: 블록을 놓으면 나무 톡, 막히면 실패음
+  useLogSounds(g.log, (e) => (e.type === 'place' ? 'wood' : e.type === 'stuck' ? 'fail' : null));
   const names = t.names;
   const me = t.me;
   const myTurn = t.myTurn;
@@ -197,7 +199,7 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
                     key={i}
                     data-i={i}
                     className={`cc-cell ${cell >= 0 ? 'filled' : ''} ${g.lastCells.includes(i) ? 'last' : ''} ${inPreview ? (preview!.problem ? 'pv-bad' : 'pv-ok') : ''}`}
-                    style={cell >= 0 ? { background: COLORS[cell].fill } : inPreview ? { ['--pv' as string]: COLORS[g.color].fill } : undefined}
+                    style={cell >= 0 ? { backgroundColor: COLORS[cell].fill } : inPreview ? { ['--pv' as string]: COLORS[g.color].fill } : undefined}
                     onMouseEnter={() => !isTouch && piece && !drag && setHover([x, y])}
                     onClick={() => {
                       if (!myTurn || !piece) return;

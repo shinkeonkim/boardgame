@@ -46,7 +46,8 @@
   }
 }
 .turn-banner.mine .tb-body {
-  background: linear-gradient(135deg, #e08a34, #c4612a);
+  /* 흰 글자 대비 4.5:1 이상 (가독성 검사) */
+  background: linear-gradient(135deg, #c4611f, #a4431a);
   border-color: transparent;
   color: #fff;
   box-shadow: 0 6px 20px rgba(196, 97, 42, 0.45);

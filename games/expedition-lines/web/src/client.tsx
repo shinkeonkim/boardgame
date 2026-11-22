@@ -1,6 +1,7 @@
 import { EXTRA_EMOTES, GameConfig, GameView } from '@bg/expedition-lines-engine';
 import { BASE_EMOTES } from '@bg/core';
 import type { GameClient } from '@bg/web';
+import { meta } from '../../meta';
 import { CardDefs } from './cards';
 import { ConfigPanel } from './ConfigPanel';
 import { DemoBoard } from './Demo';
@@ -11,6 +12,7 @@ export const client: GameClient<GameView, GameConfig> = {
   id: 'expedition-lines',
   title: 'Expedition Lines',
   subtitle: '탐험대 · 2~4명이 하는 카드 게임',
+  original: meta.original,
   logo: (
     <svg viewBox="0 0 64 64" aria-hidden>
       <rect width="64" height="64" rx="14" fill="var(--ink)" />

@@ -15,6 +15,7 @@ export const meta: GameMeta = {
   weight: 1,
   tags: ['dice', 'bluffing', 'party', 'player-elimination', 'hidden-info', 'big-group'],
   inspiredBy: "Liar's Dice / Perudo (전통 주사위 게임) 메커니즘",
+  original: { ko: '라이어 다이스', en: 'Liar\'s Dice · Perudo', by: '전통 주사위 놀이' },
   accent: '#b3542e',
   icon: '<rect width="64" height="64" rx="14" fill="#2a1f1a"/><path d="M18 12 h28 l-4 30 h-20 z" fill="#b3542e"/><rect x="15" y="9" width="34" height="6" rx="3" fill="#c96a3e"/><rect x="22" y="40" width="20" height="20" rx="5" fill="#f6efe2"/><circle cx="27" cy="45" r="2.3" fill="#2a1f1a"/><circle cx="37" cy="55" r="2.3" fill="#2a1f1a"/><circle cx="32" cy="50" r="2.3" fill="#d0533f"/>',
   status: 'live',

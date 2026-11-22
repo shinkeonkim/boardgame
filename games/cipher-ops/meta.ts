@@ -15,6 +15,7 @@ export const meta: GameMeta = {
   weight: 1,
   tags: ['party', 'word', 'teams', 'deduction', 'big-group', 'hidden-info'],
   inspiredBy: 'Codenames (Vlaada Chvátil) 메커니즘',
+  original: { ko: '코드네임', en: 'Codenames', by: 'Vlaada Chvátil' },
   accent: '#3a7bd5',
   icon: '<rect width="64" height="64" rx="14" fill="#1f2430"/><rect x="11" y="11" width="12" height="12" rx="2.5" fill="#d0533f"/><rect x="26" y="11" width="12" height="12" rx="2.5" fill="#3a7bd5"/><rect x="41" y="11" width="12" height="12" rx="2.5" fill="#e8dcc2"/><rect x="11" y="26" width="12" height="12" rx="2.5" fill="#e8dcc2"/><rect x="26" y="26" width="12" height="12" rx="2.5" fill="#111"/><rect x="41" y="26" width="12" height="12" rx="2.5" fill="#3a7bd5"/><rect x="11" y="41" width="12" height="12" rx="2.5" fill="#e8dcc2"/><rect x="26" y="41" width="12" height="12" rx="2.5" fill="#d0533f"/><rect x="41" y="41" width="12" height="12" rx="2.5" fill="#e8dcc2"/>',
   status: 'live',

@@ -160,6 +160,33 @@ scripts/  local.mjs(운영과 같은 경로 게이트웨이) · bundle.mjs(이�
   - 무늬는 CSS 그라디언트나 `svgTile(w, h, '<svg 몸통>', 바탕색)`으로 만든다. 외부 이미지 파일은 쓰지 않는다.
   - SVG 몸통에는 `#`를 그대로 쓴다. 인코딩은 `svgTile`이 한다.
 
+## 5-2. 카드·칩 품질 · 가독성 · 효과음 · 원작 표시
+
+**놀이 도구 키트 (`packages/ui/src/pieces.tsx` + `styles/pieces.css`)**. 기준은 Expedition Lines·Crown March 카드다.
+- **카드**: 카드 요소에 `pc` 클래스를 붙인다.
+  - 크림색 테두리 + 바깥 어두운 선 + 겹친 그림자 + 안쪽 테두리·모서리 어둡게·사선 광택 + 누르면 들림을 키트가 그린다.
+  - 앞면 바탕은 게임이 채운다. 색 카드는 「밝은 가운데 → 진한 가장자리」 그라디언트, 종이 카드는 `pc light` + 윗단 색 띠.
+  - 숫자는 `pc-num`(세리프)을 쓴다. 뒷면은 `pc back`이고, 꾸미기 무늬 위에 가운데 문장이 그려진다.
+- **칩**: `<ChipSvg fill>{가운데 그림}</ChipSvg>`를 쓴다 (테두리 홈 8개·안쪽 점선 고리·두께·광택). 동전·원판·보석이 모두 이걸 쓴다.
+- **두꺼운 조각(타일·주사위)**: 윗면 밝은 선 + 아래 두께 그림자 + 대각 그라디언트로 그린다.
+
+**가독성** — 칩·그림 위에 숫자를 얹지 않는다(실제 피드백: 보석 칩 숫자가 안 읽힘).
+- 개수는 `<CountBadge n>`으로 표시한다. 흰 알약 + 진한 글자를 칩 오른쪽 아래에 붙인다.
+- 그림 위에 꼭 글자를 써야 하면 진한 외곽선(text-shadow 2겹)을 두른다.
+- 밝은 색(노랑) 바탕에는 어두운 글자를 쓴다.
+- 글자는 10px 이상이어야 한다.
+- 검사: `node scripts/qa/readability.mjs [id…]`. 실제 화면 픽셀로 글자색과 배경 대비(3:1 미만)를 재고, 10px 미만 글자를 잡는다. 새 게임은 「문제 없음」이 나와야 한다.
+
+**효과음 (`packages/web/src/fx.ts`, WebAudio 합성 — 음원 파일 없음)**
+- `sound.fx('card' | 'deal' | 'flip' | 'shuffle' | 'sweep' | 'chip' | 'chips' | 'coin' | 'coins' | 'dice' | 'cup' | 'tile' | 'tiles' | 'wood' | 'stone' | 'paper' | 'plate' | 'firework' | 'fizzle' | 'thud' | 'lock' | 'bell' | 'alert' | 'success' | 'fail' | 'win')`
+- 게임은 `useLogSounds(g.log, (e) => 기록 → 소리)`로 **그 게임 도구에 맞는 소리**를 고른다. 기록이 없는 변화는 `useChangeSound(key, fx)`로 처리한다.
+  - 예: 카드 게임은 card·deal, 보석은 chips, 주사위는 cup·dice, 타일은 tile(s), 블록은 wood, 불꽃은 firework.
+- 내 차례는 마림바 세 음, 남의 차례는 나무 똑이다. 새 효과음은 fx.ts에 한 줄 추가하고, OfflineAudioContext로 렌더해 소리가 나는지 확인한다.
+
+**원작 표시**: `meta.ts`에 `original: { ko, en, by }`를 넣는다.
+- 포털 카드(「원작 ○○」), 상세 페이지, 게임 첫 화면, 게임 방법 머리에 나온다. client.tsx의 `original: meta.original`이 연결한다.
+- 「원작 규칙을 바탕으로 직접 만든 팬 제작 버전, 권리자와 관계없음」 안내(`ORIGINAL_NOTE`)를 함께 둔다.
+
 ## 6. 디자인 시스템 규칙 (packages/ui, 문서: packages/ui/README.md, 진열장: /design)
 
 - 색·간격·반경은 토큰만 쓴다(`--bg --panel --ink --muted --line --accent --gold --info --ok --danger`, `--sp-*`, `--r-*`). 하드코딩한 색은 게임 고유 그림(카드 무늬 등)에만.
@@ -258,6 +285,8 @@ scripts/  local.mjs(운영과 같은 경로 게이트웨이) · bundle.mjs(이�
 - [ ] `npm test && npm run typecheck && npm run build && npm run local` 로 한 판 + QA 크기·테마
 - [ ] deploy/(servicemonitor 포함) · release-<id>.yml · `npm run media`(포털 표지 `apps/portal/public/covers/<id>.jpg`, 게임 방법 영상)
 - [ ] oh-my-homelab PR (ArgoCD 앱 + 네트워크 정책) → merge 후 확인
+- [ ] 카드는 `pc`(뒷면 `pc back`), 칩은 `ChipSvg`, 개수는 `CountBadge` · `scripts/qa/readability.mjs` 통과
+- [ ] `useLogSounds`로 도구에 맞는 효과음 · meta.ts `original`(원작 이름)
 - [ ] 카드 뒷면·앞면·칩에 스킨 변수(`--card-back`·`--card-tex`·`--chip-tex`), 움직일 요소에 `data-flip`
 - [ ] 조작이 「고르기 → 놓기」인 게임은 끌어다 놓기도 (elementFromPoint + data-drop, 고스트는 portal)
 - [ ] 쓸 만한 새 UI는 packages/ui로 올리고 /design에 예시 추가, 새 함정은 이 문서 10절에 추가

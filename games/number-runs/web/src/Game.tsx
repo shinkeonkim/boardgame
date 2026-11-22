@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom';
 import type { RoomView } from '@bg/core';
 import { GameConfig, GameView, LogEntry, Tile, analyze, arrange, setValue, tableProblem } from '@bg/number-runs-engine';
 import { AlertBanner, seatColor } from '@bg/ui';
-import { GameScreenProps, ResultSheet, fitZoom, SeatList, TableBanner, TableEmotes, TableLayout, TableTopBar, Ticker, rankOf, usePeek, useTable, SideNote } from '@bg/web';
+import { GameScreenProps, ResultSheet, fitZoom, SeatList, TableBanner, TableEmotes, TableLayout, TableTopBar, Ticker, rankOf, usePeek, useTable, SideNote, useLogSounds } from '@bg/web';
 import { TileFace } from './theme';
 
 
@@ -14,6 +14,8 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
   const g = v.game!;
   const c = g.config;
   const t = useTable(view, notify, { title: 'Number Runs', turn: g.turn, playing: g.status === 'playing', mySub: '타일을 내거나 1장 가져와요' });
+  // 소리: 타일을 내면 여러 개 딱, 가져오면 하나, 이기면 축하
+  useLogSounds(g.log, (e) => (e.type === 'play' ? 'tiles' : e.type === 'draw' ? 'tile' : e.type === 'win' ? 'win' : null));
   const names = t.names;
   const me = t.me;
   const myTurn = t.myTurn;

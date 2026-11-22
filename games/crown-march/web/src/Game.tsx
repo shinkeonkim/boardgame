@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import type { EmoteEvent, RoomView } from '@bg/core';
 import { Card, DIRS, EMPTY, GameConfig, GameView, HOLE, LogEntry, playOutcome, sameSide, scoreBoard } from '@bg/crown-march-engine';
 import { AlertBanner, EmoteBubble, EmoteButton, EmoteFeed, ThemeToggle, TurnBanner as BannerFrame, TurnSplash, TurnTimer, useCountdown } from '@bg/ui';
-import { CloseRoomButton, GameScreenProps, GuideButton, StopGameButton, sound, useFitZoom } from '@bg/web';
+import { CloseRoomButton, GameScreenProps, GuideButton, StopGameButton, sound, useFitZoom, useLogSounds } from '@bg/web';
 import { CrownIcon, KnightIcon, MoveCard, SeatStone, cardText, seatName, seatVars } from './theme';
 
 type Act = GameScreenProps['act'];
@@ -45,6 +45,8 @@ export function Game({
 }) {
   const g = view.game!;
   const zoom = useFitZoom();
+  // 소리: 돌을 놓으면 묵직하게, 기사로 뒤집으면 뒤집기 + 돌, 카드 뽑기는 미끄러짐
+  useLogSounds(g.log, (e) => (e.type === 'place' ? 'stone' : e.type === 'hero' ? ['flip', 'stone'] : e.type === 'draw' ? 'deal' : e.type === 'pass' ? 'tick' : null));
   const c = g.config;
   const names = view.seats;
   const me = g.me;

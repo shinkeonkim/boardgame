@@ -15,7 +15,7 @@ export function DishCard({ dish, size = 'md', selected, onClick, className = '',
   const d = DISH[dish];
   const Tag = onClick ? 'button' : 'div';
   return (
-    <Tag data-flip={flip} data-flip-enter={noEnter ? 'none' : undefined} className={`dcard ${size} ${selected ? 'selected' : ''} ${dim ? 'dim' : ''} ${className}`} style={{ ['--tone' as string]: GROUP_COLOR[d.group], ...style }} onClick={onClick} title={`${d.name}: ${d.hint}`} aria-label={d.name}>
+    <Tag data-flip={flip} data-flip-enter={noEnter ? 'none' : undefined} className={`dcard pc light ${size} ${selected ? 'selected' : ''} ${dim ? 'dim' : ''} ${className}`} style={{ ['--tone' as string]: GROUP_COLOR[d.group], ...style }} onClick={onClick} title={`${d.name}: ${d.hint}`} aria-label={d.name}>
       <span className="dcard-icon" aria-hidden>
         {d.icon}
         {dish === 'maki2' && d.icon}

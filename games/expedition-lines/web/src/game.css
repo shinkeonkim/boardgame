@@ -140,6 +140,18 @@
   color: #ffe7b0;
 }
 /* 설산은 밝은 배경이라 글자를 어둡게 */
+/* 그림 위 흰 글자: 어두운 테두리(외곽선)로 어느 그림 위에서도 읽히게 */
+.card .idx,
+.card .num {
+  text-shadow: 0 0 2px rgba(0, 0, 0, 0.75), 0 0 1px rgba(0, 0, 0, 0.9), 0 2px 2px rgba(0, 0, 0, 0.45);
+}
+.card[style*='var(--sun)'] {
+  color: #3a2600;
+}
+.card[style*='var(--sun)'] .idx,
+.card[style*='var(--sun)'] .num {
+  text-shadow: 0 0 2px rgba(255, 244, 210, 0.9), 0 0 1px rgba(255, 244, 210, 1), 0 1px 0 rgba(255, 240, 200, 0.75);
+}
 .card[style*='--snow'] {
   color: #1f2a38;
   --ruin: rgba(40, 52, 70, 0.55);
@@ -311,13 +323,14 @@ button.card:focus-visible {
 .col-score {
   position: absolute;
   bottom: 2px;
-  font-size: 0.7rem;
-  font-weight: 700;
+  font-size: 0.75rem;
+  font-weight: 800;
   white-space: nowrap;
 }
+/* 투자 배수: 작게 줄이지 않고 같은 크기로 (가독성 검사) */
 .col-score small {
-  font-weight: 600;
-  opacity: 0.7;
+  font-size: 1em;
+  font-weight: 700;
 }
 /* 탐험대 열: 카드를 겹쳐 쌓되 각 카드의 숫자(왼쪽 위)는 보이게 */
 .stack {

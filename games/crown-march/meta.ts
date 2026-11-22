@@ -15,6 +15,7 @@ export const meta: GameMeta = {
   weight: 2,
   tags: ['abstract', 'area-control', 'grid-movement', 'two-player', 'teams', 'open-info'],
   inspiredBy: '장미전쟁 (Rosenkönig, Dirk Henn) 메커니즘',
+  original: { ko: '장미전쟁', en: 'Rosenkönig (The Rose King)', by: 'Dirk Henn' },
   accent: '#c43c3c',
   icon: '<rect width="64" height="64" rx="14" fill="#1b1a17"/><path d="M14 44 L16 22 L25 32 L32 16 L39 32 L48 22 L50 44 Z" fill="#d9a441"/><rect x="14" y="46" width="36" height="5" rx="2" fill="#d9a441"/>',
   status: 'live',

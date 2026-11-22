@@ -15,6 +15,7 @@ export const meta: GameMeta = {
   weight: 1,
   tags: ['deduction', 'number', 'hidden-info', 'player-elimination', 'quick'],
   inspiredBy: '다빈치 코드 (Coda, 와카스기 에이지) 메커니즘',
+  original: { ko: '다빈치 코드', en: 'Coda', by: '와카스기 에이지' },
   accent: '#2b2f3a',
   icon: '<rect width="64" height="64" rx="14" fill="#2b2f3a"/><rect x="10" y="16" width="13" height="30" rx="3" fill="#15171c" stroke="#5c6475" stroke-width="1.5"/><rect x="25.5" y="16" width="13" height="30" rx="3" fill="#f4f1ea"/><rect x="41" y="16" width="13" height="30" rx="3" fill="#15171c" stroke="#5c6475" stroke-width="1.5"/><circle cx="32" cy="54" r="3" fill="#e8b04a"/>',
   status: 'live',

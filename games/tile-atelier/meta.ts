@@ -15,6 +15,7 @@ export const meta: GameMeta = {
   weight: 2,
   tags: ['tile-placement', 'pattern', 'drafting', 'abstract', 'open-info'],
   inspiredBy: 'Azul (Michael Kiesling) 메커니즘',
+  original: { ko: '아줄', en: 'Azul', by: 'Michael Kiesling' },
   accent: '#4a90d9',
   icon: '<rect width="64" height="64" rx="14" fill="#f3ead8"/><rect x="10" y="10" width="13" height="13" rx="3" fill="#4a90d9"/><rect x="25" y="10" width="13" height="13" rx="3" fill="#e8a33a"/><rect x="40" y="10" width="13" height="13" rx="3" fill="#2f3340"/><rect x="10" y="25" width="13" height="13" rx="3" fill="#4fae8a"/><rect x="25" y="25" width="13" height="13" rx="3" fill="#4a90d9"/><rect x="40" y="25" width="13" height="13" rx="3" fill="#e8a33a"/><rect x="10" y="40" width="13" height="13" rx="3" fill="#e0614f"/><rect x="25" y="40" width="13" height="13" rx="3" fill="#4fae8a"/><rect x="40" y="40" width="13" height="13" rx="3" fill="#4a90d9"/>',
   status: 'live',

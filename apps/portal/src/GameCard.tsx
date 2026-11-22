@@ -46,6 +46,11 @@ export function GameCard({ game }: { game: GameMeta }) {
               <Link href={`/games/${game.id}`}>{game.title}</Link>
             </h3>
             <span className="muted small">{game.subtitle}</span>
+            {game.original && (
+              <span className="gc-original" title={`${game.original.en} · ${game.original.by}`}>
+                원작 {game.original.ko}
+              </span>
+            )}
           </div>
           {game.status === 'soon' && <span className="tag">준비 중</span>}
         </div>

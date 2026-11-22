@@ -345,12 +345,22 @@ button.co-card.can:hover {
   }
 }
 
-/* 카드 앞면 질감 (꾸미기) — 상태별 배경색 위에 한 겹 */
-.co-card::before {
+/* 카드 키트(pc): 이름표 카드 — 상아색 종이 + 안쪽 점선 테 (공개되면 팀 색) */
+.co-card.pc {
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.25), 0 3px 8px rgba(0, 0, 0, 0.2);
+}
+.co-card.pc:not(.open):not(.hinted) {
+  background: var(--card-tex), linear-gradient(170deg, #fffaf0, #efe4cc) !important;
+}
+.co-card.pc .co-word {
+  position: relative;
+  z-index: 4;
+}
+.co-card.pc::after {
   content: '';
   position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  background: var(--card-tex);
+  inset: 7%;
+  border: 1.5px dashed rgba(120, 90, 50, 0.28);
+  border-radius: 6px;
   pointer-events: none;
 }

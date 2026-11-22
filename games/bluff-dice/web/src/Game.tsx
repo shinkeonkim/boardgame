@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import type { RoomView } from '@bg/core';
 import { GameConfig, GameView, LogEntry, ga, myeon } from '@bg/bluff-dice-engine';
 import { AlertBanner, SeatDot, seatColor } from '@bg/ui';
-import { GameScreenProps, ResultSheet, SeatList, TableBanner, TableEmotes, TableLayout, TableTopBar, Ticker, rankOf, usePeek, useTable } from '@bg/web';
+import { GameScreenProps, ResultSheet, SeatList, TableBanner, TableEmotes, TableLayout, TableTopBar, Ticker, rankOf, usePeek, useTable, useLogSounds, useChangeSound } from '@bg/web';
 import { Cup, Die } from './theme';
 
 type View = RoomView<GameView, GameConfig>;
@@ -26,6 +26,9 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
   const g = v.game!;
   const c = g.config;
   const t = useTable(view, notify, { title: 'Bluff Dice', turn: g.turn, playing: g.status === 'playing', stepKey: `${g.hand}-${g.phase}-${g.bids.length}`, mySub: g.phase === 'reveal' ? '주사위를 굴려 다음 판' : '더 높게 걸거나 거짓말!' });
+  // 소리: 호가는 칩, 「거짓말!」은 경고 + 컵을 여는 주사위, 탈락은 쿵 / 새로 굴리면 컵 흔들기
+  useLogSounds(g.log, (e) => (e.type === 'bid' ? 'chip' : e.type === 'call' ? ['alert', 'dice'] : e.type === 'out' ? 'thud' : e.type === 'win' ? 'win' : null));
+  useChangeSound(`${g.round}-${g.hand}`, 'cup', g.status === 'playing');
   const names = t.names;
   const me = t.me;
   const myTurn = t.myTurn;

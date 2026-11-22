@@ -2,10 +2,10 @@ import { ROLE_DEFS, Role } from '@bg/court-intrigue-engine';
 
 export function RoleCard({ role, lost, size = 'md', selected, onClick, hidden, flip }: { role: Role | null; lost?: boolean; size?: 'xs' | 'sm' | 'md'; selected?: boolean; onClick?: () => void; hidden?: boolean; flip?: string }) {
   const Tag = onClick ? 'button' : 'div';
-  if (!role || hidden) return <Tag data-flip={flip} className={`rcard back ${size} ${lost ? 'lost' : ''}`} onClick={onClick} aria-label="가려진 카드" />;
+  if (!role || hidden) return <Tag data-flip={flip} className={`rcard pc back ${size} ${lost ? 'lost' : ''}`} onClick={onClick} aria-label="가려진 카드" />;
   const d = ROLE_DEFS[role];
   return (
-    <Tag data-flip={flip} className={`rcard ${size} ${lost ? 'lost' : ''} ${selected ? 'selected' : ''} ${lost ? '' : 'face'}`} style={{ ['--tone' as string]: d.color }} onClick={onClick} aria-label={`${d.name}${lost ? ' (잃음)' : ''}`}>
+    <Tag data-flip={flip} className={`rcard pc ${size} ${lost ? 'lost' : ''} ${selected ? 'selected' : ''} ${lost ? '' : 'face'}`} style={{ ['--tone' as string]: d.color }} onClick={onClick} aria-label={`${d.name}${lost ? ' (잃음)' : ''}`}>
       <span className="rcard-icon" aria-hidden>
         {d.icon}
       </span>

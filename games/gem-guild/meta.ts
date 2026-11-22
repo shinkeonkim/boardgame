@@ -15,6 +15,7 @@ export const meta: GameMeta = {
   weight: 2,
   tags: ['engine-building', 'set-collection', 'card', 'open-info'],
   inspiredBy: 'Splendor (Marc André) 메커니즘',
+  original: { ko: '스플렌더', en: 'Splendor', by: 'Marc André' },
   accent: '#3a7bd5',
   icon: '<rect width="64" height="64" rx="14" fill="#232035"/><path d="M32 12 L48 26 L32 52 L16 26 Z" fill="#3a7bd5" stroke="#9cc0f5" stroke-width="2"/><circle cx="49" cy="47" r="7" fill="#e3b04a" stroke="#a17a1e" stroke-width="2"/>',
   status: 'live',

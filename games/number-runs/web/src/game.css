@@ -19,9 +19,9 @@
   width: var(--w);
   aspect-ratio: 3 / 4;
   border-radius: 6px;
-  background: var(--card-tex), var(--tile-face);
+  background: var(--card-tex), linear-gradient(170deg, #fffdf6, color-mix(in srgb, var(--tile-face) 85%, #c9b997));
   border: 1.5px solid #d8cdb5;
-  box-shadow: 0 2px 0 #b8ad95;
+  box-shadow: inset 0 1.5px 0 rgba(255, 255, 255, 0.85), inset 0 -2px 0 rgba(120, 100, 60, 0.18), 0 2px 0 #b3a68a, 0 4px 7px rgba(0, 0, 0, 0.18);
   display: grid;
   place-items: center;
   font: inherit;
@@ -183,4 +183,10 @@ button.rtile:hover {
   pointer-events: none;
   transform: translate(-50%, -60%) rotate(-3deg) scale(var(--gz, 1));
   filter: drop-shadow(0 8px 12px rgb(0 0 0 / 0.35));
+}
+
+/* 새긴 숫자: 위 그림자 어둡게 + 아래 밝게 */
+.rtile .rtile-n {
+  font-family: Georgia, 'Times New Roman', serif;
+  text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.18), 0 1px 0 rgba(255, 255, 255, 0.9);
 }

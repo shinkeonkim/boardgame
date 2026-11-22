@@ -1,6 +1,6 @@
 import type { Tile } from '@bg/number-runs-engine';
 
-export const INK = ['#d0453a', '#2f6fd0', '#d88a12', '#2b2b33', '#8a5cd0'];
+export const INK = ['#c23a2f', '#2563c4', '#a95f00', '#2b2b33', '#7a48c4'];
 export const INK_NAME = ['빨강', '파랑', '주황', '검정', '보라'];
 
 export function TileFace({

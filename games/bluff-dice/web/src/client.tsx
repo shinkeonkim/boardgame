@@ -2,6 +2,7 @@ import { BASE_EMOTES } from '@bg/core';
 import { EXTRA_EMOTES, GameConfig, GameView } from '@bg/bluff-dice-engine';
 import { SeatDot } from '@bg/ui';
 import type { GameClient } from '@bg/web';
+import { meta } from '../../meta';
 import { ConfigPanel } from './ConfigPanel';
 import { Demo } from './Demo';
 import { Game } from './Game';
@@ -12,6 +13,7 @@ export const client: GameClient<GameView, GameConfig> = {
   id: 'bluff-dice',
   title: 'Bluff Dice',
   subtitle: '허풍 주사위 · 2~8명이 컵 속 주사위로 겨루는 눈치 게임',
+  original: meta.original,
   logo: <Logo />,
   lead: (
     <>

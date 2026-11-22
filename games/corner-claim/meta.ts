@@ -15,6 +15,7 @@ export const meta: GameMeta = {
   weight: 2,
   tags: ['spatial', 'abstract', 'tile-placement', 'area-control', 'open-info'],
   inspiredBy: 'Blokus (Bernard Tavitian) 메커니즘',
+  original: { ko: '블로커스', en: 'Blokus', by: 'Bernard Tavitian' },
   accent: '#3a7bd5',
   icon: '<rect width="64" height="64" rx="14" fill="#eef0f4"/><rect x="8" y="8" width="10" height="10" rx="2" fill="#3a7bd5"/><rect x="18" y="18" width="10" height="10" rx="2" fill="#3a7bd5"/><rect x="46" y="8" width="10" height="10" rx="2" fill="#e0a526"/><rect x="36" y="18" width="10" height="10" rx="2" fill="#e0a526"/><rect x="46" y="46" width="10" height="10" rx="2" fill="#d0453a"/><rect x="36" y="36" width="10" height="10" rx="2" fill="#d0453a"/><rect x="8" y="46" width="10" height="10" rx="2" fill="#2f9e6a"/>',
   status: 'live',

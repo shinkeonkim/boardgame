@@ -2,7 +2,7 @@ import { useEffect, useLayoutEffect, useMemo, useState } from 'react';
 import type { RoomView } from '@bg/core';
 import { FIRST, GameConfig, GameView, LogEntry, lineProblem } from '@bg/tile-atelier-engine';
 import { AlertBanner, SeatDot, seatColor } from '@bg/ui';
-import { GameScreenProps, ResultSheet, SeatList, TableBanner, TableEmotes, TableLayout, TableTopBar, Ticker, rankOf, usePeek, useTable, SideNote, flyClone } from '@bg/web';
+import { GameScreenProps, ResultSheet, SeatList, TableBanner, TableEmotes, TableLayout, TableTopBar, Ticker, rankOf, usePeek, useTable, SideNote, flyClone, useLogSounds } from '@bg/web';
 import { BoardView, TILE, TileView } from './theme';
 
 type View = RoomView<GameView, GameConfig>;
@@ -31,6 +31,8 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
     tiles.slice(-lastTake.count).forEach((el, j) => flyClone(from, el, { delay: j * 70 }));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [takeKey]);
+  // 소리: 공장에서 가져오면 타일 여러 개, 벽에 붙이면 타일 하나, 보너스는 축하
+  useLogSounds(g.log, (e) => (e.type === 'take' ? 'tiles' : e.type === 'tile' ? 'tile' : e.type === 'bonus' ? 'success' : e.type === 'round' ? 'shuffle' : null));
   const names = t.names;
   const me = t.me;
   const myTurn = t.myTurn;

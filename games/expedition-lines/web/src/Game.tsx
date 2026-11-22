@@ -2,7 +2,7 @@ import { forwardRef, useEffect, useMemo, useRef, useState } from 'react';
 import type { EmoteEvent, RoomView } from '@bg/core';
 import { Card, GameConfig, GameView, LogEntry, canPlayOnExpedition, playBlockReason, scoreColumn, scorePlayer, teamOf } from '@bg/expedition-lines-engine';
 import { AlertBanner, EmoteBubble, EmoteButton, EmoteFeed, ThemeToggle, TurnBanner as BannerFrame, TurnSplash, TurnSteps, TurnTimer, useCountdown } from '@bg/ui';
-import { CloseRoomButton, GameScreenProps, GuideButton, StopGameButton, sound, useFitZoom } from '@bg/web';
+import { CloseRoomButton, GameScreenProps, GuideButton, StopGameButton, sound, useFitZoom, useLogSounds } from '@bg/web';
 import { Glyph, SUITS, cardLabel, suitVars } from './theme';
 import { CardBack, CardFace } from './cards';
 import { hasOrigin, setOrigin } from './flip';
@@ -63,6 +63,8 @@ export function Game({
 }) {
   const g = view.game!;
   const zoom = useFitZoom();
+  // 소리: 탐험대에 내거나 버리면 카드 탁, 가져오면 미끄러짐
+  useLogSounds(g.log, (e) => (e.move.type === 'draw' ? 'deal' : 'card'));
   const c = g.config;
   const range: [number, number] = [c.minValue, c.maxValue];
   const names = view.seats;

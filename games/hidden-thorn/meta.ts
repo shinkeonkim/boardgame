@@ -15,6 +15,7 @@ export const meta: GameMeta = {
   weight: 1,
   tags: ['bluffing', 'party', 'big-group', 'push-your-luck', 'player-elimination'],
   inspiredBy: 'Skull (Hervé Marly) 메커니즘',
+  original: { ko: '스컬', en: 'Skull', by: 'Hervé Marly' },
   accent: '#d84a5c',
   icon: '<rect width="64" height="64" rx="14" fill="#1f2a1e"/><circle cx="26" cy="34" r="16" fill="#f6efe2"/><circle cx="26" cy="34" r="4" fill="#f2c14e"/><path d="M46 10 L48 20 L57 18 L50 24 L56 32 L47 28 L45 38 L43 28 L34 31 L41 24 L35 17 L44 20 Z" fill="#5aa152"/>',
   status: 'live',

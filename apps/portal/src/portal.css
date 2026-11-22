@@ -611,3 +611,20 @@ a.chip {
 #how-to-play {
   scroll-margin-top: 70px;
 }
+/* 원작 표시 */
+.gc-original {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 0 8px;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent) 28%, transparent);
+  vertical-align: middle;
+}
+.gd-original {
+  margin-top: 4px;
+  font-weight: 700;
+  font-size: 0.92rem;
+}

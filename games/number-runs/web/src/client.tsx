@@ -2,6 +2,7 @@ import { BASE_EMOTES } from '@bg/core';
 import { EXTRA_EMOTES, GameConfig, GameView } from '@bg/number-runs-engine';
 import { SeatDot } from '@bg/ui';
 import type { GameClient } from '@bg/web';
+import { meta } from '../../meta';
 import { ConfigPanel } from './ConfigPanel';
 import { Demo } from './Demo';
 import { Game } from './Game';
@@ -12,6 +13,7 @@ export const client: GameClient<GameView, GameConfig> = {
   id: 'number-runs',
   title: 'Number Runs',
   subtitle: '숫자 잇기 · 2~6명이 테이블을 다시 짜는 숫자 타일 게임',
+  original: meta.original,
   logo: <Logo />,
   lead: (
     <>

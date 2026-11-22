@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import type { RoomView } from '@bg/core';
 import { GameConfig, GameView, LogEntry } from '@bg/number-vault-engine';
 import { AlertBanner, EmoteBubble, SeatDot } from '@bg/ui';
-import { GameScreenProps, ResultSheet, TableBanner, TableEmotes, TableLayout, TableTopBar, Ticker, emotesBySeat, rankOf, usePeek, useTable } from '@bg/web';
+import { GameScreenProps, ResultSheet, TableBanner, TableEmotes, TableLayout, TableTopBar, Ticker, emotesBySeat, rankOf, usePeek, useTable, useLogSounds } from '@bg/web';
 import { TileView } from './theme';
 
 type View = RoomView<GameView, GameConfig>;
@@ -31,6 +31,8 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
   const g = v.game!;
   const c = g.config;
   const t = useTable(view, notify, { title: 'Number Vault', turn: g.turn, playing: g.status === 'playing', stepKey: `${g.turn}-${g.log.length ? g.log[g.log.length - 1].n : 0}-${g.phase}`, mySub: '타일을 가져오고 숫자를 맞혀요' });
+  // 소리: 타일 가져오기는 딱, 맞히면 금고 철컥, 틀리면 실패음 + 내 타일 공개, 탈락은 쿵
+  useLogSounds(g.log, (e) => (e.type === 'draw' ? 'tile' : e.type === 'guess' ? (e.ok ? 'lock' : 'fail') : e.type === 'expose' ? 'flip' : e.type === 'out' ? 'thud' : e.type === 'win' ? 'win' : e.type === 'stop' ? 'tick' : null));
   const names = t.names;
   const me = t.me;
   const myTurn = t.myTurn;
