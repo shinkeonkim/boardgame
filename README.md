@@ -25,6 +25,7 @@
 | [Corner Claim · 모서리 땅따먹기](https://boardgame.shinkeonkim.com/games/corner-claim) | 블로커스 | 2~4 | 20~30분 | 내 조각끼리 모서리로만 — 폴리오미노 공간 퍼즐 |
 | [Number Runs · 숫자 잇기](https://boardgame.shinkeonkim.com/games/number-runs) | 루미큐브 | 2~6 | 30~60분 | 줄과 무리로 묶고 테이블을 다시 짜 손을 비우기 |
 | [Yacht Dice · 요트 다이스](https://boardgame.shinkeonkim.com/games/yacht) | 요트 | 1~8 | 10~25분 | 주사위 5개를 세 번까지 굴려 족보 칸을 채우는 고전 주사위 게임 |
+| [Secret Mission · 비밀 원정대](https://boardgame.shinkeonkim.com/games/secret-mission) | 레지스탕스 | 5~10 | 20~40분 | 숨은 첩자를 찾아라 — 원정대 투표와 몰래 낸 카드로 추리하는 파티 게임 |
 
 게임 규칙 메커니즘은 고전 보드게임에서 영감을 받았고, 이름·그림·화면은 모두 직접 만들었다.
 

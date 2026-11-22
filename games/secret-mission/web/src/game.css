@@ -1,0 +1,381 @@
+/* ---------- Secret Mission 전용 ---------- */
+:root {
+  --sm-table: #2a3a2e;
+  --sm-table-ink: #eef4ea;
+}
+:root[data-theme='dark'] {
+  --sm-table: #1c2820;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --sm-table: #1c2820;
+  }
+}
+/* 원탁 */
+.sm-table {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  max-height: 60vh;
+  margin: 0 auto;
+  border-radius: 50% / 46%;
+  background: radial-gradient(ellipse at center, color-mix(in srgb, var(--sm-table) 75%, #6a8a5a) 0 38%, var(--sm-table) 70%);
+  box-shadow: inset 0 0 0 10px #5a3a22, inset 0 0 0 13px #3a2414, 0 14px 30px rgba(0, 0, 0, 0.3);
+  color: var(--sm-table-ink);
+}
+.sm-center {
+  position: absolute;
+  inset: 34% 24%;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 8px;
+}
+.sm-track {
+  display: flex;
+  gap: 6px;
+}
+.sm-mission {
+  position: relative;
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: radial-gradient(circle at 35% 30%, #f6efe2, #d8c9a8);
+  color: #3a2a1a;
+  box-shadow: inset 0 0 0 3px rgba(0, 0, 0, 0.18), 0 2px 4px rgba(0, 0, 0, 0.35);
+  font-size: 1.1rem;
+}
+.sm-mission small {
+  position: absolute;
+  top: -13px;
+  font-size: 0.58rem;
+  color: #ffb4a8;
+}
+.sm-mission.now {
+  outline: 3px solid var(--gold);
+  outline-offset: 2px;
+}
+.sm-mission.win {
+  background: radial-gradient(circle at 35% 30%, #8ad0ff, #2f6fb0);
+  color: #fff;
+}
+.sm-mission.lose {
+  background: radial-gradient(circle at 35% 30%, #ff9a8a, #a8322a);
+  color: #fff;
+}
+.sm-rejects {
+  display: inline-flex;
+  gap: 4px;
+  align-items: center;
+}
+.sm-rejects i {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 2px solid #ffb4a8;
+}
+.sm-rejects i.on {
+  background: #e0483c;
+}
+.sm-seat {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  min-width: 92px;
+  padding: 6px 8px 8px;
+  border-radius: 14px;
+  border: 2px solid transparent;
+  border-top: 4px solid var(--seat);
+  background: var(--panel);
+  color: var(--ink);
+  font: inherit;
+  display: grid;
+  justify-items: center;
+  gap: 2px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+.sm-seat:disabled {
+  cursor: default;
+}
+.sm-table.picking .sm-seat:not(:disabled),
+.sm-table.hunting .sm-seat:not(:disabled) {
+  cursor: pointer;
+}
+.sm-table.picking .sm-seat:not(:disabled):hover,
+.sm-table.hunting .sm-seat:not(:disabled):hover {
+  transform: translate(-50%, -54%);
+}
+.sm-seat.me {
+  background: color-mix(in srgb, var(--accent) 10%, var(--panel));
+}
+.sm-seat.acting {
+  box-shadow: 0 0 0 3px var(--gold), 0 4px 10px rgba(0, 0, 0, 0.3);
+}
+.sm-seat.on-team {
+  border-color: #2f6fb0;
+}
+.sm-seat.known-spy {
+  border-color: #a8322a;
+}
+.sm-seat.reveal-spy {
+  background: color-mix(in srgb, #a8322a 18%, var(--panel));
+}
+.sm-seat-name {
+  font-weight: 800;
+  font-size: 0.86rem;
+  max-width: 110px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.sm-crown {
+  position: absolute;
+  top: -16px;
+  left: -8px;
+  font-size: 1.2rem;
+  filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.4));
+}
+.sm-tag {
+  font-size: 0.68rem;
+  font-weight: 800;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--ink) 10%, transparent);
+}
+.sm-tag.spy {
+  background: #a8322a;
+  color: #fff;
+}
+.sm-tag.seer {
+  background: #6a3fb0;
+  color: #fff;
+}
+.sm-badge {
+  font-size: 0.68rem;
+  font-weight: 800;
+  color: #fff;
+  background: #2f6fb0;
+  border-radius: 999px;
+  padding: 0 7px;
+}
+.sm-voted {
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+.sm-voted.done {
+  color: var(--ok);
+  font-weight: 800;
+}
+.sm-vote {
+  font-size: 0.72rem;
+  font-weight: 900;
+  border-radius: 6px;
+  padding: 0 6px;
+  color: #fff;
+  animation: sm-flip 0.4s ease-out both;
+}
+.sm-vote.yes {
+  background: #2f8a5a;
+}
+.sm-vote.no {
+  background: #a8322a;
+}
+@keyframes sm-flip {
+  from {
+    transform: rotateY(90deg);
+  }
+}
+/* 내 역할 · 할 일 */
+.sm-hand {
+  grid-template-columns: auto 1fr;
+  align-items: center;
+}
+.sm-me {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.sm-role-toggle {
+  border: 0;
+  background: none;
+  padding: 0;
+  cursor: pointer;
+}
+.sm-role-hidden {
+  display: grid;
+  place-items: center;
+  --w: 84px;
+  width: 84px;
+  aspect-ratio: 5 / 7;
+  border-radius: 10px;
+  color: #fff;
+  font-weight: 800;
+  font-size: 0.75rem;
+}
+.sm-me-text {
+  max-width: 260px;
+  line-height: 1.45;
+}
+.sm-actions {
+  justify-content: flex-end;
+}
+.sm-role {
+  --w: 120px;
+  width: var(--w);
+  aspect-ratio: 5 / 7;
+  border-radius: 10px;
+  padding: 6px;
+  display: grid;
+  grid-template-rows: auto auto auto;
+  justify-items: center;
+  gap: 3px;
+  background: var(--card-tex), linear-gradient(180deg, var(--tone) 0 4%, #fbf3e2 4%, #ecdcbc) !important;
+  color: #2a2118;
+}
+.sm-role.sm {
+  --w: 84px;
+  padding: 4px;
+}
+.sm-portrait {
+  display: block;
+  width: 100%;
+  aspect-ratio: 60 / 40;
+  border-radius: 6px;
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--tone) 50%, black);
+}
+.sm-role-name {
+  font-family: Georgia, 'Nanum Myeongjo', serif;
+  font-size: calc(var(--w) * 0.13);
+}
+.sm-side {
+  font-size: calc(var(--w) * 0.09);
+  font-weight: 800;
+  padding: 0 6px;
+  border-radius: 999px;
+  color: #fff;
+  background: #2f6fb0;
+}
+.sm-side.spy {
+  background: #a8322a;
+}
+.sm-token {
+  --w: 78px;
+  width: var(--w);
+  aspect-ratio: 5 / 7;
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 4px;
+  color: #fff;
+  font: inherit;
+}
+.sm-token.yes {
+  background: var(--card-tex), radial-gradient(circle at 50% 35%, #6ad09a, #2f8a5a 70%) !important;
+}
+.sm-token.no {
+  background: var(--card-tex), radial-gradient(circle at 50% 35%, #f08a7a, #a8322a 70%) !important;
+}
+.sm-token.success {
+  background: var(--card-tex), radial-gradient(circle at 50% 35%, #8ac8ff, #2f6fb0 70%) !important;
+}
+.sm-token.fail {
+  background: var(--card-tex), radial-gradient(circle at 50% 35%, #5a4a4a, #1a1414 70%) !important;
+}
+.sm-token:disabled {
+  opacity: 0.35;
+  filter: grayscale(0.6);
+}
+.sm-token-icon {
+  font-size: 1.6rem;
+  position: relative;
+  z-index: 4;
+}
+.sm-token b {
+  position: relative;
+  z-index: 4;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
+}
+.sm-history {
+  display: grid;
+  gap: 6px;
+  max-height: 320px;
+  overflow: auto;
+}
+.sm-hist {
+  display: grid;
+  gap: 1px;
+  padding: 5px 8px;
+  border-radius: 8px;
+  border-left: 4px solid var(--line);
+  background: color-mix(in srgb, var(--ink) 4%, transparent);
+}
+.sm-hist.win {
+  border-left-color: #2f6fb0;
+}
+.sm-hist.lose {
+  border-left-color: #a8322a;
+}
+.sm-hist.rejected {
+  opacity: 0.7;
+}
+.sm-hist-team {
+  font-weight: 700;
+}
+.spy-text {
+  color: #a8322a;
+}
+/* 좁은 화면: 원탁 대신 자리를 격자로 */
+@media (max-width: 759px), (max-aspect-ratio: 1/1) {
+  .sm-table {
+    aspect-ratio: auto;
+    max-height: none;
+    border-radius: 18px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+    gap: 8px;
+    padding: 12px;
+  }
+  .sm-center {
+    position: static;
+    grid-column: 1 / -1;
+    order: -1;
+  }
+  .sm-seat {
+    position: relative;
+    left: auto !important;
+    top: auto !important;
+    transform: none;
+    min-width: 0;
+  }
+  .sm-table.picking .sm-seat:not(:disabled):hover {
+    transform: translateY(-3px);
+  }
+  .sm-mission {
+    width: 38px;
+    height: 38px;
+  }
+  .sm-hand {
+    grid-template-columns: 1fr;
+  }
+  .sm-actions {
+    justify-content: center;
+  }
+}
+/* 첫 화면 시연 */
+.sm-demo {
+  display: grid;
+  gap: 10px;
+  justify-items: center;
+  padding: 14px;
+  border-radius: 16px;
+  background: var(--sm-table);
+  color: var(--sm-table-ink);
+  width: min(100%, 340px);
+}
+.sm-demo-row {
+  display: flex;
+  gap: 6px;
+}

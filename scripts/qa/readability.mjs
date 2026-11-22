@@ -7,12 +7,13 @@
 // 그림(SVG·그라디언트) 위 글자도 픽셀로 재므로 CSS 값만 보는 검사보다 정확하다.
 // 어두운 외곽선(text-shadow 2겹 이상, 진한 색)이 있는 글자는 그림 위에서도 읽히므로 대비 검사를 건너뛴다.
 // 누를 수 없는 버튼(disabled)도 건너뛴다.
+import { readdirSync } from 'node:fs';
 import { PNG } from 'pngjs';
 import { chromium } from 'playwright';
 
 const ORIGIN = process.env.ORIGIN ?? 'http://localhost:8099';
-const ALL = ['row-six', 'flare-signals', 'cipher-ops', 'bluff-dice', 'number-vault', 'sealed-letter', 'court-intrigue', 'pass-the-plate', 'hidden-thorn', 'flag-line', 'gem-guild', 'tile-atelier', 'corner-claim', 'number-runs', 'crown-march', 'expedition-lines'];
-const BOTS = { 'cipher-ops': 3, 'flag-line': 1, 'crown-march': 1, 'expedition-lines': 1 };
+const ALL = readdirSync(new URL('../../games/', import.meta.url)).filter((g) => !g.startsWith('.'));
+const BOTS = { 'cipher-ops': 3, 'flag-line': 1, 'crown-march': 1, 'expedition-lines': 1, 'secret-mission': 6 };
 const ids = process.argv.slice(2).length ? process.argv.slice(2) : ALL;
 
 const lum = ([r, g, b]) => {

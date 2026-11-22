@@ -192,3 +192,9 @@
 .cover-frame[data-game='expedition-lines'] {
   --cz: 2.5;
 }
+.cover-frame[data-game='yacht'] {
+  --cz: 1.8;
+}
+.cover-frame[data-game='secret-mission'] {
+  --cz: 1.5;
+}
