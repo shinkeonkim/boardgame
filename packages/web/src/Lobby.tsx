@@ -4,6 +4,7 @@ import { BOT_LEVELS, BotLevel, EmoteEvent, RoomView, botLevelLabel } from '@bg/c
 import { ConfirmButton, EmoteBubble, EmoteButton, EmoteFeed, Notice, ThemeToggle, Toggle, Icon } from '@bg/ui';
 import { useGameClient } from './App';
 import type { Act } from './client';
+import { SwitchGame } from './switch-game';
 import { GuideButton } from './Guide';
 import { BASE, store } from './runtime';
 
@@ -56,6 +57,7 @@ export function Lobby({ view, act, onLeave, emotes, onEmote }: { view: RoomView;
           <ThemeToggle variant="icon" />
           <GuideButton />
           <EmoteButton onSend={onEmote} />
+          {isHost && <SwitchGame view={view} act={act} current={client.id} />}
           {isHost && <CloseRoomButton act={act} />}
           <button className="btn ghost" onClick={onLeave}>
             나가기

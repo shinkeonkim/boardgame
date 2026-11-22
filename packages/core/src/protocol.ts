@@ -54,6 +54,8 @@ export interface RoomView<GameView = unknown, Config = unknown> {
     inResults: string[];
     /** 방장이 중지한 게임 — 이어서 하기 가능 */
     paused: PausedInfo | null;
+    /** 방장이 다른 게임으로 옮김 — 모두 이 방으로 (게임 id·방 코드) */
+    relocate: { game: string; code: string; title: string } | null;
   };
   game: GameView | null;
   /** seat → 이름 */

@@ -281,4 +281,12 @@ describe('Rooms', () => {
     rooms.start(room, host); // 새 게임은 가능, 중지한 게임은 버림
     expect(rooms.view(room, host).lobby.paused).toBeNull();
   });
+  it('다른 게임으로 옮기기: 방장만, 대기실에서만, 모두에게 새 방 주소', () => {
+    const { rooms, room, host, others } = lobby(2);
+    expect(() => rooms.relocate(room, others[0], { game: 'one-card', code: 'ABCD', title: 'One Card' })).toThrow(RoomError);
+    expect(() => rooms.relocate(room, host, { game: '../x', code: 'ABCD', title: 'x' })).toThrow(/이상해요/);
+    rooms.relocate(room, host, { game: 'one-card', code: 'ABCD', title: 'One Card' });
+    expect(rooms.view(room, others[0]).lobby.relocate).toEqual({ game: 'one-card', code: 'ABCD', title: 'One Card' });
+    expect(room.listed).toBe(false);
+  });
 });

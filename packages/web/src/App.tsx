@@ -1,7 +1,8 @@
+import { useRelocate } from './switch-game';
 import { createContext, useCallback, useContext, useEffect, useState, ReactNode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { DRAIN_MESSAGE, type EmoteEvent, type RoomView } from '@bg/core';
-import { EmotesContext, applySkin, applyTheme, getTheme } from '@bg/ui';
+import { EmotesContext, Icon, applySkin, applyTheme, getTheme } from '@bg/ui';
 import type { GameClient } from './client';
 import { BASE, call, setGameId, socket, store } from './runtime';
 import { Home, HomeShell } from './Home';
@@ -90,6 +91,8 @@ function RoomPage({ code, onExit }: { code: string; onExit: (msg?: string) => vo
   const [toast, setToast] = useState<string | null>(null);
   const [connected, setConnected] = useState(socket.connected);
   const [emotes, setEmotes] = useState<EmoteEvent[]>([]);
+  // 방장이 다른 게임으로 옮기면 모두 그 방으로
+  const relocating = useRelocate(view);
 
   useEffect(() => {
     const up = () => setConnected(true);
@@ -120,6 +123,9 @@ function RoomPage({ code, onExit }: { code: string; onExit: (msg?: string) => vo
   // 최초 진입: 토큰이 있으면 바로 재접속, 아니면 입장 폼
   useEffect(() => {
     let cancelled = false;
+    // 옮겨 온 표시는 읽고 바로 주소에서 지움
+    const auto = new URLSearchParams(location.search).get('auto') === '1';
+    if (auto) history.replaceState(null, '', location.pathname);
     (async () => {
       if (store.token(code)) {
         const err = await enter({ name: store.name() });
@@ -129,6 +135,8 @@ function RoomPage({ code, onExit }: { code: string; onExit: (msg?: string) => vo
       const p = await call<{ hasPassword: boolean; inGame: boolean }>('peek', { code });
       if (cancelled) return;
       if (!p.ok) return onExit(p.error);
+      // 다른 게임에서 옮겨 온 경우(?auto=1): 저장된 닉네임으로 바로 입장
+      if (auto && store.name() && !p.hasPassword && !(await enter({ name: store.name() }))) return;
       setPhase({ kind: 'form', hasPassword: p.hasPassword, inGame: p.inGame });
     })();
     return () => {
@@ -223,6 +231,16 @@ function RoomPage({ code, onExit }: { code: string; onExit: (msg?: string) => vo
         </div>
       )}
       {!connected && <div className="offline">연결이 끊겼어요. 다시 연결하는 중이에요…</div>}
+      {relocating && (
+        <div className="overlay" role="alertdialog" aria-label="게임 바꾸는 중">
+          <div className="panel sheet center">
+            <h2>
+              <Icon name="swap" /> {relocating.title}(으)로 옮겨요
+            </h2>
+            <p className="muted small">방장이 게임을 바꿨어요. 새 방으로 함께 이동하는 중…</p>
+          </div>
+        </div>
+      )}
     </>
   );
 }

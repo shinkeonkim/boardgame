@@ -284,6 +284,7 @@ export function createGameServer(opts: GameServerOptions) {
     act('nudge', (r, m) => rooms.nudge(r, m));
     act<{ level: string }>('addBot', (r, m, p) => void rooms.addBot(r, m, isBotLevel(p.level) ? p.level : 'normal'));
     act<{ id: string; level: string }>('botLevel', (r, m, p) => rooms.setBotLevel(r, m, String(p.id), isBotLevel(p.level) ? p.level : 'normal'));
+    act<{ game: string; code: string; title: string }>('relocate', (r, m, p) => rooms.relocate(r, m, { game: String(p.game ?? ''), code: String(p.code ?? '').toUpperCase(), title: String(p.title ?? '') }));
     act<{ listed: boolean }>('listed', (r, m, p) => rooms.setListed(r, m, p.listed !== false));
     act('stop', (r, m) => rooms.stop(r, m));
     act('resume', (r, m) => rooms.resume(r, m));

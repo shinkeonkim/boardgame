@@ -52,6 +52,8 @@ export interface Room<Config = unknown, Match = unknown> {
   listed: boolean;
   /** 봇이 두기까지 기다리는 타이머 */
   botTimer?: NodeJS.Timeout | null;
+  /** 방장이 다른 게임의 새 방으로 옮김 (모두에게 그 방 주소를 알림) */
+  relocate?: { game: string; code: string; title: string } | null;
 }
 
 interface Snap {
@@ -376,6 +378,16 @@ export class Rooms {
   }
 
   // ---------- 방 목록 ----------
+
+  /** 방장: 모두를 다른 게임의 방으로 옮김 (새 방은 방장이 그 게임 서버에 먼저 만들어 둠). 게임 중에는 안 됨 */
+  relocate(room: Room, by: Member, to: { game: string; code: string; title: string }) {
+    this.requireHost(room, by);
+    if (!this.lobbyOpen(room)) throw new RoomError('게임이 끝난 뒤 대기실에서 바꿀 수 있어요');
+    if (!/^[a-z0-9-]{2,40}$/.test(to.game) || !/^[A-Z0-9]{3,8}$/.test(to.code)) throw new RoomError('옮길 방 정보가 이상해요');
+    room.relocate = { game: to.game, code: to.code, title: String(to.title ?? to.game).slice(0, 40) };
+    room.listed = false;
+    this.touch(room);
+  }
 
   setListed(room: Room, by: Member, listed: boolean) {
     this.requireHost(room, by);
@@ -877,6 +889,7 @@ export class Rooms {
         errors: this.startErrors(room.config, players.length),
         inResults: room.members.filter((m) => m.role === 'player' && m.connections > 0 && this.inResults(room, m)).map((m) => m.name),
         paused: this.pausedInfo(room),
+        relocate: room.relocate ?? null,
       },
       // 매치가 끝난 뒤 로비로 돌아온 사람에게는 게임 대신 대기 로비를 보여준다
       game: showGame ? this.game.viewFor(room.match, member.seat ?? -1) : null,

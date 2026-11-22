@@ -174,3 +174,52 @@
   align-items: center;
   gap: 4px 6px;
 }
+
+/* 다른 게임으로 바꾸기 (switch-game.tsx) */
+.switch-sheet {
+  width: min(560px, 100%);
+  max-height: 80dvh;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.switch-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  overflow-y: auto;
+  display: grid;
+  gap: 6px;
+}
+.switch-item {
+  width: 100%;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  text-align: left;
+  padding: 8px 10px;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  background: var(--panel);
+  color: var(--ink);
+  font: inherit;
+  cursor: pointer;
+}
+.switch-item:hover:not(:disabled) {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 6%, var(--panel));
+}
+.switch-item:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.switch-item svg {
+  border-radius: 10px;
+  flex: none;
+}
+.switch-text {
+  display: grid;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+}
