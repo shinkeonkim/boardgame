@@ -14,4 +14,4 @@ labels:
 images:
 - name: ghcr.io/shinkeonkim/boardgame-one-word
   newName: ghcr.io/shinkeonkim/boardgame-one-word
-  newTag: sha-d533312
+  newTag: sha-be6c169
