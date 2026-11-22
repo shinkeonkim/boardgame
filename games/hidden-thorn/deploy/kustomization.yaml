@@ -14,4 +14,4 @@ labels:
 images:
 - name: ghcr.io/shinkeonkim/boardgame-hidden-thorn
   newName: ghcr.io/shinkeonkim/boardgame-hidden-thorn
-  newTag: sha-fa88c0e
+  newTag: sha-61943b7
