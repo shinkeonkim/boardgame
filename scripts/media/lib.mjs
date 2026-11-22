@@ -64,7 +64,7 @@ export function findChromium() {
  * 녹화기: 2배 픽셀 스크린샷을 쉬지 않고 찍고(약 15fps), 찍은 시각으로 길이를 복원한다.
  * (CDP screencast는 기기 배율을 무시하고 CSS 픽셀 크기로만 보내 글자가 흐려져서 쓰지 않는다)
  */
-export async function recorder(page, target, name, { width }) {
+export async function recorder(page, target, name, { width, quality = 92 }) {
   const dir = join(tmpdir(), `bg-media-${target}-${name}-${process.pid}`);
   rmSync(dir, { recursive: true, force: true });
   mkdirSync(dir, { recursive: true });
@@ -80,7 +80,7 @@ export async function recorder(page, target, name, { width }) {
         // 가끔 응답이 오지 않는 캡처가 있어(특히 모바일 에뮬레이션) 3초 넘으면 버린다
         const { data } = await withTimeout(cdp.send('Page.captureScreenshot', {
           format: 'jpeg',
-          quality: 92,
+          quality,
           optimizeForSpeed: true,
           clip: { x: 0, y: 0, width: vp.width, height: vp.height, scale },
         }), 3000);
