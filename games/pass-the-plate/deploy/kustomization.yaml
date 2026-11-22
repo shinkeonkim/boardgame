@@ -14,4 +14,4 @@ labels:
 images:
 - name: ghcr.io/shinkeonkim/boardgame-pass-the-plate
   newName: ghcr.io/shinkeonkim/boardgame-pass-the-plate
-  newTag: sha-0825a1d
+  newTag: sha-490c884
