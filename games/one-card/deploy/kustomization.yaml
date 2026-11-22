@@ -14,4 +14,4 @@ labels:
 images:
 - name: ghcr.io/shinkeonkim/boardgame-one-card
   newName: ghcr.io/shinkeonkim/boardgame-one-card
-  newTag: sha-e4c2e2a
+  newTag: sha-0d033dd
