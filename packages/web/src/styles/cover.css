@@ -204,3 +204,6 @@
 .cover-frame[data-game='one-word'] {
   --cz: 1.5;
 }
+.cover-frame[data-game='trio-hunt'] {
+  --cz: 1.8;
+}

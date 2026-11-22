@@ -1,0 +1,195 @@
+/* ---------- Trio Hunt 전용 ---------- */
+:root {
+  --th-felt: #2a2440;
+}
+:root[data-theme='dark'] {
+  --th-felt: #1c1830;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --th-felt: #1c1830;
+  }
+}
+.th-card {
+  --w: 54px;
+  position: relative;
+  width: var(--w);
+  aspect-ratio: 5 / 7;
+  border-radius: calc(var(--w) * 0.12);
+  display: grid;
+  place-items: center;
+  font: inherit;
+  padding: 0;
+  flex: none;
+  background: var(--card-tex), linear-gradient(170deg, #fffaf0, color-mix(in srgb, var(--tone) 18%, #f3ead6)) !important;
+  color: var(--tone);
+}
+.th-card.sm {
+  --w: 36px;
+}
+.th-card.lg {
+  --w: 78px;
+}
+.th-num {
+  position: relative;
+  z-index: 2;
+  font-size: calc(var(--w) * 0.56);
+  color: color-mix(in srgb, var(--tone) 85%, black);
+}
+.th-sticker {
+  position: absolute;
+  top: 6%;
+  right: 9%;
+  font-style: normal;
+  font-size: calc(var(--w) * 0.2);
+  color: var(--tone);
+}
+.th-card.back {
+  color: #fff;
+}
+.th-back-mark {
+  position: relative;
+  z-index: 4;
+  font-family: Georgia, serif;
+  font-weight: 900;
+  font-size: calc(var(--w) * 0.36);
+  color: #ffe2a0;
+  text-shadow: 0 0 2px rgba(0, 0, 0, 0.8);
+}
+.th-card.sm .th-back-mark {
+  display: none;
+}
+.th-card.glow {
+  box-shadow: 0 0 0 3px var(--gold), 0 0 16px color-mix(in srgb, var(--gold) 70%, transparent) !important;
+  animation: th-flip 0.4s ease-out;
+}
+@keyframes th-flip {
+  from {
+    transform: rotateY(90deg);
+  }
+}
+button.th-card.back:hover {
+  transform: translateY(-4px);
+}
+.th-tray {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  align-items: center;
+  min-height: 120px;
+  padding: 12px;
+  border-radius: 18px;
+  background: radial-gradient(ellipse at center, color-mix(in srgb, var(--th-felt) 70%, #6a5aa0), var(--th-felt));
+  color: #f0ecfb;
+  box-shadow: inset 0 0 0 6px rgba(0, 0, 0, 0.15);
+}
+.th-tray .muted {
+  color: color-mix(in srgb, #f0ecfb 70%, transparent);
+}
+.th-miss-label {
+  opacity: 0.8;
+}
+.th-middle {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+}
+.th-gap {
+  width: 54px;
+  aspect-ratio: 5 / 7;
+  border-radius: 7px;
+  border: 1.5px dashed var(--line);
+}
+.th-seats {
+  display: grid;
+  gap: 8px;
+}
+.th-seat {
+  padding: 8px 10px;
+  border-radius: 12px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-left: 5px solid var(--seat);
+}
+.th-seat.acting {
+  box-shadow: 0 0 0 2px var(--gold);
+}
+.th-seat.mine {
+  background: color-mix(in srgb, var(--accent) 7%, var(--panel));
+}
+.th-seat-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+.th-seat-head .seat-name {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.th-trios {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.th-trio {
+  display: inline-flex;
+  box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.15), 4px 4px 0 rgba(0, 0, 0, 0.1);
+  border-radius: 5px;
+}
+.th-hand {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.th-end {
+  border: 1.5px dashed var(--accent);
+  background: color-mix(in srgb, var(--accent) 8%, transparent);
+  color: var(--ink);
+  border-radius: 8px;
+  padding: 6px 8px;
+  font: inherit;
+  font-size: 0.75rem;
+  font-weight: 800;
+  cursor: pointer;
+}
+.th-end:hover {
+  background: color-mix(in srgb, var(--accent) 22%, transparent);
+}
+.th-demo {
+  display: grid;
+  gap: 10px;
+  justify-items: center;
+  padding: 16px;
+  border-radius: 16px;
+  background: var(--th-felt);
+  color: #fff;
+  width: min(100%, 340px);
+}
+.th-demo-row {
+  display: flex;
+  gap: 6px;
+}
+@media (max-width: 759px), (max-aspect-ratio: 1/1) {
+  .th-card {
+    --w: 46px;
+  }
+  .th-card.sm {
+    --w: 30px;
+  }
+  .th-card.lg {
+    --w: 62px;
+  }
+  .th-tray {
+    min-height: 96px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .th-card.glow {
+    animation: none;
+  }
+}
