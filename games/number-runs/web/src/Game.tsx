@@ -1,8 +1,9 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import type { RoomView } from '@bg/core';
 import { GameConfig, GameView, LogEntry, Tile, analyze, arrange, setValue, tableProblem } from '@bg/number-runs-engine';
 import { AlertBanner, seatColor } from '@bg/ui';
-import { GameScreenProps, ResultSheet, SeatList, TableBanner, TableEmotes, TableLayout, TableTopBar, Ticker, rankOf, usePeek, useTable } from '@bg/web';
+import { GameScreenProps, ResultSheet, fitZoom, SeatList, TableBanner, TableEmotes, TableLayout, TableTopBar, Ticker, rankOf, usePeek, useTable } from '@bg/web';
 import { TileFace } from './theme';
 
 
@@ -54,6 +55,49 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
     setHand([...hand, ...back.map((id) => all.get(id)!).filter((x) => !hand.some((h) => h.id === x.id))]);
     setSel([]);
   };
+  // ---------- 끌어다 놓기: 타일(고른 타일 묶음)을 묶음·「새 묶음」·손으로 ----------
+  type Target = number | 'new' | 'hand';
+  const [drag, setDrag] = useState<{ x: number; y: number; ids: string[]; over: Target | null } | null>(null);
+  const fns = useRef({ moveTo, backToHand });
+  fns.current = { moveTo, backToHand };
+  const targetAt = (x: number, y: number): Target | null => {
+    const el = document.elementFromPoint(x, y)?.closest<HTMLElement>('[data-drop]');
+    if (!el) return null;
+    const d = el.dataset.drop!;
+    return d === 'new' || d === 'hand' ? d : Number(d);
+  };
+  const grab = (id: string, e: React.PointerEvent) => {
+    if (!myTurn || e.button !== 0) return;
+    if (!g.opened[me] && !handIds.has(id)) return;
+    const sx = e.clientX;
+    const sy = e.clientY;
+    let ids: string[] | null = null;
+    const move = (ev: PointerEvent) => {
+      if (!ids) {
+        if (Math.hypot(ev.clientX - sx, ev.clientY - sy) < 6) return;
+        // 고른 타일 중 하나를 끌면 고른 것 모두, 아니면 그 타일만
+        ids = sel.includes(id) ? sel : [id];
+        setSel(ids);
+      }
+      setDrag({ x: ev.clientX, y: ev.clientY, ids, over: targetAt(ev.clientX, ev.clientY) });
+    };
+    const up = (ev: PointerEvent) => {
+      removeEventListener('pointermove', move);
+      removeEventListener('pointerup', up);
+      removeEventListener('pointercancel', up);
+      setDrag(null);
+      if (!ids || ev.type !== 'pointerup') return;
+      const to = targetAt(ev.clientX, ev.clientY);
+      if (to === null) return;
+      if (to === 'hand') fns.current.backToHand();
+      else fns.current.moveTo(to === 'new' ? -1 : to);
+    };
+    addEventListener('pointermove', move);
+    addEventListener('pointerup', up);
+    addEventListener('pointercancel', up);
+  };
+  const dropCls = (to: Target) => (drag ? (drag.over === to ? 'drop-on' : 'drop-can') : '');
+
   const problem = myTurn ? tableProblem({ table: g.table, hands: Object.assign([], { [me]: g.hand }) as Tile[][], opened: g.opened, config: c }, me, draft) : null;
   const changed = hand.length !== g.hand.length;
   const submit = () => act('move', { move: { type: 'play', table: draft.map((s) => s.map((x) => x.id)) } });
@@ -72,7 +116,7 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
     }
   };
   const title = myTurn ? (changed ? (problem ? '아직 낼 수 없어요' : '이대로 낼까요?') : g.opened[me] ? '타일을 내거나 1장 가져오세요' : `처음 등록: 합 ${c.initialMeld} 이상`) : `${names[g.turn]} 님의 차례`;
-  const hint = myTurn ? (changed ? problem ?? '「내기」를 누르면 확정돼요' : '타일을 눌러 고르고, 묶음이나 「새 묶음」을 눌러 옮겨요') : '테이블이 어떻게 바뀔까요?';
+  const hint = myTurn ? (changed ? problem ?? '「내기」를 누르면 확정돼요' : '타일을 묶음이나 「새 묶음」으로 끌어다 놓거나, 눌러 고른 뒤 묶음을 눌러요') : '테이블이 어떻게 바뀔까요?';
   const matchOver = g.status === 'match-over';
   const ranks = rankOf(g.totals);
 
@@ -95,13 +139,16 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
             {draft.map((set, i) => {
               const ok = !!analyze(set, c.maxNumber, c.colors);
               return (
-                <div key={i} className={`nr-set ${ok ? 'ok' : 'bad'}`} onClick={myTurn && sel.length ? () => moveTo(i) : undefined}>
+                <div key={i} data-drop={i} className={`nr-set ${ok ? 'ok' : 'bad'} ${dropCls(i)}`} onClick={myTurn && sel.length ? () => moveTo(i) : undefined}>
                   {set.map((x) => (
                     <TileFace
                       key={x.id}
+                      flip={`n${x.id}`}
                       t={x}
                       size="sm"
                       selected={sel.includes(x.id)}
+                      lifted={!!drag?.ids.includes(x.id)}
+                      onPointerDown={myTurn ? (e) => grab(x.id, e) : undefined}
                       fresh={g.lastPlayed.includes(x.id) || (myTurn && handIds.has(x.id))}
                       onClick={
                         myTurn
@@ -118,13 +165,13 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
               );
             })}
             {myTurn && (
-              <button className="nr-set new" onClick={() => moveTo(-1)} disabled={!sel.length}>
+              <button className={`nr-set new ${dropCls('new')}`} data-drop="new" onClick={() => moveTo(-1)} disabled={!sel.length && !drag}>
                 + 새 묶음
               </button>
             )}
           </section>
           {me >= 0 && g.status === 'playing' && (
-            <section className="hand-panel" aria-label="내 타일">
+            <section className={`hand-panel ${dropCls('hand')}`} data-drop="hand" aria-label="내 타일">
               <div className="hand-panel-head small">
                 <span>
                   내 타일 {hand.length}장{g.opened[me] ? '' : ` · 처음 등록 전 (${c.initialMeld}점 필요)`}
@@ -140,7 +187,7 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
               </div>
               <div className="hand-row nr-hand">
                 {sortedHand.map((x) => (
-                  <TileFace key={x.id} t={x} selected={sel.includes(x.id)} onClick={() => toggle(x.id)} />
+                  <TileFace key={x.id} flip={`n${x.id}`} t={x} selected={sel.includes(x.id)} lifted={!!drag?.ids.includes(x.id)} onClick={() => toggle(x.id)} onPointerDown={myTurn ? (e) => grab(x.id, e) : undefined} />
                 ))}
               </div>
               {myTurn && (
@@ -166,6 +213,13 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
             </section>
           )}
           <Ticker text={describe(g.log[g.log.length - 1])} />
+          {drag &&
+            createPortal(
+              <div className="nr-ghost" style={{ left: drag.x, top: drag.y, ['--gz' as string]: fitZoom(innerWidth, innerHeight) }} aria-hidden>
+                {drag.ids.map((id) => all.get(id)).map((x) => x && <TileFace key={x.id} t={x} />)}
+              </div>,
+              document.body,
+            )}
         </>
       }
       side={

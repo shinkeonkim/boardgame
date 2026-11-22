@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import type { RoomView } from '@bg/core';
 import { Cell, GameConfig, GameView, LogEntry, pieceById, placeProblem } from '@bg/corner-claim-engine';
 import { GameScreenProps, ResultSheet, TableBanner, TableEmotes, TableLayout, TableTopBar, Ticker, rankOf, usePeek, useTable } from '@bg/web';
@@ -26,6 +27,7 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
 
   const choose = (id: string) => {
     if (!myTurn) return t.warn(t.waitingMsg);
+    if (live.current.piece === id) return; // 이미 든 조각은 돌린 모양 그대로
     setPiece(id);
     setShape(pieceById(id)!.orients[0]);
   };
@@ -40,24 +42,104 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
     return () => window.removeEventListener('keydown', onKey);
   });
 
-  /** 미리보기: 조각의 가운데쯤을 가리킨 칸에 */
-  const preview = useMemo(() => {
-    if (!piece || !hover || !shape.length) return null;
-    const cx = Math.floor(Math.max(...shape.map((s) => s[0])) / 2);
-    const cy = Math.floor(Math.max(...shape.map((s) => s[1])) / 2);
-    const x = hover[0] - cx;
-    const y = hover[1] - cy;
-    const orient = orientIndex(piece, shape);
-    const problem = placeProblem({ board: g.board, config: c, remaining: g.remaining }, g.color, { piece, orient, x, y });
-    const cells = new Set(shape.map(([dx, dy]) => (y + dy) * n + (x + dx)));
-    return { x, y, orient, problem, cells };
-  }, [piece, hover, shape, g.board, c, g.remaining, g.color, n]);
+  /** 조각의 가운데쯤이 가리킨 칸에 오도록 놓을 자리 */
+  const placementFor = (id: string, cells: Cell[], at: [number, number]) => {
+    const cx = Math.floor(Math.max(...cells.map((s) => s[0])) / 2);
+    const cy = Math.floor(Math.max(...cells.map((s) => s[1])) / 2);
+    const x = at[0] - cx;
+    const y = at[1] - cy;
+    const orient = orientIndex(id, cells);
+    const problem = placeProblem({ board: g.board, config: c, remaining: g.remaining }, g.color, { piece: id, orient, x, y });
+    return { x, y, orient, problem, cells: new Set(cells.map(([dx, dy]) => (y + dy) * n + (x + dx))) };
+  };
+  /** 미리보기 */
+  const preview = useMemo(() => (piece && hover && shape.length ? placementFor(piece, shape, hover) : null), [piece, hover, shape, g.board, c, g.remaining, g.color, n]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const place = () => {
     if (!preview) return;
     if (preview.problem) return t.warn(preview.problem);
     act('move', { move: { type: 'place', piece, orient: preview.orient, x: preview.x, y: preview.y } });
   };
+
+  // ---------- 끌어다 놓기 ----------
+  // 판 칸은 data-i로 찾는다 (화면 맞춤 배율과 상관없이 elementFromPoint로 판정)
+  const boardRef = useRef<HTMLElement>(null);
+  const live = useRef({ piece, shape });
+  live.current = { piece, shape };
+  const [drag, setDrag] = useState<{ x: number; y: number; over: boolean } | null>(null);
+  const cellAt = (px: number, py: number): [number, number] | null => {
+    const el = document.elementFromPoint(px, py)?.closest<HTMLElement>('.cc-cell[data-i]');
+    if (!el) return null;
+    const i = Number(el.dataset.i);
+    return [i % n, Math.floor(i / n)];
+  };
+  const cellPx = () => (boardRef.current ? boardRef.current.getBoundingClientRect().width / n : 24);
+  /** 손가락으로 끌 때는 조각이 손가락에 가리지 않게 조금 위를 가리킨다 */
+  const track = (e: { pointerType: string }, onEnd?: (cell: [number, number] | null) => void) => {
+    const touch = e.pointerType !== 'mouse';
+    const lift = touch ? cellPx() * 1.8 : 0;
+    let moved = false;
+    let sx = NaN;
+    let sy = NaN;
+    const move = (ev: PointerEvent) => {
+      if (Number.isNaN(sx)) {
+        sx = ev.clientX;
+        sy = ev.clientY;
+      }
+      if (!moved && Math.hypot(ev.clientX - sx, ev.clientY - sy) < 6) return;
+      moved = true;
+      const cell = cellAt(ev.clientX, ev.clientY - lift);
+      setHover(cell);
+      setDrag({ x: ev.clientX, y: ev.clientY - lift, over: !!cell });
+    };
+    const up = (ev: PointerEvent) => {
+      removeEventListener('pointermove', move);
+      removeEventListener('pointerup', up);
+      removeEventListener('pointercancel', up);
+      setDrag(null);
+      if (moved && ev.type === 'pointerup') onEnd?.(cellAt(ev.clientX, ev.clientY - lift));
+    };
+    addEventListener('pointermove', move);
+    addEventListener('pointerup', up);
+    addEventListener('pointercancel', up);
+  };
+  /** 조각 줄에서 집어 판으로 끌기 → 놓으면 바로 둔다 (안 되는 자리면 이유를 보여 주고 그대로 들고 있음) */
+  const grab = (id: string, e: React.PointerEvent) => {
+    if (!myTurn) return t.warn(t.waitingMsg);
+    if (e.button !== 0) return;
+    if (live.current.piece !== id) {
+      setPiece(id);
+      setShape(pieceById(id)!.orients[0]);
+    }
+    track(e, (cell) => {
+      const { piece: p, shape: sh } = live.current;
+      if (!cell || !p) return;
+      const pl = placementFor(p, sh, cell);
+      setHover(cell);
+      if (pl.problem) return t.warn(pl.problem);
+      act('move', { move: { type: 'place', piece: p, orient: pl.orient, x: pl.x, y: pl.y } });
+    });
+  };
+  /** 터치: 조각을 고른 뒤 판 위에서 손가락을 움직여 자리를 맞춤 (놓기는 「놓기」 버튼) */
+  const boardDown = (e: React.PointerEvent) => {
+    if (!myTurn || !piece || e.pointerType === 'mouse') return;
+    track(e);
+  };
+  // 휠 = 회전, 오른쪽 클릭 = 뒤집기 (조각을 들고 있을 때)
+  useEffect(() => {
+    const el = boardRef.current;
+    if (!el) return;
+    let last = 0;
+    const onWheel = (e: WheelEvent) => {
+      if (!live.current.piece) return;
+      e.preventDefault();
+      if (Date.now() - last < 140) return;
+      last = Date.now();
+      setShape((sh) => (e.deltaY < 0 ? rotate(rotate(rotate(sh))) : rotate(sh)));
+    };
+    el.addEventListener('wheel', onWheel, { passive: false });
+    return () => el.removeEventListener('wheel', onWheel);
+  }, []);
   const isTouch = typeof window !== 'undefined' && window.matchMedia?.('(hover: none)').matches;
 
   const describe = (e: LogEntry | undefined) => {
@@ -67,7 +149,13 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
   };
   const myColors = g.fixedOwners.flatMap((o, col) => (o === me ? [col] : []));
   const title = myTurn ? (piece ? '놓을 자리를 고르세요' : `${COLORS[g.color].name} 조각을 고르세요`) : `${names[g.owners[g.color]]} 님 · ${COLORS[g.color].name} 차례`;
-  const hint = myTurn ? (piece ? `${isTouch ? '칸을 누르고 「놓기」' : '판을 눌러 놓기'} · 회전 R · 뒤집기 F · 내 색과는 모서리만 닿게` : '큰 조각부터 쓰는 게 좋아요 — 남은 칸이 감점이에요') : '어디로 뻗어 올까요?';
+  const hint = myTurn
+    ? piece
+      ? isTouch
+        ? '판으로 끌어다 놓거나, 칸을 눌러 맞춘 뒤 「놓기」 · 내 색과는 모서리만 닿게'
+        : '판으로 끌어다 놓거나 판을 눌러 놓기 · 휠/R 회전 · 오른쪽 클릭/F 뒤집기'
+      : '조각을 판으로 끌어다 놓아요 · 큰 조각부터 쓰는 게 좋아요'
+    : '어디로 뻗어 올까요?';
   const matchOver = g.status === 'match-over';
   const ranks = rankOf(g.totals);
 
@@ -86,7 +174,19 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
       main={
         <>
           <div className="table-fit">
-            <section className="cc-board" style={{ ['--n' as string]: n }} aria-label="판" onMouseLeave={() => !isTouch && setHover(null)}>
+            <section
+              ref={boardRef}
+              className={`cc-board ${piece && myTurn ? 'holding' : ''}`}
+              style={{ ['--n' as string]: n }}
+              aria-label="판"
+              onMouseLeave={() => !isTouch && !drag && setHover(null)}
+              onPointerDown={boardDown}
+              onContextMenu={(e) => {
+                if (!piece) return;
+                e.preventDefault();
+                flp();
+              }}
+            >
               {g.board.map((cell, i) => {
                 const x = i % n;
                 const y = (i - x) / n;
@@ -95,9 +195,10 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
                 return (
                   <div
                     key={i}
+                    data-i={i}
                     className={`cc-cell ${cell >= 0 ? 'filled' : ''} ${g.lastCells.includes(i) ? 'last' : ''} ${inPreview ? (preview!.problem ? 'pv-bad' : 'pv-ok') : ''}`}
                     style={cell >= 0 ? { background: COLORS[cell].fill } : inPreview ? { ['--pv' as string]: COLORS[g.color].fill } : undefined}
-                    onMouseEnter={() => !isTouch && piece && setHover([x, y])}
+                    onMouseEnter={() => !isTouch && piece && !drag && setHover([x, y])}
                     onClick={() => {
                       if (!myTurn || !piece) return;
                       if (isTouch) setHover([x, y]);
@@ -138,12 +239,32 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
               {piece && myTurn && preview?.problem && <div className="small warn">{preview.problem}</div>}
               <div className="cc-pieces">
                 {(myTurn ? g.remaining[g.color] : g.remaining[myColors[0] ?? 0] ?? []).map((id) => (
-                  <PieceIcon key={id} cells={piece === id ? shape : pieceById(id)!.orients[0]} color={myTurn ? g.color : myColors[0] ?? 0} size={11} selected={piece === id} onClick={myTurn ? () => choose(id) : undefined} title={`${pieceById(id)!.size}칸 조각`} />
+                  <PieceIcon
+                    key={id}
+                    cells={piece === id ? shape : pieceById(id)!.orients[0]}
+                    color={myTurn ? g.color : myColors[0] ?? 0}
+                    size={13}
+                    selected={piece === id}
+                    dragging={piece === id && !!drag}
+                    onClick={myTurn ? () => choose(id) : undefined}
+                    onPointerDown={myTurn ? (e) => grab(id, e) : undefined}
+                    title={`${pieceById(id)!.size}칸 조각`}
+                  />
                 ))}
               </div>
             </section>
           )}
           <Ticker text={describe(g.log[g.log.length - 1])} />
+          {drag &&
+            !drag.over &&
+            piece &&
+            createPortal(
+              // 판 밖에서 끌고 있을 때: 손에 든 조각 (판 위에서는 판의 미리보기가 대신 보인다)
+              <div className="cc-ghost" style={{ left: drag.x, top: drag.y }} aria-hidden>
+                <PieceIcon cells={shape} color={g.color} size={cellPx()} />
+              </div>,
+              document.body,
+            )}
         </>
       }
       side={

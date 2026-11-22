@@ -17,7 +17,9 @@
   display: inline-grid;
   place-items: center;
   border-radius: 5px;
-  background: var(--tile);
+  background: var(--chip-tex), var(--tile);
+  /* 새로 생긴 타일(공장 채우기·줄·벽에 놓임)은 톡 하고 나타남 */
+  animation: tile-in 0.32s cubic-bezier(0.2, 0.8, 0.3, 1.3) both;
   border: 0;
   padding: 0;
   flex: none;
@@ -216,4 +218,16 @@ button.tile:hover {
 }
 .ta-mine .hand-panel-head {
   justify-self: stretch;
+}
+
+@keyframes tile-in {
+  from {
+    transform: scale(0.4);
+    opacity: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .tile {
+    animation: none;
+  }
 }

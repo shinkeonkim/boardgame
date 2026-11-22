@@ -344,3 +344,13 @@ button.co-card.can:hover {
     font-size: 1rem;
   }
 }
+
+/* 카드 앞면 질감 (꾸미기) — 상태별 배경색 위에 한 겹 */
+.co-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: var(--card-tex);
+  pointer-events: none;
+}

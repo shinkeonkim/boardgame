@@ -18,7 +18,13 @@ export function GemToken({ gem, n, size = 34, selected, onClick, disabled, label
         <circle cx="20" cy="20" r="18" fill={g.fill} stroke={g.stroke} strokeWidth="2.5" />
         <path d="M20 9 L29 17 L20 31 L11 17 Z" fill="rgb(255 255 255 / .35)" stroke="rgb(255 255 255 / .55)" strokeWidth="1.2" />
       </svg>
-      {n !== undefined && <b style={{ color: g.ink }}>{n}</b>}
+      <i className="chip-tex" aria-hidden />
+      {n !== undefined && (
+        // 개수가 바뀌면 살짝 튐
+        <b key={n} style={{ color: g.ink }}>
+          {n}
+        </b>
+      )}
     </Tag>
   );
 }
@@ -41,7 +47,7 @@ export function DevCardView({ card, onClick, selected, affordable, size = 'md' }
   const g = GEM_INFO[card.bonus];
   const Tag = onClick ? 'button' : 'div';
   return (
-    <Tag className={`devcard t${card.tier} ${size} ${selected ? 'selected' : ''} ${affordable ? 'affordable' : ''}`} style={{ ['--bonus' as string]: g.fill, ['--bonus-ink' as string]: g.ink }} onClick={onClick} aria-label={`${card.tier}단계 ${g.name} 카드, ${card.points}점`}>
+    <Tag data-flip={`g${card.id}`} className={`devcard t${card.tier} ${size} ${selected ? 'selected' : ''} ${affordable ? 'affordable' : ''}`} style={{ ['--bonus' as string]: g.fill, ['--bonus-ink' as string]: g.ink }} onClick={onClick} aria-label={`${card.tier}단계 ${g.name} 카드, ${card.points}점`}>
       <div className="devcard-top">
         <b className="devcard-pts">{card.points || ''}</b>
         <GemToken gem={card.bonus} size={size === 'sm' ? 16 : 22} />

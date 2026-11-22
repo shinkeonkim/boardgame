@@ -19,7 +19,7 @@
   width: var(--w);
   aspect-ratio: 4 / 5;
   border-radius: 50% 50% 14px 14px / 40% 40% 14px 14px;
-  background: var(--plate);
+  background: var(--card-tex), var(--plate);
   border: 3px solid var(--tone);
   color: var(--ink);
   display: grid;

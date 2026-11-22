@@ -17,7 +17,7 @@ function Tableau({ t, size = 'sm' }: { t: Played[]; size?: 'xs' | 'sm' }) {
         return (
           <span key={g.id} className="tab-group" title={g.name}>
             {cards.map((p) => (
-              <DishCard key={p.id} dish={p.dish} size="xs" className={`${p.onWasabi ? 'on-wasabi' : ''} ${p.used ? 'used' : ''}`} />
+              <DishCard key={p.id} flip={`d${p.id}`} dish={p.dish} size="xs" className={`${p.onWasabi ? 'on-wasabi' : ''} ${p.used ? 'used' : ''}`} />
             ))}
           </span>
         );
@@ -118,7 +118,7 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
               </div>
               <div className="hand-row">
                 {g.hand.map((h) => (
-                  <DishCard key={h.id} dish={h.dish} size="md" selected={picked.has(h.id) || first === h.id} onClick={() => pick(h.id)} badge={first === h.id ? '1' : undefined} />
+                  <DishCard key={h.id} flip={`d${h.id}`} dish={h.dish} size="md" selected={picked.has(h.id) || first === h.id} onClick={() => pick(h.id)} badge={first === h.id ? '1' : undefined} />
                 ))}
               </div>
             </section>

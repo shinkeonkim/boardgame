@@ -113,19 +113,19 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
                   </div>
                   <div className="nv-tiles">
                     {g.rows[seat].map((tile) => (
-                      <div key={tile.id} className="nv-slot">
+                      <div key={tile.id} className="nv-slot" data-flip={`t${tile.id}`}>
                         <TileView t={tile} selected={sel?.tileId === tile.id} onClick={!tile.revealed ? () => pickTile(seat, tile.id, tile.revealed) : undefined} />
                         {!tile.revealed && missesFor(tile.id).size > 0 && (
                           <span className="nv-miss" title="틀린 추측">
                             {[...missesFor(tile.id)].map((x) => (
-                              <s key={x}>{num(x)}</s>
+                              <s key={x}>✕{num(x)}</s>
                             ))}
                           </span>
                         )}
                       </div>
                     ))}
                     {g.pending && g.turn === seat && (
-                      <div className="nv-slot pending">
+                      <div className="nv-slot pending" data-flip={`t${g.pending.id}`}>
                         <TileView t={g.pending} size="sm" />
                         <span className="small muted">가져온 타일</span>
                       </div>
@@ -173,7 +173,7 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
                   <button className="nv-insert" onClick={() => act('move', { move: { type: 'place', index: 0 } })} aria-label="맨 앞에 놓기" />
                 )}
                 {myRow.map((tile, i) => (
-                  <div key={tile.id} className="nv-slot-wrap">
+                  <div key={tile.id} className="nv-slot-wrap" data-flip={`t${tile.id}`}>
                     <TileView
                       t={tile}
                       mine
@@ -185,7 +185,7 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
                   </div>
                 ))}
                 {g.pending && g.turn === me && (
-                  <div className="nv-slot pending">
+                  <div className="nv-slot pending" data-flip={`t${g.pending.id}`}>
                     <TileView t={g.pending} mine size="lg" />
                     <span className="small muted">가져온 타일</span>
                   </div>

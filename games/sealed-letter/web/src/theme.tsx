@@ -22,7 +22,9 @@ export function LetterCard({
   className = '',
   disabled,
   title,
+  flip,
 }: {
+  flip?: string;
   kind: Kind;
   value: number;
   size?: 'xs' | 'sm' | 'md' | 'lg';
@@ -35,7 +37,7 @@ export function LetterCard({
   const d = CARD_DEFS[kind];
   const Tag = onClick ? 'button' : 'div';
   return (
-    <Tag className={`lcard ${size} ${selected ? 'selected' : ''} ${className}`} style={{ ['--tone' as string]: TONE[kind] }} onClick={onClick} disabled={onClick ? disabled : undefined} title={title ?? `${value} ${d.name}: ${d.text}`} aria-label={`${value} ${d.name}`}>
+    <Tag data-flip={flip} className={`lcard ${size} ${selected ? 'selected' : ''} ${className}`} style={{ ['--tone' as string]: TONE[kind] }} onClick={onClick} disabled={onClick ? disabled : undefined} title={title ?? `${value} ${d.name}: ${d.text}`} aria-label={`${value} ${d.name}`}>
       <span className="lcard-val">{value}</span>
       <span className="lcard-icon" aria-hidden>
         {d.icon}

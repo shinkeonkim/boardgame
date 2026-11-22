@@ -24,6 +24,7 @@ export function DiscView({ disc, seat = 0, size = 40, onClick, selected, label }
         )}
         {!disc && <circle cx="20" cy="20" r="12" fill="none" stroke="rgb(255 255 255 / .35)" strokeWidth="2" />}
       </svg>
+      <i className="chip-tex" aria-hidden />
     </Tag>
   );
 }

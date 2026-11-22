@@ -118,8 +118,9 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
                       const flipped = g.flippedDiscs[s][fromTop];
                       const own = s === me ? g.myMat[i] : null;
                       return (
-                        <span key={i} className={`ht-slot ${own && !flipped ? 'peek' : ''}`} style={{ ['--i' as string]: i }}>
-                          <DiscView disc={flipped ?? (own && g.status !== 'playing' ? own : flipped ?? null)} seat={s} size={34} />
+                        // 뒤집히면 key가 바뀌어 뒤집히는 움직임이 한 번 나온다
+                        <span key={`${i}-${flipped ?? 'x'}`} data-flip={`ht${s}-${i}`} className={`ht-slot ${own && !flipped ? 'peek' : ''} ${flipped ? 'flipped' : ''}`} style={{ ['--i' as string]: i }}>
+                          <DiscView disc={flipped ?? (own && g.status !== 'playing' ? own : flipped ?? null)} seat={s} size={44} />
                           {own && !flipped && <span className="ht-peek">{own === 'rose' ? '🌹' : '🌵'}</span>}
                         </span>
                       );

@@ -41,6 +41,7 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
     turn: g.phase === 'lose' ? g.loss?.seat ?? g.turn : g.turn,
     playing: g.status === 'playing',
     simultaneous: reaction,
+    quiet: reaction,
     stepKey: `${g.turn}-${g.phase}-${g.log.length ? g.log[g.log.length - 1].n : 0}`,
     mySub: reaction ? '도전하거나 통과해요' : g.phase === 'lose' ? '잃을 카드를 골라요' : '행동을 골라요',
   });
@@ -123,7 +124,7 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
                     </div>
                     <div className="ci-cards">
                       {g.hands[s].map((h) => (
-                        <RoleCard key={h.id} role={h.role} lost={h.lost} size="sm" />
+                        <RoleCard key={h.id} flip={`r${h.id}`} role={h.role} lost={h.lost} size="sm" />
                       ))}
                     </div>
                     {reaction && g.passed.includes(s) && <span className="ci-pass">통과 ✓</span>}
@@ -131,6 +132,31 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
                 );
               })}
           </section>
+
+          {pend && g.status === 'playing' && (
+            // 지금 걸린 선언: 누가 · 무슨 역할로 · 무엇을 · 누구에게 (+ 막기)
+            <section className="ci-claim" key={`${pend.actor}-${pend.action}-${pend.target}-${pend.blocker}`} aria-live="polite">
+              <span className="ci-claim-who" style={{ ['--seat' as string]: seatColor(pend.actor) }}>
+                <SeatDot seat={pend.actor} size={12} /> <b>{names[pend.actor]}</b>
+              </span>
+              {ACTION_DEFS[pend.action].role && <span className="ci-claim-role">{ROLE_DEFS[ACTION_DEFS[pend.action].role!].icon} {rn(ACTION_DEFS[pend.action].role!)} 주장</span>}
+              <span className="ci-claim-act">{ACTION_DEFS[pend.action].name}</span>
+              {pend.target !== null && (
+                <>
+                  <span aria-hidden>→</span>
+                  <span className="ci-claim-who" style={{ ['--seat' as string]: seatColor(pend.target) }}>
+                    <SeatDot seat={pend.target} size={12} /> <b>{names[pend.target]}</b>
+                  </span>
+                </>
+              )}
+              {pend.blocker !== null && pend.blockRole && (
+                <span className="ci-claim-block">
+                  🚫 {names[pend.blocker]} · {ROLE_DEFS[pend.blockRole].icon} {rn(pend.blockRole)}로 막기
+                </span>
+              )}
+              {reaction && <span className="small muted ci-claim-wait">통과 {g.passed.length}명</span>}
+            </section>
+          )}
 
           {me >= 0 && g.status === 'playing' && g.influence[me] > 0 && (
             <section className="hand-panel" aria-label="내 영향력">
@@ -146,7 +172,7 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
                       <RoleCard key={p.id} role={p.role} size="md" selected={keep.includes(p.id)} onClick={() => setKeep((k) => (k.includes(p.id) ? k.filter((x) => x !== p.id) : k.length < myLive.length ? [...k, p.id] : k))} />
                     ))
                   : g.hands[me].map((h) => (
-                      <RoleCard key={h.id} role={h.role} lost={h.lost} size="md" onClick={g.phase === 'lose' && g.loss?.seat === me && !h.lost ? () => act('move', { move: { type: 'lose', cardId: h.id } }) : undefined} />
+                      <RoleCard key={h.id} flip={`r${h.id}`} role={h.role} lost={h.lost} size="md" onClick={g.phase === 'lose' && g.loss?.seat === me && !h.lost ? () => act('move', { move: { type: 'lose', cardId: h.id } }) : undefined} />
                     ))}
               </div>
               {g.phase === 'exchange' && myTurn && (

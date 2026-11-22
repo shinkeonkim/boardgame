@@ -220,3 +220,59 @@
     gap: 6px;
   }
 }
+
+/* 좌석: 컵 + 가려진 주사위 */
+.bd-seat-dice {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.bd-seat-hidden {
+  display: inline-flex;
+  gap: 2px;
+  flex-wrap: wrap;
+}
+.bd-faces-head {
+  margin-top: 2px;
+}
+/* 새 호가: 가운데로 탁 놓이는 느낌 */
+.bd-bid {
+  animation: bid-in 0.35s cubic-bezier(0.2, 0.8, 0.2, 1.2);
+}
+@keyframes bid-in {
+  from {
+    transform: scale(0.7) translateY(-10px);
+    opacity: 0;
+  }
+}
+/* 굴림: 살짝 돌며 떨어짐 */
+.die.rolled {
+  animation: die-roll 0.5s cubic-bezier(0.2, 0.8, 0.3, 1.15) both;
+}
+@keyframes die-roll {
+  from {
+    transform: translateY(-26px) rotate(-200deg) scale(0.7);
+    opacity: 0;
+  }
+}
+/* 공개: 하나씩 뒤집혀 나옴 */
+.die.reveal-die {
+  animation: die-reveal 0.35s ease-out both;
+}
+@keyframes die-reveal {
+  from {
+    transform: rotateY(90deg) scale(0.8);
+    opacity: 0;
+  }
+}
+.die rect {
+  transition: stroke 0.2s;
+}
+@media (prefers-reduced-motion: reduce) {
+  .die.rolled,
+  .die.reveal-die,
+  .bd-bid {
+    animation: none;
+  }
+}

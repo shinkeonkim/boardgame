@@ -43,7 +43,7 @@
   width: var(--w);
   aspect-ratio: 5 / 7;
   border-radius: calc(var(--w) * 0.12);
-  background: var(--card-face);
+  background: var(--card-tex), var(--card-face);
   border: 1.5px solid var(--card-edge);
   border-top: calc(var(--w) * 0.12) solid var(--tone);
   color: var(--card-ink);
@@ -78,7 +78,7 @@
 }
 .ncard.p7 {
   --tone: var(--pen-7);
-  background: color-mix(in srgb, var(--pen-7) 10%, var(--card-face));
+  background: var(--card-tex), color-mix(in srgb, var(--pen-7) 10%, var(--card-face));
 }
 .ncard-num {
   font-weight: 800;
@@ -120,7 +120,7 @@
   height: 3px;
 }
 .ncard.back {
-  background: repeating-linear-gradient(45deg, #3b3550, #3b3550 4px, #453e5d 4px, #453e5d 8px);
+  background: var(--card-back);
   border-color: #2a2539;
   border-top-color: #2a2539;
   border-top-width: 1.5px;

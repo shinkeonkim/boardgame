@@ -40,18 +40,18 @@
   --w: 30px;
 }
 .vtile.md {
-  --w: clamp(32px, 6cqw, 46px);
+  --w: clamp(34px, 7cqw, 56px);
 }
 .vtile.lg {
   --w: clamp(38px, 7vw, 54px);
 }
 .vtile.black {
-  background: var(--tile-black);
+  background: var(--card-tex), var(--tile-black);
   color: var(--tile-black-ink);
   border-color: #4c5262;
 }
 .vtile.white {
-  background: var(--tile-white);
+  background: var(--card-tex), var(--tile-white);
   color: var(--tile-white-ink);
   border-color: #c9c2b0;
 }
@@ -60,12 +60,17 @@
   font-size: calc(var(--w) * 0.52);
   font-variant-numeric: tabular-nums;
 }
-.vtile.closed:not(.mine-hidden) .vtile-back {
+.vtile .vtile-back {
   position: absolute;
-  inset: 22%;
-  border-radius: 4px;
-  border: 2px dotted currentColor;
-  opacity: 0.35;
+  width: 62%;
+  left: 19%;
+  top: 50%;
+  transform: translateY(-50%);
+  opacity: 0.4;
+}
+.vtile.closed:not(.mine-hidden) {
+  /* 가려진 타일은 금속판 느낌의 잔잔한 결 */
+  background-image: repeating-linear-gradient(180deg, rgb(255 255 255 / 0.05) 0 2px, transparent 2px 5px);
 }
 .vtile.open {
   outline: 2px solid var(--gold);
@@ -170,12 +175,17 @@ button.vtile:hover {
   display: flex;
   gap: 2px;
   flex-wrap: wrap;
-  max-width: 48px;
+  max-width: 64px;
   justify-content: center;
 }
 .nv-miss s {
-  font-size: 0.65rem;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-decoration: none;
   color: var(--danger);
+  background: color-mix(in srgb, var(--danger) 12%, transparent);
+  border-radius: 999px;
+  padding: 0 5px;
 }
 .nv-insert {
   width: 14px;

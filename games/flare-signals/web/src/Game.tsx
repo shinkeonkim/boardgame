@@ -190,7 +190,7 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
                   </div>
                   <div className="other-cards">
                     {hand.map((card, i) => (
-                      <div key={card.id} className={`ocard ${touched.has(card.id) && choosing ? 'touch' : ''} ${i === g.chops[seat] ? 'chop' : ''}`}>
+                      <div key={card.id} data-flip={`f${card.id}`} className={`ocard ${touched.has(card.id) && choosing ? 'touch' : ''} ${i === g.chops[seat] ? 'chop' : ''}`}>
                         <FlareCard c={c} color={card.color!} value={card.value!} size="md" onClick={() => pickOtherCard(seat, card)} title="눌러서 이 카드의 색·숫자로 힌트" />
                         {c.showClues && <ClueMarks c={c} clue={card.clue} />}
                       </div>
@@ -230,7 +230,7 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
                 {myHand.map((card, i) => {
                   const ps = showPoss ? possibilities(g, me, card.clue) : [];
                   return (
-                    <div key={card.id} className={`mycard ${i === g.chops[me] ? 'chop' : ''}`}>
+                    <div key={card.id} data-flip={`f${card.id}`} className={`mycard ${i === g.chops[me] ? 'chop' : ''}`}>
                       <MysteryCard
                         c={c}
                         clue={card.clue}

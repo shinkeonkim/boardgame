@@ -15,7 +15,10 @@ export function NumberCard({
   title,
   disabled,
   ariaLabel,
+  flip,
 }: {
+  /** 움직임 추적 id (TableLayout의 FLIP) */
+  flip?: string;
   n: number;
   flat?: boolean;
   size?: 'xs' | 'sm' | 'md' | 'lg';
@@ -31,6 +34,7 @@ export function NumberCard({
   return (
     <Tag
       className={`ncard ${size} ${PENALTY_TONE[p] ?? 'p1'} ${className}`}
+      data-flip={flip}
       style={style}
       onClick={onClick}
       title={title}

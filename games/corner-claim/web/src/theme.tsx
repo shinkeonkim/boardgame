@@ -18,12 +18,32 @@ export const flip = (cells: Cell[]) => norm(cells.map(([x, y]) => [-x, y] as Cel
 export const orientIndex = (piece: string, cells: Cell[]) => pieceById(piece)!.orients.findIndex((o) => key(o) === key(cells));
 
 /** 조각 미리보기 (작은 칸 그림) */
-export function PieceIcon({ cells, color, size = 10, selected, onClick, disabled, title }: { cells: Cell[]; color: number; size?: number; selected?: boolean; onClick?: () => void; disabled?: boolean; title?: string }) {
+export function PieceIcon({
+  cells,
+  color,
+  size = 10,
+  selected,
+  onClick,
+  onPointerDown,
+  dragging,
+  disabled,
+  title,
+}: {
+  cells: Cell[];
+  color: number;
+  size?: number;
+  selected?: boolean;
+  onClick?: () => void;
+  onPointerDown?: (e: React.PointerEvent) => void;
+  dragging?: boolean;
+  disabled?: boolean;
+  title?: string;
+}) {
   const w = Math.max(...cells.map((c) => c[0])) + 1;
   const h = Math.max(...cells.map((c) => c[1])) + 1;
   const Tag = onClick ? 'button' : 'span';
   return (
-    <Tag className={`piece ${selected ? 'selected' : ''}`} onClick={onClick} disabled={onClick ? disabled : undefined} title={title} aria-label={title}>
+    <Tag className={`piece ${selected ? 'selected' : ''} ${dragging ? 'dragging' : ''} ${onPointerDown ? 'grabbable' : ''}`} onClick={onClick} onPointerDown={onPointerDown} disabled={onClick ? disabled : undefined} title={title} aria-label={title}>
       <svg width={w * size} height={h * size} viewBox={`0 0 ${w} ${h}`} aria-hidden>
         {cells.map(([x, y], i) => (
           <rect key={i} x={x + 0.06} y={y + 0.06} width="0.88" height="0.88" rx="0.15" fill={COLORS[color].fill} />

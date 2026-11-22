@@ -13,12 +13,12 @@
   }
 }
 .troop {
-  --w: 46px;
+  --w: 56px;
   position: relative;
   width: var(--w);
   aspect-ratio: 5 / 7;
   border-radius: 7px;
-  background: color-mix(in srgb, var(--tc) 18%, var(--panel));
+  background: var(--card-tex), color-mix(in srgb, var(--tc) 18%, var(--panel));
   border: 2px solid var(--tc);
   color: var(--ink);
   display: grid;
@@ -29,7 +29,8 @@
   transition: transform 0.15s;
 }
 .troop.sm {
-  --w: clamp(24px, 4.2cqw, 38px);
+  /* 깃발 9개가 한 줄 → 한 칸은 약 11cqw. 카드는 그 대부분을 쓴다 */
+  --w: clamp(26px, 8.6cqw, 66px);
   aspect-ratio: 7 / 5;
 }
 .troop.xs {
@@ -120,7 +121,7 @@ button.troop:hover {
   justify-content: flex-start;
 }
 .fl-empty {
-  width: clamp(24px, 4.2cqw, 38px);
+  width: clamp(26px, 8.6cqw, 66px);
   aspect-ratio: 7 / 5;
   border-radius: 6px;
   border: 1.5px dashed var(--line);
@@ -215,5 +216,25 @@ button.troop:hover {
   }
   .troop {
     --w: 40px;
+  }
+}
+
+/* 차지한 깃발: 한 번 펄럭 */
+.fl-col.won .fl-flag svg,
+.fl-col.lost .fl-flag svg {
+  animation: fl-wave 0.7s ease-out;
+  transform-origin: 20% 90%;
+}
+@keyframes fl-wave {
+  30% {
+    transform: rotate(-12deg) scale(1.3);
+  }
+  60% {
+    transform: rotate(8deg) scale(1.15);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .fl-col .fl-flag svg {
+    animation: none;
   }
 }

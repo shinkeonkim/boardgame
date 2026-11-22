@@ -11,11 +11,11 @@ export const GROUP_COLOR: Record<Group, string> = {
   pudding: '#d0478f',
 };
 
-export function DishCard({ dish, size = 'md', selected, onClick, className = '', badge, dim }: { dish: Dish; size?: 'xs' | 'sm' | 'md'; selected?: boolean; onClick?: () => void; className?: string; badge?: string; dim?: boolean }) {
+export function DishCard({ dish, size = 'md', selected, onClick, className = '', badge, dim, flip }: { dish: Dish; size?: 'xs' | 'sm' | 'md'; selected?: boolean; onClick?: () => void; className?: string; badge?: string; dim?: boolean; flip?: string }) {
   const d = DISH[dish];
   const Tag = onClick ? 'button' : 'div';
   return (
-    <Tag className={`dcard ${size} ${selected ? 'selected' : ''} ${dim ? 'dim' : ''} ${className}`} style={{ ['--tone' as string]: GROUP_COLOR[d.group] }} onClick={onClick} title={`${d.name}: ${d.hint}`} aria-label={d.name}>
+    <Tag data-flip={flip} className={`dcard ${size} ${selected ? 'selected' : ''} ${dim ? 'dim' : ''} ${className}`} style={{ ['--tone' as string]: GROUP_COLOR[d.group] }} onClick={onClick} title={`${d.name}: ${d.hint}`} aria-label={d.name}>
       <span className="dcard-icon" aria-hidden>
         {d.icon}
         {dish === 'maki2' && d.icon}

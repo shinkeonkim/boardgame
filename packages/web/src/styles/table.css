@@ -1,7 +1,9 @@
 /* ---------- 테이블 키트 (table.tsx): 새 게임 공통 화면 틀 ---------- */
 .page.game.table-game {
+  /* --z: 화면 맞춤 배율 (useFitZoom). 높이는 배율을 되돌려 화면에 꼭 맞게 */
+  zoom: var(--z, 1);
   max-width: 1280px;
-  height: 100dvh;
+  height: calc(100dvh / var(--z, 1));
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -34,6 +36,8 @@
   gap: 10px;
   overflow-y: auto;
   overscroll-behavior: contain;
+  /* 남는 높이가 있으면 가운데로 (넘치면 safe라서 위에서부터 스크롤) */
+  justify-content: safe center;
 }
 .table-side {
   min-height: 0;
@@ -170,7 +174,7 @@
   }
   /* 테이블은 내용만큼(최대 화면의 66%), 넘치면 그 안에서만 스크롤. 나머지는 정보 패널 */
   .table-main {
-    max-height: 66dvh;
+    max-height: calc(66dvh / var(--z, 1));
     gap: 6px;
   }
   /* 좁은 화면: 테이블은 너비 기준 (높이 컨테이너는 내용 높이가 0이 되어 겹침) */
@@ -212,4 +216,65 @@
 }
 .seat-row .emote-bubble::after {
   display: none;
+}
+
+/* 위 막대: 좁은 화면에서는 방장 버튼·테마·꾸미기를 「⋯」 안으로 */
+.table-game .tb-inline {
+  display: contents;
+}
+.tb-more {
+  display: none;
+  position: relative;
+}
+.tb-more > summary {
+  list-style: none;
+  cursor: pointer;
+}
+.tb-more > summary::-webkit-details-marker {
+  display: none;
+}
+.tb-more-menu {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 6px);
+  z-index: 30;
+  display: grid;
+  gap: 6px;
+  min-width: 150px;
+  padding: 8px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+}
+.tb-more-row {
+  display: flex;
+  gap: 6px;
+}
+@media (max-width: 560px) {
+  .table-game .tb-inline {
+    display: none;
+  }
+  .table-game .tb-more {
+    display: block;
+  }
+}
+
+/* 내 차례 배너(주황) 안의 작은 표시가 묻히지 않게 */
+.turn-banner.mine .tb-side .muted {
+  color: rgba(255, 255, 255, 0.92);
+}
+.turn-banner.mine .tb-side .tag {
+  background: rgba(255, 255, 255, 0.24);
+  color: #fff;
+  border-color: transparent;
+}
+.turn-banner .tb-side > .small.muted {
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--ink, #333) 7%, transparent);
+  font-weight: 700;
+}
+.turn-banner.mine .tb-side > .small.muted {
+  background: rgba(255, 255, 255, 0.2);
 }

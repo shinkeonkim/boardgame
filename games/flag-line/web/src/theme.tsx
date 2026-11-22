@@ -1,10 +1,10 @@
 export const TROOP_COLORS = ['#d0533f', '#e0a526', '#2f9e6a', '#3a7bd5', '#8a5cd0', '#e06aa8'];
 export const TROOP_NAMES = ['빨강', '노랑', '초록', '파랑', '보라', '분홍'];
 
-export function Troop({ color, value, size = 'md', selected, onClick, className = '' }: { color: number; value: number; size?: 'xs' | 'sm' | 'md'; selected?: boolean; onClick?: () => void; className?: string }) {
+export function Troop({ color, value, size = 'md', selected, onClick, className = '', flip }: { color: number; value: number; size?: 'xs' | 'sm' | 'md'; selected?: boolean; onClick?: () => void; className?: string; flip?: string }) {
   const Tag = onClick ? 'button' : 'div';
   return (
-    <Tag className={`troop ${size} ${selected ? 'selected' : ''} ${className}`} style={{ ['--tc' as string]: TROOP_COLORS[color] }} onClick={onClick} aria-label={`${TROOP_NAMES[color]} ${value}`}>
+    <Tag data-flip={flip} className={`troop ${size} ${selected ? 'selected' : ''} ${className}`} style={{ ['--tc' as string]: TROOP_COLORS[color] }} onClick={onClick} aria-label={`${TROOP_NAMES[color]} ${value}`}>
       <span className="troop-num">{value}</span>
       <span className="troop-pip" aria-hidden />
     </Tag>

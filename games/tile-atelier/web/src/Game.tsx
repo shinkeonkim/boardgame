@@ -100,7 +100,7 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
             {g.factories.map((f, i) => (
               <div key={i} className={`ta-factory ${f.length ? '' : 'empty'}`}>
                 {f.map((col, k) => (
-                  <TileView key={k} color={col} size={26} selected={sel?.source === i && sel.color === col} onClick={() => pickTile(i, col)} />
+                  <TileView key={k} color={col} size={32} selected={sel?.source === i && sel.color === col} onClick={() => pickTile(i, col)} />
                 ))}
               </div>
             ))}
@@ -109,7 +109,7 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
               {[...g.center]
                 .sort((a, b) => a - b)
                 .map((col, k) => (
-                  <TileView key={k} color={col} first={col === FIRST} size={26} selected={sel?.source === -1 && sel.color === col} onClick={() => pickTile(-1, col)} />
+                  <TileView key={k} color={col} first={col === FIRST} size={32} selected={sel?.source === -1 && sel.color === col} onClick={() => pickTile(-1, col)} />
                 ))}
             </div>
           </section>

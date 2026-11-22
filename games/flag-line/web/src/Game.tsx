@@ -62,7 +62,7 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
     return (
       <div className={`fl-stack ${side === mySide ? 'mine' : 'theirs'}`}>
         {cards.map((x) => (
-          <Troop key={x.id} color={x.color} value={x.value} size="sm" />
+          <Troop key={x.id} flip={`t${x.id}`} color={x.color} value={x.value} size="sm" />
         ))}
         {Array.from({ length: c.size - cards.length }, (_, i) => (
           <span key={i} className="fl-empty" />
@@ -129,7 +129,7 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
                 {[...g.hand]
                   .sort((a, b) => a.color - b.color || a.value - b.value)
                   .map((x) => (
-                    <Troop key={x.id} color={x.color} value={x.value} size="md" selected={sel === x.id} onClick={() => (myTurn ? setSel((s) => (s === x.id ? null : x.id)) : t.warn(t.waitingMsg))} />
+                    <Troop key={x.id} flip={`t${x.id}`} color={x.color} value={x.value} size="md" selected={sel === x.id} onClick={() => (myTurn ? setSel((s) => (s === x.id ? null : x.id)) : t.warn(t.waitingMsg))} />
                   ))}
               </div>
               {myTurn && g.hand.length > 0 && !g.flags.some((_, i) => playable(i)) && (

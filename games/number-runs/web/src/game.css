@@ -19,7 +19,7 @@
   width: var(--w);
   aspect-ratio: 3 / 4;
   border-radius: 6px;
-  background: var(--tile-face);
+  background: var(--card-tex), var(--tile-face);
   border: 1.5px solid #d8cdb5;
   box-shadow: 0 2px 0 #b8ad95;
   display: grid;
@@ -154,4 +154,33 @@ button.rtile:hover {
     padding: 8px;
     gap: 6px;
   }
+}
+
+/* 끌어다 놓기 */
+.rtile.grabbable {
+  touch-action: none;
+  cursor: grab;
+}
+.rtile.lifted {
+  opacity: 0.3;
+}
+.nr-set.drop-can,
+.hand-panel.drop-can {
+  outline: 2px dashed color-mix(in srgb, var(--accent) 60%, transparent);
+  outline-offset: 2px;
+}
+.nr-set.drop-on,
+.hand-panel.drop-on {
+  outline: 3px solid var(--accent);
+  outline-offset: 2px;
+  background: color-mix(in srgb, var(--accent) 18%, transparent);
+}
+.nr-ghost {
+  position: fixed;
+  z-index: 50;
+  display: flex;
+  gap: 2px;
+  pointer-events: none;
+  transform: translate(-50%, -60%) rotate(-3deg) scale(var(--gz, 1));
+  filter: drop-shadow(0 8px 12px rgb(0 0 0 / 0.35));
 }

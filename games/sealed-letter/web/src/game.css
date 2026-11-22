@@ -20,7 +20,7 @@
   width: var(--w);
   aspect-ratio: 5 / 7;
   border-radius: calc(var(--w) * 0.08);
-  background: var(--paper);
+  background: var(--card-tex), var(--paper);
   color: var(--paper-ink);
   border: 2px solid var(--tone, #888);
   border-top-width: calc(var(--w) * 0.06);
@@ -84,7 +84,7 @@
   opacity: 0.85;
 }
 .lcard.back {
-  background: repeating-linear-gradient(45deg, #4a2b38, #4a2b38 4px, #57333f 4px, #57333f 8px);
+  background: var(--card-back);
   border-color: #2e1a22;
 }
 button.lcard {
@@ -219,5 +219,38 @@ button.lcard:hover {
   }
   .sl-center {
     padding: 8px;
+  }
+}
+
+/* 방금 낸 카드 (가운데) */
+.sl-last {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 14px 8px 8px;
+  border-radius: 14px;
+  background: var(--panel);
+  border: 2px solid var(--seat);
+  animation: sl-last-in 0.45s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.sl-last-text {
+  display: grid;
+  gap: 2px;
+  max-width: 260px;
+}
+.sl-last-text b {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+@keyframes sl-last-in {
+  from {
+    transform: translateY(-14px) rotate(-4deg);
+    opacity: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sl-last {
+    animation: none;
   }
 }

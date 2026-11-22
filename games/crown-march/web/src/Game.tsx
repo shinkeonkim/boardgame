@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import type { EmoteEvent, RoomView } from '@bg/core';
 import { Card, DIRS, EMPTY, GameConfig, GameView, HOLE, LogEntry, playOutcome, sameSide, scoreBoard } from '@bg/crown-march-engine';
 import { AlertBanner, EmoteBubble, EmoteButton, EmoteFeed, ThemeToggle, TurnBanner as BannerFrame, TurnSplash, TurnTimer, useCountdown } from '@bg/ui';
-import { CloseRoomButton, GameScreenProps, GuideButton, StopGameButton, sound } from '@bg/web';
+import { CloseRoomButton, GameScreenProps, GuideButton, StopGameButton, sound, useFitZoom } from '@bg/web';
 import { CrownIcon, KnightIcon, MoveCard, SeatStone, cardText, seatName, seatVars } from './theme';
 
 type Act = GameScreenProps['act'];
@@ -44,6 +44,7 @@ export function Game({
   onEmote: (id: string) => void;
 }) {
   const g = view.game!;
+  const zoom = useFitZoom();
   const c = g.config;
   const names = view.seats;
   const me = g.me;
@@ -256,7 +257,7 @@ export function Game({
   const focusOk = !!focusOutcome && isOutcomeOk(focusOutcome);
 
   return (
-    <main className={`page game ${myTurn ? 'my-turn' : ''}`} style={{ ['--n' as string]: g.size }}>
+    <main className={`page game ${myTurn ? 'my-turn' : ''}`} style={{ ['--n' as string]: g.size, ['--z' as string]: zoom }}>
       <header className="topbar compact">
         <div className="small">
           <b>
@@ -477,7 +478,8 @@ export function Game({
       </div>
 
       {drag && (
-        <div className={`drag-ghost ${drag.over ? 'on-target' : ''}`} style={{ left: drag.x, top: drag.y }} aria-hidden>
+        // 화면 맞춤 배율(zoom) 안의 fixed 좌표는 배율만큼 커지므로 나눠 준다
+        <div className={`drag-ghost ${drag.over ? 'on-target' : ''}`} style={{ left: drag.x / zoom, top: drag.y / zoom }} aria-hidden>
           <MoveCard card={drag.card} kind={(() => { const o = outcomes.get(drag.card.id); return o && isOutcomeOk(o) ? o.kind : 'blocked'; })()} />
         </div>
       )}

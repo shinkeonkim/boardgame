@@ -2,3 +2,5 @@ export * from './theme';
 export * from './components';
 export * from './game';
 export * from './config';
+export * from './skins';
+export * from './skin-picker';

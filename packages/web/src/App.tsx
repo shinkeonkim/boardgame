@@ -1,7 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { DRAIN_MESSAGE, type EmoteEvent, type RoomView } from '@bg/core';
-import { EmotesContext, applyTheme, getTheme } from '@bg/ui';
+import { EmotesContext, applySkin, applyTheme, getTheme } from '@bg/ui';
 import type { GameClient } from './client';
 import { BASE, call, setGameId, socket, store } from './runtime';
 import { Home, HomeShell } from './Home';
@@ -17,6 +17,7 @@ export function useGameClient<V = unknown, C = unknown>(): GameClient<V, C> {
 export function mountGame(client: GameClient<any, any>) {
   setGameId(client.id);
   applyTheme(getTheme());
+  applySkin();
   document.title = client.title;
   createRoot(document.getElementById('root')!).render(
     <ClientContext.Provider value={client}>

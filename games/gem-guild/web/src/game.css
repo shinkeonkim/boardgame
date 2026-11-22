@@ -28,6 +28,19 @@
   position: absolute;
   font-size: 0.85rem;
   font-weight: 900;
+  animation: gem-bump 0.4s ease-out;
+}
+@keyframes gem-bump {
+  40% {
+    transform: scale(1.5);
+  }
+}
+.gem .chip-tex {
+  position: absolute;
+  inset: 6%;
+  border-radius: 50%;
+  background: var(--chip-tex);
+  pointer-events: none;
 }
 button.gem {
   cursor: pointer;
@@ -51,21 +64,22 @@ button.gem:disabled {
   align-items: flex-start;
 }
 .cost-dot {
-  width: 18px;
-  height: 18px;
+  width: calc(var(--cw, 82px) * 0.23);
+  height: calc(var(--cw, 82px) * 0.23);
   border-radius: 50%;
   border: 1.5px solid;
-  font-size: 0.7rem;
+  font-size: calc(var(--cw, 82px) * 0.14);
   font-weight: 900;
   display: grid;
   place-items: center;
 }
 .devcard {
+  --cw: 82px;
   position: relative;
-  width: 82px;
+  width: var(--cw);
   aspect-ratio: 4 / 5;
   border-radius: 10px;
-  background: linear-gradient(180deg, color-mix(in srgb, var(--bonus) 30%, var(--card-bg)) 0 30%, var(--card-bg) 30%);
+  background: var(--card-tex), linear-gradient(180deg, color-mix(in srgb, var(--bonus) 30%, var(--card-bg)) 0 30%, var(--card-bg) 30%);
   border: 2px solid color-mix(in srgb, var(--bonus) 60%, var(--line));
   color: var(--ink);
   padding: 5px;
@@ -77,12 +91,18 @@ button.gem:disabled {
   transition: transform 0.15s;
 }
 .devcard.sm {
-  width: 58px;
+  --cw: 58px;
 }
-.devcard.sm .cost-dot {
-  width: 14px;
-  height: 14px;
-  font-size: 0.6rem;
+/* 시장 카드는 남는 너비에 맞춰 크게 (한 줄 = 더미 + 카드 4장) */
+.gg-market {
+  container-type: inline-size;
+}
+.gg-market .devcard {
+  /* 너비(한 줄 5칸)와 높이(3단계 + 은행·내 상단이 한 화면에) 중 작은 쪽. 100dvh/--z = 화면 맞춤 배율 안의 화면 높이 */
+  --cw: clamp(64px, min(16cqw, calc((100dvh / var(--z, 1) - 450px) / 3.8)), 124px);
+}
+.gg-market .devcard-pts {
+  font-size: calc(var(--cw) * 0.26);
 }
 .devcard-top {
   display: flex;
@@ -171,11 +191,13 @@ button.noble {
   flex-wrap: wrap;
 }
 .gg-deck {
-  width: 58px;
+  width: clamp(54px, 12cqw, 90px);
   border-radius: 10px;
-  border: 2px dashed var(--line);
-  background: var(--panel);
-  color: var(--ink);
+  border: 3px solid var(--line);
+  background: var(--card-back);
+  color: #fff;
+  text-shadow: 0 1px 2px rgb(0 0 0 / 0.6);
+  box-shadow: 2px 2px 0 rgb(0 0 0 / 0.25), 4px 4px 0 rgb(0 0 0 / 0.15);
   display: grid;
   place-content: center;
   text-align: center;

@@ -122,6 +122,41 @@ scripts/  local.mjs(운영과 같은 경로 게이트웨이) · bundle.mjs(이�
 
 **meta.ts**: 포털 카드·검색·상세에 쓰인다 (players, minutes, weight, tags, accent, icon SVG, highlights, customizable). 태그는 `TAG_LABELS`에 있는 것을 우선 쓰고 새 태그면 거기에 한국어 이름을 추가.
 
+## 5-1. 화면 크기 · 움직임 · 꾸미기 (테이블 키트가 해 주는 것, 게임이 지킬 것)
+
+**화면 맞춤 배율 (`fitZoom`, `packages/web/src/fit.ts`)**
+- `TableLayout`은 화면을 기준 크기로 보고 CSS `zoom`을 건다. 기준은 넓은 화면 1240×760, 세로 화면 560×860이다.
+  - 큰 모니터·태블릿: 최대 1.7배까지 키운다.
+  - 가로로 눕힌 휴대폰: 0.8배까지 줄인다.
+  - 게임 CSS는 기준 크기에서 보기 좋게만 만들면 된다.
+- 배율 안에서 지킬 것:
+  - 높이는 `calc(100dvh / var(--z))`처럼 배율로 나눈다. `vw`·`dvh`·`position: fixed` 좌표·`transform` 픽셀은 모두 배율만큼 커지기 때문이다.
+  - 끌어다 놓기 판정은 `document.elementFromPoint` + `data-*`로 한다. 좌표 계산은 하지 않는다.
+  - 손에 든 조각(고스트)은 `createPortal(…, document.body)`로 배율 밖에 그린다.
+  - 모달도 배율과 움직임 레이어 밖에 띄운다. 그러지 않으면 배너·카드 밑에 깔린다.
+- 표준 테이블 키트를 쓰지 않는 게임(Crown March·Expedition Lines)은 `useFitZoom()` + `.page.game { zoom: var(--z) }`로 같은 효과를 낸다.
+
+**움직임 (FLIP, `packages/web/src/motion.ts`)**
+- 움직일 카드·타일 요소에 `data-flip="고유id"`만 붙인다. 손패 → 줄, 시장 → 예약처럼 같은 id가 자리를 옮기면 미끄러져 가고, 새 id는 톡 나타난다.
+- 같은 id가 화면에 두 번 나오면 안 된다. 예를 들어 「방금 낸 카드」 강조 표시에는 id를 붙이지 않는다.
+- 상태가 바뀌는 표시(주사위 굴림, 원판 뒤집기, 금화 개수)는 `key`를 바꿔 다시 그려 CSS 애니메이션 한 번으로 처리한다. 무한 반복 애니메이션은 「지금 눌러야 하는 것」에만 쓴다.
+- `prefers-reduced-motion`이면 끈다.
+
+**차례 알림**
+- 큰 스플래시는 **내 차례에만** 띄운다. 남의 차례는 배너와 좌석 강조로 충분하다. 봇은 1초마다 두기도 하므로, 남의 차례마다 띄우면 판이 계속 가려진다(실제 피드백).
+- 도전·막기처럼 남의 행동마다 짧게 열리는 대기 창은 `useTable({ quiet: true })`로 소리만 낸다.
+
+**카드·칩 꾸미기 (스킨, `packages/ui/src/skins.ts`)**
+- 게임 CSS는 다음 세 변수를 쓴다:
+  - 뒷면: `background: var(--card-back)`
+  - 앞면: `background: var(--card-tex), <앞면 색>`
+  - 칩: `background: var(--chip-tex), <칩 색>`
+    - SVG 칩은 위에 `<i class="chip-tex">` 한 겹을 얹는다.
+- 사용자는 상단 🎨에서 고르고, 「내 그림」을 뒷면으로 올릴 수도 있다. 설정은 모든 게임이 공유하고 이 기기에만 저장된다.
+- **새 무늬 추가**: `CARD_BACKS`·`CARD_TEXTURES`·`CHIP_TEXTURES`에 `{ id, name, bg }` 한 줄을 추가한다.
+  - 무늬는 CSS 그라디언트나 `svgTile(w, h, '<svg 몸통>', 바탕색)`으로 만든다. 외부 이미지 파일은 쓰지 않는다.
+  - SVG 몸통에는 `#`를 그대로 쓴다. 인코딩은 `svgTile`이 한다.
+
 ## 6. 디자인 시스템 규칙 (packages/ui, 문서: packages/ui/README.md, 진열장: /design)
 
 - 색·간격·반경은 토큰만 쓴다(`--bg --panel --ink --muted --line --accent --gold --info --ok --danger`, `--sp-*`, `--r-*`). 하드코딩한 색은 게임 고유 그림(카드 무늬 등)에만.
@@ -150,7 +185,11 @@ scripts/  local.mjs(운영과 같은 경로 게이트웨이) · bundle.mjs(이�
 
 - `npm test`(엔진·퍼즈·방 흐름) · `npm run typecheck` · `npm run build`.
 - `npm run local` + 헤드리스 Chrome + 봇(Socket.IO 클라이언트, `path: '/<id>/socket.io'`)으로 **한 판을 끝까지**: 첫 화면 → 방 만들기 → 봇 입장 → 프리셋 → 시작 → 클릭/드래그 → 특수 행동 → 경고 → 결과 → 로비 복귀.
-- 크기: 1440×900, 1024×768, 768×1024, 390×844, 360×640, 844×390 각각 `scrollWidth - innerWidth == 0`, 페이지 세로 스크롤 0(게임 화면).
+- 크기: 1920×1080, 1366×768, 820×1180, 390×844, 844×390를 확인한다.
+  - 가로 넘침 0, 페이지 세로 스크롤 0이어야 한다.
+  - **큰 화면에서 빈 공간만 넓고 요소가 작지 않은지** 본다.
+  - **세로 태블릿에서 손패가 화면 밖으로 밀리지 않는지** 본다.
+  - 다섯 크기를 한 장에 붙여 보면 빨리 찾는다 (봇과 한 판 시작 → 크기마다 캡처).
 - **`isMobile: true` 에뮬레이션으로도** 확인 — 로비가 몇 px만 넘쳐도 휴대폰이 화면을 축소해 이후 게임 화면까지 잘린다(실제 겪음).
 - 라이트/다크/시스템 세 가지로 포털·첫 화면·로비·게임 캡처.
 - 무중단 배포: 서버 2개 + 프록시로 "게임 중 이전 서버 SIGTERM → 새 서버가 방 받음 → 브라우저·봇 자동 재접속 → 같은 보드로 계속" 확인.
@@ -200,6 +239,9 @@ scripts/  local.mjs(운영과 같은 경로 게이트웨이) · bundle.mjs(이�
 | 봇 엔진에 모듈 수준 변수(전역 배열)를 두면 방끼리 섞임 | 이번 수의 기록도 match 상태에 둔다 (JSON 직렬화 가능해야 무중단 배포도 됨) |
 | 확률 게임에서 「어려움이 이긴 비율」 테스트가 흔들림 | 평균 점수 비교로 테스트 (Row Six·Pass the Plate) |
 | 셸 한 줄에 heredoc 여러 개 → 도구가 명령을 못 읽음 | 스크립트는 파일로 쓰고 따로 실행 |
+| 공용 `.center` 클래스에 로딩 화면용 `padding-top: 30vh`가 있어, 게임에서 글자 가운데 정렬로 쓰면 큰 빈칸이 생김 | `.center`는 정렬만 한다. 30vh는 `.page.center`(로딩 화면)에만 |
+| 남의 차례마다 「○○ 님 차례」 스플래시 → 봇이 빨리 두면 판이 계속 가려짐 | 스플래시는 내 차례에만. 대기 창은 `quiet` |
+| 배율(zoom) 안의 `position: fixed` 고스트·모달이 엉뚱한 자리에 뜨거나 카드 밑에 깔림 | `document.body`로 portal하거나 좌표를 배율로 나눈다 |
 | 문구가 딱딱·어색 (합니다체·명사형·개발 용어·"2인/로비/패스") | docs/ux-writing.md 기준으로 한 번에 정리 |
 
 ## 11. 새 게임 체크리스트 (복사해서 쓰기)
@@ -213,4 +255,6 @@ scripts/  local.mjs(운영과 같은 경로 게이트웨이) · bundle.mjs(이�
 - [ ] `npm test && npm run typecheck && npm run build && npm run local` 로 한 판 + QA 크기·테마
 - [ ] deploy/(servicemonitor 포함) · release-<id>.yml · `npm run media`(포털 표지 `apps/portal/public/covers/<id>.jpg`, 게임 방법 영상)
 - [ ] oh-my-homelab PR (ArgoCD 앱 + 네트워크 정책) → merge 후 확인
+- [ ] 카드 뒷면·앞면·칩에 스킨 변수(`--card-back`·`--card-tex`·`--chip-tex`), 움직일 요소에 `data-flip`
+- [ ] 조작이 「고르기 → 놓기」인 게임은 끌어다 놓기도 (elementFromPoint + data-drop, 고스트는 portal)
 - [ ] 쓸 만한 새 UI는 packages/ui로 올리고 /design에 예시 추가, 새 함정은 이 문서 10절에 추가

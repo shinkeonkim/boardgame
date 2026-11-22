@@ -105,7 +105,7 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
           <section className="bd-table" aria-label="테이블">
             <div className="bd-center">
               {prev ? (
-                <div className="bd-bid" style={{ ['--seat' as string]: seatColor(prev.seat) }}>
+                <div key={g.bids.length} className="bd-bid" style={{ ['--seat' as string]: seatColor(prev.seat) }}>
                   <span className="small">{names[prev.seat]}</span>
                   <b>{prev.count}개</b>
                   <Die face={prev.face} seat={prev.seat} size={40} />
@@ -120,7 +120,7 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
             </div>
             <div className="bd-history">
               {g.bids.map((b, i) => (
-                <span key={i} className="bd-chip" style={{ ['--seat' as string]: seatColor(b.seat) }}>
+                <span key={i} data-flip={`bid${i}`} className="bd-chip" style={{ ['--seat' as string]: seatColor(b.seat) }}>
                   {b.count}×<Die face={b.face} seat={b.seat} size={16} />
                 </span>
               ))}
@@ -134,7 +134,7 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
                         <SeatDot seat={seat} size={12} /> {names[seat]}
                       </span>
                       {ds.map((d, i) => (
-                        <Die key={i} face={d} seat={seat} size={28} hit={matches(d)} wild={r!.wild && d === 1} />
+                        <Die key={i} face={d} seat={seat} size={28} hit={matches(d)} wild={r!.wild && d === 1} className="reveal-die" style={{ animationDelay: `${(seat * 5 + i) * 45}ms` }} />
                       ))}
                     </div>
                   ) : null,
@@ -157,11 +157,13 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
               </div>
               <div className="hand-row">
                 {g.myDice.map((d, i) => (
-                  <Die key={i} face={d} seat={me} size={44} hit={face === d || (g.wild && d === 1 && face !== 1)} />
+                  // 주사위가 바뀌면(새로 굴림) 다시 그려 굴러 나오는 움직임
+                  <Die key={`${g.round}-${g.myDice.join('')}-${i}`} face={d} seat={me} size={44} hit={face === d || (g.wild && d === 1 && face !== 1)} className="rolled" style={{ animationDelay: `${i * 60}ms` }} />
                 ))}
               </div>
               {g.phase === 'bid' ? (
                 <>
+                  <div className="small muted center bd-faces-head">걸 숫자를 고르세요 · 아래 숫자는 걸 수 있는 가장 적은 개수예요</div>
                   <div className="bd-faces" role="radiogroup" aria-label="숫자 고르기">
                     {Array.from({ length: c.faces }, (_, i) => i + 1).map((f) => {
                       const mc = g.minCounts[f];
@@ -178,7 +180,7 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
                           }}
                         >
                           <Die face={f} seat={me} size={28} />
-                          <small>{mc === null ? '—' : `${mc}+`}</small>
+                          <small>{mc === null ? '—' : `${mc}개부터`}</small>
                         </button>
                       );
                     })}
@@ -234,7 +236,18 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
               dim: n === 0,
               score: g.totals[seat] > 0 ? `🏆${g.totals[seat]}` : undefined,
               badge: n === 0 ? <span className="tag">탈락</span> : undefined,
-              children: n > 0 ? <Cup seat={seat} count={n} size={30} /> : undefined,
+              children:
+                n > 0 ? (
+                  <span className="bd-seat-dice">
+                    <Cup seat={seat} count={n} size={36} />
+                    <span className="bd-seat-hidden" aria-hidden>
+                      {Array.from({ length: n }, (_, i) => (
+                        <Die key={i} face={null} seat={seat} size={16} />
+                      ))}
+                    </span>
+                    <span className="small muted">주사위 {n}개</span>
+                  </span>
+                ) : undefined,
             }))}
           />
           <p className="small muted rule-note">

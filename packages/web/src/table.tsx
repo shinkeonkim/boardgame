@@ -12,7 +12,10 @@
  */
 import { CSSProperties, ReactNode, useEffect, useMemo, useRef, useState } from 'react';
 import type { EmoteEvent, RoomView } from '@bg/core';
-import { EmoteBubble, EmoteButton, EmoteFeed, ThemeToggle, TurnBanner, TurnSplash, TurnTimer, useCountdown } from '@bg/ui';
+import { EmoteBubble, EmoteButton, EmoteFeed, SkinButton, ThemeToggle, TurnBanner, TurnSplash, TurnTimer, useCountdown } from '@bg/ui';
+import { useFlip } from './motion';
+import { fitZoom } from './fit';
+export { fitZoom };
 import type { Act } from './client';
 import { GuideButton } from './Guide';
 import { CloseRoomButton, StopGameButton } from './Lobby';
@@ -31,6 +34,8 @@ export interface TableOptions {
   simultaneous?: boolean;
   /** 같은 좌석이 연속으로 할 때도 스플래시를 다시 띄울 키 (예: 판 번호·단계) */
   stepKey?: string | number;
+  /** 이번 단계는 큰 스플래시 없이 배너·소리만 (도전·막기처럼 남의 행동마다 짧게 열리는 대기 창) */
+  quiet?: boolean;
 }
 
 export function useTable(view: RoomView, notify: (msg: string) => void, o: TableOptions) {
@@ -79,17 +84,19 @@ export function useTable(view: RoomView, notify: (msg: string) => void, o: Table
       return;
     }
     last.current = key;
-    if (o.simultaneous && !myTurn) return;
-    const mine = myTurn;
-    const n = names.length;
-    setSplash({
-      text: mine ? (o.simultaneous ? '고를 차례!' : '내 차례!') : `${turnName} 님 차례`,
-      sub: mine ? o.mySub ?? '' : n > 2 && me >= 0 && (o.turn + 1) % n === me ? '다음은 내 차례예요' : '',
-      mine,
-      k: Date.now(),
-    });
-    sound.play(mine ? 'myTurn' : 'turn');
-    const t = setTimeout(() => setSplash(null), mine ? 1400 : 900);
+    // 남의 차례는 배너·좌석 강조로 충분하다. 큰 스플래시는 판을 가리므로 내 차례에만 (봇은 1초마다 두기도 한다)
+    if (!myTurn) {
+      const n = names.length;
+      if (!o.simultaneous && n > 2 && me >= 0 && (o.turn + 1) % n === me) sound.play('turn');
+      return;
+    }
+    if (o.quiet) {
+      sound.play('turn');
+      return;
+    }
+    setSplash({ text: o.simultaneous ? '고를 차례!' : '내 차례!', sub: o.mySub ?? '', mine: true, k: Date.now() });
+    sound.play('myTurn');
+    const t = setTimeout(() => setSplash(null), 1300);
     return () => clearTimeout(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [key, o.playing]);
@@ -155,11 +162,28 @@ export function TableTopBar({ view, act, round, rounds, over, children }: { view
         <button className="btn ghost tiny" aria-label={muted ? '소리 켜기' : '소리 끄기'} onClick={() => sound.setMuted(!muted)}>
           {muted ? '🔕' : '🔔'}
         </button>
-        {isHost && !over && <StopGameButton act={act} small />}
-        {isHost && <CloseRoomButton act={act} small />}
-        <ThemeToggle variant="icon" />
+        {/* 넓은 화면: 한 줄로 · 좁은 화면: 「⋯」 안으로 */}
+        <span className="tb-inline">
+          {isHost && !over && <StopGameButton act={act} small />}
+          {isHost && <CloseRoomButton act={act} small />}
+          <ThemeToggle variant="icon" />
+          <SkinButton />
+        </span>
         <GuideButton className="btn ghost tiny" label="게임 방법" />
         {children}
+        <details className="tb-more">
+          <summary className="btn ghost tiny" aria-label="더 보기">
+            ⋯
+          </summary>
+          <div className="tb-more-menu">
+            {isHost && !over && <StopGameButton act={act} small />}
+            {isHost && <CloseRoomButton act={act} small />}
+            <span className="tb-more-row">
+              <ThemeToggle variant="icon" />
+              <SkinButton />
+            </span>
+          </div>
+        </details>
       </div>
     </header>
   );
@@ -405,9 +429,23 @@ export function winnerHeadline(names: string[], ranks: number[]): string {
 }
 
 /** 기기 화면 고정 틀: 위 막대·배너, 가운데 테이블(남은 공간), 오른쪽(좁으면 아래) 정보 패널 */
+export function useFitZoom(): number {
+  const read = () => (typeof window === 'undefined' ? 1 : fitZoom(window.innerWidth, window.innerHeight));
+  const [z, setZ] = useState(read);
+  useEffect(() => {
+    const on = () => setZ(read());
+    addEventListener('resize', on);
+    return () => removeEventListener('resize', on);
+  }, []);
+  return z;
+}
+
 export function TableLayout({ className = '', top, main, side, mine, splash, overlay }: { className?: string; top: ReactNode; main: ReactNode; side: ReactNode; mine?: boolean; splash?: Table['splash']; overlay?: ReactNode }) {
+  const zoom = useFitZoom();
+  const root = useRef<HTMLElement>(null);
+  useFlip(root);
   return (
-    <main className={`page game table-game ${mine ? 'my-turn' : ''} ${className}`}>
+    <main ref={root} className={`page game table-game ${mine ? 'my-turn' : ''} ${className}`} style={{ '--z': zoom } as CSSProperties}>
       {top}
       <div className="table-layout">
         <section className="table-main">{main}</section>

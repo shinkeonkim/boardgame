@@ -162,6 +162,7 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
                         <NumberCard
                           key={n}
                           n={n}
+                          flip={`c${n}`}
                           flat={flat}
                           size="md"
                           className={fresh.has(n) ? 'fresh' : ''}
@@ -186,7 +187,7 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
                 .sort((a, b) => a.card - b.card)
                 .map((x) => (
                   <span key={x.card} className={`reveal-item ${x.done ? 'done' : 'waiting'} ${x.took ? 'took' : ''}`}>
-                    <NumberCard n={x.card} flat={flat} size="sm" />
+                    <NumberCard n={x.card} flat={flat} size="sm" flip={x.done ? undefined : `c${x.card}`} />
                     <span className="reveal-who">
                       <SeatDot seat={x.seat} size={12} /> {names[x.seat]}
                       {x.took && <b className="took-pen"> +{x.pen}</b>}
@@ -219,6 +220,7 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
                     <NumberCard
                       key={n}
                       n={n}
+                      flip={`c${n}`}
                       flat={flat}
                       size="lg"
                       className={`${g.myPick === n ? 'picked' : ''} ${pv?.take ? 'risky' : ''} ${canPick ? 'can' : ''}`}

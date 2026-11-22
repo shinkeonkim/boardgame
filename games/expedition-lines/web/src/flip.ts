@@ -36,12 +36,15 @@ export function useFlyIn(cardId: string, ref: RefObject<HTMLElement>) {
     const dy = o.rect.top + o.rect.height / 2 - (to.top + to.height / 2);
     // 출발 요소가 카드보다 훨씬 크거나 작아도(예: 이름 줄) 카드가 거대하게 보이지 않도록 제한
     const s = Math.min(1.6, Math.max(0.5, o.rect.width / to.width || 1));
-    const start = `translate(${dx}px, ${dy}px) scale(${s})${o.flip ? ' rotateY(90deg)' : ''}`;
+    // 화면 맞춤 배율(zoom) 안에서는 transform 픽셀도 배율만큼 커지므로 되돌린다
+    const z = el.offsetWidth ? to.width / el.offsetWidth : 1;
+    const k = z > 0.2 ? z : 1;
+    const start = `translate(${dx / k}px, ${dy / k}px) scale(${s})${o.flip ? ' rotateY(90deg)' : ''}`;
     el.style.zIndex = '30';
     const anim = el.animate(
       [
         { transform: start, offset: 0 },
-        { transform: `translate(${dx * 0.15}px, ${dy * 0.15 - 14}px) scale(1.08)`, offset: 0.7 },
+        { transform: `translate(${(dx * 0.15) / k}px, ${(dy * 0.15) / k - 14}px) scale(1.08)`, offset: 0.7 },
         { transform: 'none', offset: 1 },
       ],
       { duration: 480, delay: o.delay, easing: 'cubic-bezier(.2,.75,.25,1)', fill: 'backwards' },

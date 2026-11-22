@@ -1,0 +1,77 @@
+/* 카드·칩 꾸미기 (skins.ts). 스크립트가 고른 값으로 덮어쓰기 전 기본값 */
+:root {
+  --card-back: repeating-linear-gradient(45deg, #3b3550 0 4px, #453e5d 4px 8px);
+  --card-tex: repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.035) 0 1px, transparent 1px 3px), repeating-linear-gradient(90deg, rgba(0, 0, 0, 0.03) 0 1px, transparent 1px 3px);
+  --chip-tex: radial-gradient(circle at 32% 26%, rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0) 46%);
+}
+.g-sheet.skin-sheet {
+  width: min(620px, 100%);
+  height: auto;
+  max-height: calc(100dvh - 32px);
+  overflow-y: auto;
+  padding: 16px 18px 20px;
+  gap: 6px;
+}
+.skin-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.skin-head h3 {
+  margin: 0;
+}
+.skin-sheet h4 {
+  margin: 12px 0 4px;
+  font-size: 0.9rem;
+}
+.skin-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(76px, 1fr));
+  gap: 8px;
+}
+.skin-opt {
+  display: grid;
+  justify-items: center;
+  gap: 4px;
+  padding: 6px 4px;
+  border: 2px solid transparent;
+  border-radius: 12px;
+  background: none;
+  color: inherit;
+  cursor: pointer;
+  font: inherit;
+}
+.skin-opt:hover {
+  background: color-mix(in srgb, var(--accent) 8%, transparent);
+}
+.skin-opt.on {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+}
+.skin-swatch {
+  display: block;
+  width: 46px;
+  height: 64px;
+  border-radius: 7px;
+  border: 1px solid rgba(0, 0, 0, 0.18);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
+}
+.skin-swatch.chip {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+}
+.skin-name {
+  font-size: 0.72rem;
+  text-align: center;
+}
+.skin-custom {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 6px;
+}
+.danger-text {
+  color: var(--danger);
+}

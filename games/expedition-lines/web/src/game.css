@@ -522,7 +522,7 @@ button.card:focus-visible {
   perspective: 800px;
 }
 .hand .card {
-  --w: min(var(--card-w), calc((min(100vw, 980px) - 52px - (var(--n) - 1) * 4px) / var(--n)));
+  --w: min(var(--card-w), calc((min(calc(100vw / var(--z, 1)), 980px) - 52px - (var(--n) - 1) * 4px) / var(--n)));
   transform: translateY(calc(var(--i) * var(--i) * 1.2px)) rotate(calc(var(--i) * 1.6deg));
   transform-origin: 50% 120%;
 }
@@ -742,8 +742,10 @@ button.card:focus-visible {
 /* ---------- 게임 화면 레이아웃: 기기 화면에 고정 (Crown March와 같은 원칙) ----------
    위(상단 바·차례 배너·경고)와 아래(손패)는 고정, 가운데(상대 보드·탁자·내 탐험대)만 스크롤 */
 .page.game {
+  /* 화면 맞춤 배율 (useFitZoom): 큰 화면에서 작게 보이지 않게 키우고, 높이는 화면에 꼭 맞게 */
+  zoom: var(--z, 1);
   max-width: 1240px;
-  height: 100dvh;
+  height: calc(100dvh / var(--z, 1));
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -767,7 +769,7 @@ button.card:focus-visible {
   margin-bottom: 8px;
 }
 .game > .log {
-  max-height: 22dvh;
+  max-height: calc(22dvh / var(--z, 1));
   margin-bottom: 8px;
 }
 .game-scroll {

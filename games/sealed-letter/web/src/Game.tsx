@@ -29,6 +29,9 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
   const g = v.game!;
   const c = g.config;
   const t = useTable(view, notify, { title: 'Sealed Letter', turn: g.turn, playing: g.status === 'playing', stepKey: `${g.round}-${g.turn}-${g.log.length ? g.log[g.log.length - 1].n : 0}`, mySub: '2장 중 1장을 내요' });
+  // 이번 판에서 가장 최근에 낸 카드 (가운데에 크게)
+  const lastEvent = [...g.log].reverse().find((e) => e.type === 'play' || e.type === 'round');
+  const lastPlay = lastEvent?.type === 'play' ? lastEvent : null;
   const names = t.names;
   const me = t.me;
   const myTurn = t.myTurn;
@@ -111,6 +114,19 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
                 ))}
               </div>
             )}
+            {lastPlay && (
+              <div className="sl-last" key={lastPlay.n} style={{ ['--seat' as string]: seatColor(lastPlay.seat) }}>
+                <LetterCard kind={lastPlay.card.kind} value={lastPlay.card.value} size="md" />
+                <div className="sl-last-text">
+                  <span className="small muted">방금 낸 카드</span>
+                  <b>
+                    <SeatDot seat={lastPlay.seat} size={12} /> {names[lastPlay.seat]}
+                    {lastPlay.target !== undefined && lastPlay.target !== lastPlay.seat ? ` → ${names[lastPlay.target]}` : ''}
+                  </b>
+                  <span className="small">{describe(lastPlay, names)}</span>
+                </div>
+              </div>
+            )}
             <details className="sl-ref small">
               <summary>카드 목록 ({spec.reduce((a, s) => a + s.copies, 0)}장)</summary>
               <ul>
@@ -135,7 +151,7 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
               </div>
               <div className="hand-row">
                 {g.hand.map((h) => (
-                  <LetterCard key={h.id} kind={h.kind} value={h.value} size="lg" selected={sel === h.id} onClick={g.phase === 'scribe' ? () => myTurn && act('move', { move: { type: 'keep', cardId: h.id } }) : () => pickCard(h.id)} />
+                  <LetterCard key={h.id} flip={`l${h.id}`} kind={h.kind} value={h.value} size="lg" selected={sel === h.id} onClick={g.phase === 'scribe' ? () => myTurn && act('move', { move: { type: 'keep', cardId: h.id } }) : () => pickCard(h.id)} />
                 ))}
               </div>
               {card && myTurn && g.phase === 'play' && (
@@ -207,8 +223,9 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
                     </span>
                   )}
                   <span className="sl-discards">
-                    {g.discards[seat].map((d) => (
-                      <LetterCard key={d.id} kind={d.kind} value={d.value} size="xs" />
+                    {g.discards[seat].map((d, i, all) => (
+                      // 가장 최근에 낸 카드는 이름까지 보이게
+                      <LetterCard key={d.id} flip={`l${d.id}`} kind={d.kind} value={d.value} size={i === all.length - 1 ? 'sm' : 'xs'} />
                     ))}
                   </span>
                 </>

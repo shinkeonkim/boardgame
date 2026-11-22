@@ -3,11 +3,33 @@ import type { Tile } from '@bg/number-runs-engine';
 export const INK = ['#d0453a', '#2f6fd0', '#d88a12', '#2b2b33', '#8a5cd0'];
 export const INK_NAME = ['빨강', '파랑', '주황', '검정', '보라'];
 
-export function TileFace({ t, size = 'md', selected, fresh, onClick }: { t: Tile; size?: 'sm' | 'md'; selected?: boolean; fresh?: boolean; onClick?: () => void }) {
+export function TileFace({
+  t,
+  size = 'md',
+  selected,
+  fresh,
+  onClick,
+  onPointerDown,
+  flip,
+  lifted,
+}: {
+  t: Tile;
+  size?: 'sm' | 'md';
+  selected?: boolean;
+  fresh?: boolean;
+  onClick?: () => void;
+  onPointerDown?: (e: React.PointerEvent) => void;
+  flip?: string;
+  lifted?: boolean;
+}) {
   const Tag = onClick ? 'button' : 'span';
   const joker = t.n === 0;
   return (
-    <Tag className={`rtile ${size} ${selected ? 'selected' : ''} ${fresh ? 'fresh' : ''}`} onClick={onClick} aria-label={joker ? '조커' : `${INK_NAME[t.color]} ${t.n}`} style={{ ['--ink' as string]: joker ? '#c0392b' : INK[t.color] }}>
+    <Tag
+      data-flip={flip}
+      className={`rtile ${size} ${selected ? 'selected' : ''} ${fresh ? 'fresh' : ''} ${onPointerDown ? 'grabbable' : ''} ${lifted ? 'lifted' : ''}`}
+      onClick={onClick}
+      onPointerDown={onPointerDown} aria-label={joker ? '조커' : `${INK_NAME[t.color]} ${t.n}`} style={{ ['--ink' as string]: joker ? '#c0392b' : INK[t.color] }}>
       {joker ? <span className="rtile-joker">☺</span> : <span className="rtile-n">{t.n}</span>}
       <span className="rtile-dot" aria-hidden />
     </Tag>

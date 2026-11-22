@@ -2,7 +2,7 @@ import { forwardRef, useEffect, useMemo, useRef, useState } from 'react';
 import type { EmoteEvent, RoomView } from '@bg/core';
 import { Card, GameConfig, GameView, LogEntry, canPlayOnExpedition, playBlockReason, scoreColumn, scorePlayer, teamOf } from '@bg/expedition-lines-engine';
 import { AlertBanner, EmoteBubble, EmoteButton, EmoteFeed, ThemeToggle, TurnBanner as BannerFrame, TurnSplash, TurnSteps, TurnTimer, useCountdown } from '@bg/ui';
-import { CloseRoomButton, GameScreenProps, GuideButton, StopGameButton, sound } from '@bg/web';
+import { CloseRoomButton, GameScreenProps, GuideButton, StopGameButton, sound, useFitZoom } from '@bg/web';
 import { Glyph, SUITS, cardLabel, suitVars } from './theme';
 import { CardBack, CardFace } from './cards';
 import { hasOrigin, setOrigin } from './flip';
@@ -62,6 +62,7 @@ export function Game({
   onEmote: (id: string) => void;
 }) {
   const g = view.game!;
+  const zoom = useFitZoom();
   const c = g.config;
   const range: [number, number] = [c.minValue, c.maxValue];
   const names = view.seats;
@@ -270,7 +271,7 @@ export function Game({
   const deckLow = g.deckCount !== null && g.deckCount > 0 && g.deckCount <= g.players * 2;
 
   return (
-    <main className={`page game ${myTurn ? 'my-turn' : ''}`} style={{ ['--cols' as string]: c.colors }}>
+    <main className={`page game ${myTurn ? 'my-turn' : ''}`} style={{ ['--cols' as string]: c.colors, ['--z' as string]: zoom }}>
       <header className="topbar compact">
         <div className="small">
           <b>
@@ -456,7 +457,8 @@ export function Game({
       <TurnSplash splash={splash} />
 
       {drag && (
-        <div className={`drag-ghost ${drag.over ? 'on-target' : ''}`} style={{ left: drag.x, top: drag.y, ['--gw' as string]: `${drag.w}px` }} aria-hidden>
+        // 화면 맞춤 배율(zoom) 안의 fixed 좌표·크기는 배율만큼 커지므로 나눠 준다
+        <div className={`drag-ghost ${drag.over ? 'on-target' : ''}`} style={{ left: drag.x / zoom, top: drag.y / zoom, ['--gw' as string]: `${drag.w / zoom}px` }} aria-hidden>
           <CardFace card={drag.card} range={range} />
         </div>
       )}

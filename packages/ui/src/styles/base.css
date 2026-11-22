@@ -52,6 +52,9 @@ h3 {
 }
 .center {
   text-align: center;
+}
+/* 「들어가는 중…」 같은 빈 화면 안내만 화면 가운데쯤으로 (게임 안의 .center는 글자 가운데 정렬만) */
+.page.center {
   padding-top: 30vh;
 }
 .center-text {

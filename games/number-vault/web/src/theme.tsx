@@ -28,7 +28,14 @@ export function TileView({
     >
       <span className="vtile-num">{known ? (t.n === -1 ? '–' : t.n) : ''}</span>
       {mine && !t.revealed && <span className="vtile-eye" title="다른 사람에게는 가려져 있어요" aria-hidden />}
-      {!known && <span className="vtile-back" aria-hidden />}
+      {!known && (
+        // 가려진 타일 뒷면: 금고 다이얼
+        <svg className="vtile-back" viewBox="0 0 20 20" aria-hidden>
+          <circle cx="10" cy="10" r="7" fill="none" stroke="currentColor" strokeWidth="1.6" />
+          <circle cx="10" cy="10" r="2.3" fill="currentColor" />
+          <path d="M10 2.6v2.6M10 14.8v2.6M2.6 10h2.6M14.8 10h2.6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+        </svg>
+      )}
     </Tag>
   );
 }
