@@ -77,6 +77,7 @@ export const TAG_LABELS: Record<string, string> = {
   spatial: '공간 퍼즐',
   number: '숫자',
   memory: '기억력',
+  drawing: '그림',
   'player-elimination': '탈락',
   'bot-friendly': '봇과 하기 좋은',
 };

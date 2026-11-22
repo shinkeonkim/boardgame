@@ -29,6 +29,8 @@ export const game: GameModule<GameConfig, MatchState, Move, GameView> = {
   turnTimerSec: (c) => c.turnTimerSec,
   // 쇼다운은 잠깐 보여 주고 넘어감
   timerSec: (m) => (m.phase === 'showdown' ? 8 : m.config.turnTimerSec),
+  // 핸드·거리·행동마다 타이머를 새로 (같은 사람이 연달아 행동해도)
+  phaseKey: (m) => `${m.handNo}-${m.phase}-${m.street}-${m.seq}`,
   newMatch,
   isMove,
   applyMove,

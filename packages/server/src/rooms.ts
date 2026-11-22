@@ -58,6 +58,7 @@ interface Snap {
   actors: number[];
   round: number;
   status: string;
+  phase: string | number | null;
 }
 
 /** 무중단 배포 때 이전 파드 → 새 파드로 넘기는 방 하나 (JSON) */
@@ -496,7 +497,7 @@ export class Rooms {
   }
 
   private snap(match: unknown): Snap {
-    return { actors: this.actors(match), round: this.game.round(match), status: this.game.status(match) };
+    return { actors: this.actors(match), round: this.game.round(match), status: this.game.status(match), phase: this.game.phaseKey?.(match) ?? null };
   }
 
   /**
@@ -508,7 +509,7 @@ export class Rooms {
     if (!match) return;
     const now = this.snap(match);
     this.afterProgress(room, before.status);
-    if (now.round !== before.round || now.status !== before.status || now.actors.some((a) => !before.actors.includes(a))) this.resetTimer(room);
+    if (now.round !== before.round || now.status !== before.status || now.phase !== before.phase || now.actors.some((a) => !before.actors.includes(a))) this.resetTimer(room);
   }
 
   /** 판·게임이 끝났는지 보고 지표를 남긴다 */

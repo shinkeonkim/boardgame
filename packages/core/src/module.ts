@@ -49,6 +49,11 @@ export interface GameModule<Config extends object, Match, Move, View> {
    * 설정과 상관없이 시간을 두어 사람이 버튼을 안 눌러도 게임이 멈추지 않게 한다 (시간이 지나면 autoMove = 통과).
    */
   timerSec?(match: Match): number;
+  /**
+   * 단계 표시 (바뀌면 타이머를 새로 잰다). 없으면 판·상태·둘 사람이 바뀔 때만 새로 잰다.
+   * 같은 사람이 연달아 두는 단계(포커의 다음 거리 등)나 둘 사람이 그대로인 단계 전환에 쓴다.
+   */
+  phaseKey?(match: Match): string | number;
 
   newMatch(config: Config, players: number, rng: Rng): Match;
   /** 서버로 들어온 임의의 값이 이 게임의 수인지 (모양만 검사, 규칙 검사는 applyMove) */

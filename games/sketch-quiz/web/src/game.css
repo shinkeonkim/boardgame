@@ -1,0 +1,160 @@
+/* ---------- Sketch Quiz 전용 ---------- */
+.sq-word {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 52px;
+}
+.sq-options {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.sq-option {
+  font-size: 1.1rem;
+  padding: 10px 18px;
+}
+.sq-slots {
+  display: inline-flex;
+  gap: 6px;
+  align-items: flex-end;
+}
+.sq-slot {
+  display: inline-grid;
+  place-items: center;
+  width: 38px;
+  height: 42px;
+  border-bottom: 3px solid var(--ink);
+  font-size: 1.5rem;
+  font-weight: 900;
+}
+.sq-slot.cho {
+  color: var(--accent);
+}
+.sq-slot.known {
+  color: var(--ink);
+}
+.sq-space {
+  width: 14px;
+}
+.sq-board {
+  display: grid;
+  gap: 8px;
+  justify-items: center;
+}
+.sq-canvas {
+  display: block;
+  width: min(100%, calc((100dvh / var(--z, 1) - 300px) * 4 / 3));
+  min-width: min(100%, 300px);
+  aspect-ratio: 4 / 3;
+  border-radius: 14px;
+  background: #fffdf6;
+  box-shadow: 0 0 0 1px var(--line), 0 8px 22px rgba(0, 0, 0, 0.14);
+  touch-action: none;
+}
+.sq-canvas.drawing {
+  cursor: crosshair;
+  box-shadow: 0 0 0 3px var(--accent), 0 8px 22px rgba(0, 0, 0, 0.14);
+}
+.sq-tools {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+}
+.sq-colors,
+.sq-sizes {
+  display: inline-flex;
+  gap: 4px;
+}
+.sq-color {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 2px solid var(--panel);
+  box-shadow: 0 0 0 1px var(--line);
+  cursor: pointer;
+  padding: 0;
+}
+.sq-color.on {
+  box-shadow: 0 0 0 3px var(--ink);
+  transform: scale(1.1);
+}
+.sq-size {
+  width: 30px;
+  height: 30px;
+  display: inline-grid;
+  place-items: center;
+  border-radius: 8px;
+  border: 1px solid var(--line);
+  background: var(--panel);
+  cursor: pointer;
+  padding: 0;
+}
+.sq-size i {
+  display: block;
+  border-radius: 50%;
+  background: var(--ink);
+}
+.sq-size.on {
+  box-shadow: 0 0 0 2px var(--accent);
+}
+.sq-actions {
+  justify-content: center;
+}
+.sq-chat-panel {
+  display: grid;
+  gap: 8px;
+}
+.sq-chat {
+  height: 220px;
+  overflow-y: auto;
+  display: grid;
+  align-content: start;
+  gap: 3px;
+  font-size: 0.86rem;
+}
+.sq-msg.sys {
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+.sq-msg.ok {
+  font-weight: 800;
+  color: #1f8a4c;
+}
+.sq-msg.close {
+  background: color-mix(in srgb, var(--gold) 18%, transparent);
+  border-radius: 6px;
+}
+.sq-guess {
+  display: flex;
+  gap: 6px;
+}
+.sq-guess input {
+  flex: 1;
+  min-width: 0;
+}
+.sq-demo {
+  display: grid;
+  gap: 8px;
+  justify-items: center;
+  width: min(100%, 340px);
+}
+.sq-demo .sq-canvas {
+  width: 100%;
+}
+@media (max-width: 759px), (max-aspect-ratio: 1/1) {
+  .sq-canvas {
+    width: 100%;
+  }
+  .sq-chat {
+    height: 140px;
+  }
+  .sq-slot {
+    width: 30px;
+    height: 36px;
+    font-size: 1.25rem;
+  }
+}

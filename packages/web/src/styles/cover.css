@@ -210,3 +210,9 @@
 .cover-frame[data-game='holdem'] {
   --cz: 1.6;
 }
+.cover-frame[data-game='sketch-quiz'] {
+  --cz: 1.4;
+}
+.sq-cover .sq-canvas {
+  width: 340px;
+}
