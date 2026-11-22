@@ -201,3 +201,6 @@
 .cover-frame[data-game='one-card'] {
   --cz: 1.7;
 }
+.cover-frame[data-game='one-word'] {
+  --cz: 1.5;
+}

@@ -1,0 +1,21 @@
+name: release one-word
+on:
+  push:
+    branches: [main]
+    paths:
+      - "games/one-word/**"
+      - "!games/one-word/deploy/**"
+      - "packages/**"
+      - "Dockerfile"
+      - "package-lock.json"
+      - "scripts/bundle.mjs"
+  workflow_dispatch:
+permissions:
+  contents: write
+  packages: write
+jobs:
+  release:
+    uses: ./.github/workflows/_release.yml
+    with:
+      target: one-word
+      deploy-dir: games/one-word/deploy

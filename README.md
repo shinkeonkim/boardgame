@@ -27,6 +27,7 @@
 | [Yacht Dice · 요트 다이스](https://boardgame.shinkeonkim.com/games/yacht) | 요트 | 1~8 | 10~25분 | 주사위 5개를 세 번까지 굴려 족보 칸을 채우는 고전 주사위 게임 |
 | [Secret Mission · 비밀 원정대](https://boardgame.shinkeonkim.com/games/secret-mission) | 레지스탕스 | 5~10 | 20~40분 | 숨은 첩자를 찾아라 — 원정대 투표와 몰래 낸 카드로 추리하는 파티 게임 |
 | [One Card · 원카드](https://boardgame.shinkeonkim.com/games/one-card) | 원카드 | 2~8 | 10~25분 | 무늬나 숫자를 맞춰 먼저 다 내기 — 공격 쌓기와 「원카드!」 |
+| [One Word · 한 단어](https://boardgame.shinkeonkim.com/games/one-word) | 저스트 원 | 3~8 | 15~25분 | 겹치지 않는 힌트 한 단어로 함께 맞히는 협력 게임 |
 
 게임 규칙 메커니즘은 고전 보드게임에서 영감을 받았고, 이름·그림·화면은 모두 직접 만들었다.
 

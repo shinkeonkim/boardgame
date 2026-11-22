@@ -26,6 +26,7 @@ const GAMES = {
   yacht: { bots: 3, secs: 16, cover: 9 },
   'secret-mission': { bots: 6, secs: 20, cover: 14 },
   'one-card': { bots: 3, secs: 16, cover: 8 },
+  'one-word': { bots: 4, secs: 18, cover: 10 },
 };
 
 const ids = process.argv.slice(2).length ? process.argv.slice(2) : Object.keys(GAMES);
