@@ -14,4 +14,4 @@ labels:
 images:
 - name: ghcr.io/shinkeonkim/boardgame-number-vault
   newName: ghcr.io/shinkeonkim/boardgame-number-vault
-  newTag: sha-dfca58a
+  newTag: sha-0825a1d
