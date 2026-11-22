@@ -11,6 +11,8 @@ const FLY = 900;
 
 const reduced = () => typeof window !== 'undefined' && !!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
 const wait = (ms: number) => new Promise((r) => setTimeout(r, reduced() ? 0 : ms));
+/** 밀린 만큼 빠르게: 봇끼리 빨리 두면 재생이 뒤처지므로 (한 차례 넘게 밀리면 0.4배, 많이 밀리면 바로) */
+const pace = (backlog: number) => (backlog > 10 ? 0 : backlog > 4 ? 0.4 : 1);
 const lastN = (log: LogEntry[]) => (log.length ? log[log.length - 1].n : 0);
 
 /**
@@ -44,23 +46,23 @@ export function useReplay(rows: number[][], log: LogEntry[]) {
       const p = queue.current.shift()!;
       setActive(p.card);
       setCur(p);
-      await wait(LOOK);
+      await wait(LOOK * pace(queue.current.length));
       if (p.took.length) {
         setTaking(p.row);
-        await wait(WARN);
+        await wait(WARN * pace(queue.current.length));
         const rowEl = document.querySelector(`[data-row="${p.row}"] .row-cards`);
         const seatEl = document.querySelector(`.seat-row[data-seat="${p.seat}"]`);
-        flyClone(rowEl, seatEl, { like: rowEl?.querySelector('.ncard'), count: p.took.length, duration: FLY });
+        if (pace(queue.current.length)) flyClone(rowEl, seatEl, { like: rowEl?.querySelector('.ncard'), count: p.took.length, duration: FLY * pace(queue.current.length) });
         setShown((rs) => rs.map((r, i) => (i === p.row ? [] : r)));
         setPop({ seat: p.seat, pen: p.penalty, key: p.card });
         addLag(p.seat, -p.penalty, -p.took.length);
-        await wait(FLY);
+        await wait(FLY * pace(queue.current.length));
         setTaking(null);
       }
       setShown((rs) => rs.map((r, i) => (i === p.row ? (p.took.length ? [p.card] : [...r, p.card]) : r)));
       setLanded((s) => new Set(s).add(p.card));
       setActive(null);
-      await wait(LAND);
+      await wait(LAND * pace(queue.current.length));
     }
     // 끝나면 서버 상태와 맞춤 (새 판이면 새 줄)
     setShown(latest.current);

@@ -166,8 +166,10 @@ async function openGame(id, view, touch) {
   // 내 차례 = 차례 띠가 「내 차례」 모양 (모든 게임 공통)
   await page.waitForSelector('.turn-banner', { timeout: 15_000 });
   await page.waitForSelector('.turn-banner.mine', { timeout: 40_000 });
-  // 「내 차례!」 알림이 사라질 때까지
+  // 「내 차례!」 알림과 카드 섞기·나눠 주기 연출(받은 자리가 톡 커짐)이 끝날 때까지
   await page.waitForTimeout(1600);
+  await page.waitForFunction(() => !document.querySelector('.deal-fx-card'), null, { timeout: 10_000 }).catch(() => {});
+  await page.waitForTimeout(400);
   if (conf.prepare) await conf.prepare(page);
   return { page, errors, ctx };
 }

@@ -117,6 +117,11 @@ export function Game({
     const fresh = g.log.length === 0;
     if (g.status !== 'playing' || (turnKey === firstTurnKey.current && !fresh)) return;
     const mine = g.turn === me;
+    // 남의 차례는 차례 띠로 충분 — 큰 알림은 판을 가려서 내 차례와 첫 차례 안내에만
+    if (!mine && !fresh) {
+      sound.play('turn');
+      return;
+    }
     setSplash({
       text: fresh ? (mine ? '내가 먼저 해요!' : `${turnName} 님이 먼저 해요`) : mine ? '내 차례!' : `${turnName} 님 차례`,
       sub: fresh

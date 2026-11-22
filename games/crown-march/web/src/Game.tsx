@@ -100,6 +100,11 @@ export function Game({
     }
     lastTurnSeat.current = k;
     const mine = g.turn === me;
+    // 남의 차례는 차례 띠·좌석 강조로 충분 — 큰 알림은 판을 가려서 내 차례에만 (봇은 1초마다 두기도 함)
+    if (!mine) {
+      sound.play('turn');
+      return;
+    }
     setSplash({
       text: mine ? '내 차례!' : `${turnName} 님 차례`,
       sub: mine ? '카드를 골라 왕관을 옮기세요' : g.players > 2 && (g.turn + 1) % g.players === me ? '다음은 내 차례예요' : '',
