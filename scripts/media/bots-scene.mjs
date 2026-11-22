@@ -23,6 +23,7 @@ const GAMES = {
   'tile-atelier': { bots: 3, secs: 18, cover: 14 },
   'corner-claim': { bots: 4, secs: 18, cover: 16 },
   'number-runs': { bots: 3, secs: 18, cover: 15 },
+  yacht: { bots: 3, secs: 16, cover: 9 },
 };
 
 const ids = process.argv.slice(2).length ? process.argv.slice(2) : Object.keys(GAMES);
