@@ -29,6 +29,7 @@
 | [One Card · 원카드](https://boardgame.shinkeonkim.com/games/one-card) | 원카드 | 2~8 | 10~25분 | 무늬나 숫자를 맞춰 먼저 다 내기 — 공격 쌓기와 「원카드!」 |
 | [One Word · 한 단어](https://boardgame.shinkeonkim.com/games/one-word) | 저스트 원 | 3~8 | 15~25분 | 겹치지 않는 힌트 한 단어로 함께 맞히는 협력 게임 |
 | [Trio Hunt · 셋 찾기](https://boardgame.shinkeonkim.com/games/trio-hunt) | 트리오 | 3~6 | 10~20분 | 가장 작은·큰 카드를 뒤집어 같은 숫자 세 장을 모으는 기억력 게임 |
+| [Hold'em · 홀덤](https://boardgame.shinkeonkim.com/games/holdem) | 텍사스 홀덤 (전통) | 2~9 | 20~60분 | 손패 2장과 바닥 5장으로 겨루는 칩 포커 (돈 없음) |
 
 게임 규칙 메커니즘은 고전 보드게임에서 영감을 받았고, 이름·그림·화면은 모두 직접 만들었다.
 

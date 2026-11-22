@@ -28,6 +28,7 @@ const GAMES = {
   'one-card': { bots: 3, secs: 16, cover: 8 },
   'one-word': { bots: 4, secs: 18, cover: 10 },
   'trio-hunt': { bots: 3, secs: 16, cover: 9 },
+  holdem: { bots: 5, secs: 18, cover: 10 },
 };
 
 const ids = process.argv.slice(2).length ? process.argv.slice(2) : Object.keys(GAMES);

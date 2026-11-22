@@ -1,0 +1,21 @@
+name: release holdem
+on:
+  push:
+    branches: [main]
+    paths:
+      - "games/holdem/**"
+      - "!games/holdem/deploy/**"
+      - "packages/**"
+      - "Dockerfile"
+      - "package-lock.json"
+      - "scripts/bundle.mjs"
+  workflow_dispatch:
+permissions:
+  contents: write
+  packages: write
+jobs:
+  release:
+    uses: ./.github/workflows/_release.yml
+    with:
+      target: holdem
+      deploy-dir: games/holdem/deploy

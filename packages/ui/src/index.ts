@@ -6,3 +6,4 @@ export * from './skins';
 export * from './skin-picker';
 export * from './pieces';
 export * from './art';
+export * from './playing-card';

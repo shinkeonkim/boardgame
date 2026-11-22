@@ -207,3 +207,6 @@
 .cover-frame[data-game='trio-hunt'] {
   --cz: 1.8;
 }
+.cover-frame[data-game='holdem'] {
+  --cz: 1.6;
+}
