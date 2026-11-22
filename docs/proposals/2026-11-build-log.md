@@ -20,3 +20,8 @@
 | 12 | 타일 공방 (Azul) | `tile-atelier` | ✅ |
 | 13 | 모서리 땅따먹기 (Blokus) | `corner-claim` | ✅ |
 | 14 | 숫자 잇기 (Rummikub) | `number-runs` | ✅ |
+
+## 마무리
+- 홈랩 PR: #150(지표 포트), #151(새 게임 14종 앱·네트워크 정책)
+- 표지·게임 방법 영상·GIF: `scripts/media/bots-scene.mjs` (봇끼리 두는 장면)
+- 테스트 296개 (엔진 단위·퍼즈·봇 시험장·방 흐름)
