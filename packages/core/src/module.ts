@@ -74,6 +74,8 @@ export interface GameModule<Config extends object, Match, Move, View> {
   actors?(match: Match): number[];
   /** 봇 (없으면 autoMove로 두는 기본 봇). 봇 만드는 법: bot.ts */
   bot?: Bot<View, Move>;
+  /** false면 봇을 넣을 수 없는 게임 (사람끼리만: 그림 퀴즈처럼 봇이 제대로 할 수 없는 게임) */
+  bots?: boolean;
   /** 1부터 시작하는 판 번호 */
   round(match: Match): number;
   config(match: Match): Config;

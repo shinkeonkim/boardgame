@@ -29,12 +29,12 @@ const GAMES = {
   'one-word': { bots: 4, secs: 18, cover: 10 },
   'trio-hunt': { bots: 3, secs: 16, cover: 9 },
   holdem: { bots: 5, secs: 18, cover: 10 },
-  // 봇은 그림을 못 그려서 방장이 직접 그린다 (play: 녹화하는 동안 방장이 두는 수)
-  'sketch-quiz': { bots: 3, secs: 20, cover: 15, play: drawHouse },
+  // 봇이 없는 게임: 방장이 그리고, 손님(guests)이 초대 링크로 들어와 맞힌다 (play: 녹화하는 동안 두는 수)
+  'sketch-quiz': { bots: 0, guests: 2, secs: 20, cover: 13, play: drawHouse },
 };
 
-/** 그림 퀴즈: 단어를 고르고 집과 해를 마우스로 그린다 */
-async function drawHouse(page) {
+/** 그림 퀴즈: 단어를 고르고 집과 해를 마우스로 그린다. 손님들은 틀린 답을 몇 번 던지다 맞힌다 */
+async function drawHouse(page, guests) {
   await page.waitForSelector('.sq-option', { timeout: 15_000 });
   await page.click('.sq-option >> nth=0');
   await page.waitForSelector('.sq-canvas.drawing');
@@ -57,6 +57,18 @@ async function drawHouse(page) {
   await line([700, 180, 730, 180], '#f1c40f');
   await line([870, 180, 840, 180], '#f1c40f');
   await line([80, 650, 300, 640, 600, 655, 920, 640], '#27ae60');
+  const word = (await page.innerText('body')).match(/「(.+?)」를 그려요/)?.[1];
+  const tries = [['상자', '건물'], ['학교']];
+  for (let k = 0; k < 2; k++)
+    for (const [i, gp] of guests.entries()) {
+      const t = tries[i]?.[k];
+      if (t) await gp.fill('.sq-guess input', t).then(() => gp.press('.sq-guess input', 'Enter')).catch(() => {});
+      await sleep(700);
+    }
+  for (const gp of guests) {
+    if (word) await gp.fill('.sq-guess input', word).then(() => gp.press('.sq-guess input', 'Enter')).catch(() => {});
+    await sleep(900);
+  }
 }
 
 const ids = process.argv.slice(2).length ? process.argv.slice(2) : Object.keys(GAMES);
@@ -71,25 +83,39 @@ try {
     await page.goto(`${ORIGIN}/${id}/`);
     await page.fill('input[placeholder="예: 민지"]', '구경꾼');
     await page.click('button:has-text("방 만들기")');
-    await page.waitForSelector('text=빈자리에 봇 넣기');
+    await page.waitForSelector('text=방 코드');
     if (!conf.play) {
       await page.click('button:has-text("관전하기")');
       await page.waitForTimeout(300);
+    }
+    const guests = [];
+    if (conf.guests) await page.waitForURL(/\/r\/[A-Z0-9]+/);
+    for (let i = 0; i < (conf.guests ?? 0); i++) {
+      const gp = await browser.newPage({ viewport: { width: 900, height: 800 } });
+      await gp.goto(page.url());
+      await gp.waitForSelector('text=초대받았어요');
+      await gp.fill('input >> nth=0', ['민지', '도윤', '서연'][i]);
+      await gp.click('button:text-is("들어가기")');
+      await gp.waitForTimeout(400);
+      guests.push(gp);
     }
     const levels = ['보통', '어려움', '쉬움'];
     for (let i = 0; i < conf.bots; i++) {
       await page.click(`button.bot-btn:has-text("${levels[i % 3]}")`);
       await page.waitForTimeout(120);
     }
-    await page.click('button:has-text("게임 시작하기")');
+    // 손님 입장이 반영돼 시작 버튼이 켜질 때까지
+  await page.waitForSelector('button:has-text("게임 시작하기"):not([disabled])', { timeout: 15_000 });
+  await page.click('button:has-text("게임 시작하기")');
     await page.waitForSelector('.table-game', { timeout: 10_000 });
     await sleep(1500);
     const rec = await recorder(page, id, 'play', { width: 1920 });
-    const playing = conf.play ? conf.play(page).catch((e) => console.log('  play 실패', e.message)) : null;
+    const playing = conf.play ? conf.play(page, guests).catch((e) => console.log('  play 실패', e.message)) : null;
     await sleep(conf.secs * 1000);
     await playing;
     await rec.stop();
     await page.close();
+    for (const gp of guests) await gp.close();
     // 표지 (포털 카드) · 게임 방법 영상 · README용 GIF
     const covers = join(ROOT, 'apps/portal/public/covers');
     mkdirSync(covers, { recursive: true });

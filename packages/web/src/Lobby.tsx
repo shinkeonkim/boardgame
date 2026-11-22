@@ -122,7 +122,7 @@ export function Lobby({ view, act, onLeave, emotes, onEmote }: { view: RoomView;
               </li>
             ))}
           </ol>
-          {isHost && players.length < maxPlayers && <AddBot act={act} />}
+          {isHost && players.length < maxPlayers && client.bots !== false && <AddBot act={act} />}
           <EmoteFeed items={emotes.filter((e) => spectators.some((s) => s.id === e.from))} />
           {spectators.length > 0 && <p className="muted small">관전 중: {spectators.map((m) => m.name).join(', ')}</p>}
           <div className="row">

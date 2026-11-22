@@ -13,7 +13,8 @@ import { Logo } from './theme';
 export const client: GameClient<GameView, GameConfig> = {
   id: 'sketch-quiz',
   title: 'Sketch Quiz',
-  subtitle: '그림 퀴즈 · 2~10명이 그리고 맞히는 파티 게임',
+  subtitle: '그림 퀴즈 · 2~10명이 그리고 맞히는 파티 게임 (사람끼리)',
+  bots: false,
   original: meta.original,
   logo: <Logo />,
   lead: (

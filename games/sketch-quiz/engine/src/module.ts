@@ -2,7 +2,6 @@ import type { EmoteDef, GameModule } from '@bg/core';
 import { CLASSIC, GameConfig, LIMITS, parseCustom, sanitizeConfig, validateConfig } from './config';
 import { MatchState, Move, actors, applyMove, autoMove, continueMatch, matchTotals, newMatch, startNextRound, timerSec } from './game';
 import { GameView, viewFor } from './view';
-import { sketchBot } from './bot';
 
 export const EXTRA_EMOTES: EmoteDef[] = [
   { id: 'wow', text: '화가시네요 🎨' },
@@ -49,7 +48,8 @@ export const game: GameModule<GameConfig, MatchState, Move, GameView> = {
   autoMove,
   viewFor,
   actors,
-  bot: sketchBot,
+  // 봇은 그림을 못 그려서 사람끼리만
+  bots: false,
   status: (m) => m.status,
   turn: (m) => m.drawer,
   round: (m) => m.round,

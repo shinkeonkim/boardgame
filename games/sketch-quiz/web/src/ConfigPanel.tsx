@@ -29,7 +29,7 @@ export function ConfigPanel({ config: c, isHost, set }: ConfigPanelProps<GameCon
           <textarea rows={4} value={c.customWords} disabled={!isHost} onChange={(e) => set({ customWords: e.target.value })} placeholder="예: 고양이, 우산, 눈사람, 자전거, 무지개" />
         </label>
       )}
-      <p className="small muted">봇은 그림을 못 그려서 차례를 넘기고, 맞히기만 해요 (힌트로 짐작).</p>
+      <p className="small muted">봇 없이 사람끼리 하는 게임이에요. 방 코드를 보내 친구를 불러요.</p>
     </>
   );
 }

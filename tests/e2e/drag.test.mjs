@@ -71,7 +71,9 @@ const GAMES = {
     count: (p) => p.locator('.nr-hand > *').count(),
   },
   'sketch-quiz': {
-    bots: 1,
+    // 봇 없는 게임: 손님 한 명이 초대 링크로 들어옴
+    bots: 0,
+    guests: 1,
     prepare: async (p) => {
       await p.waitForSelector('.sq-option', { timeout: 15_000 });
       await p.click('.sq-option >> nth=0');
@@ -124,7 +126,24 @@ after(async () => {
   server?.kill();
 });
 
-/** 방을 만들고 봇을 넣어 시작, 내 차례까지 기다림 */
+/** 초대 링크로 손님 입장 (봇을 넣을 수 없는 게임) — 브라우저를 닫을 때 함께 닫힘 */
+async function joinGuest(url, name) {
+  const g = await (await browser.newContext()).newPage();
+  await g.goto(url);
+  try {
+    await g.waitForSelector('text=초대받았어요', { timeout: 10_000 });
+  } catch (e) {
+    mkdirSync(join(ROOT, 'out/e2e'), { recursive: true });
+    await g.screenshot({ path: join(ROOT, 'out/e2e/guest-join.png') });
+    throw new Error(`손님 입장 화면이 안 떠요 (${url}): ${(await g.innerText('body')).slice(0, 200)}`);
+  }
+  await g.fill('input >> nth=0', name);
+  await g.click('button:text-is("들어가기")');
+  await g.waitForSelector('text=게임 시작', { timeout: 10_000 }).catch(() => {});
+  return g;
+}
+
+/** 방을 만들고 봇(또는 손님)을 넣어 시작, 내 차례까지 기다림 */
 async function openGame(id, view, touch) {
   const conf = GAMES[id];
   const ctx = await browser.newContext({ viewport: VIEWS[view], hasTouch: touch, isMobile: false });
@@ -134,11 +153,15 @@ async function openGame(id, view, touch) {
   await page.goto(`${ORIGIN}/${id}/`);
   await page.fill('input[placeholder="예: 민지"]', '테스터');
   await page.click('button:has-text("방 만들기")');
-  await page.waitForSelector('text=빈자리에 봇 넣기');
+  await page.waitForSelector('text=방 코드');
   for (let i = 0; i < conf.bots; i++) {
     await page.click('button.bot-btn:has-text("쉬움")');
     await page.waitForTimeout(120);
   }
+  if (conf.guests) await page.waitForURL(/\/r\/[A-Z0-9]+/);
+  for (let i = 0; i < (conf.guests ?? 0); i++) await joinGuest(page.url(), `손님${i + 1}`);
+  // 손님 입장이 반영돼 시작 버튼이 켜질 때까지
+  await page.waitForSelector('button:has-text("게임 시작하기"):not([disabled])', { timeout: 15_000 });
   await page.click('button:has-text("게임 시작하기")');
   // 내 차례 = 차례 띠가 「내 차례」 모양 (모든 게임 공통)
   await page.waitForSelector('.turn-banner', { timeout: 15_000 });

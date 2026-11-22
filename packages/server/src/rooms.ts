@@ -270,6 +270,7 @@ export class Rooms {
   /** 방장이 봇을 자리에 넣는다 (대기실에서만) */
   addBot(room: Room, by: Member, level: BotLevel) {
     this.requireHost(room, by);
+    if (this.game.bots === false) throw new RoomError('이 게임은 사람끼리만 할 수 있어요');
     if (!this.lobbyOpen(room)) throw new RoomError('게임이 끝난 뒤에 봇을 넣을 수 있어요');
     const max = this.game.players.max;
     if (room.members.filter((m) => m.role === 'player').length >= max) throw new RoomError(`자리가 다 찼어요. 플레이어는 ${max}명까지예요`);

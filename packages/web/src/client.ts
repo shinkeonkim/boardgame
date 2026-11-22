@@ -35,6 +35,8 @@ export interface GameClient<V = unknown, C = unknown> {
   title: string;
   /** 첫 화면 브랜드 아래 한 줄 */
   subtitle: string;
+  /** false면 봇과 할 수 없는 게임 (그림 퀴즈처럼) — 대기실에 「봇 넣기」를 안 보여 줌 */
+  bots?: boolean;
   /** 원작 게임 (meta.ts의 original) — 첫 화면·게임 방법에 「원작」으로 표시 */
   original?: OriginalGame;
   /** 브랜드 아이콘 (48×48 정도 SVG) */

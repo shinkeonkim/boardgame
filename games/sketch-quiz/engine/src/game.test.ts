@@ -2,7 +2,6 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { CLASSIC } from './config';
 import { MatchState, actors, applyMove, clock, decodePts, encodePts, newMatch } from './game';
 import { viewFor } from './view';
-import { sketchBot } from './bot';
 
 let now = 1_000_000;
 beforeEach(() => {
@@ -77,23 +76,14 @@ describe('그림 퀴즈', () => {
     for (const s of actors(m)) applyMove(m, s, { type: 'next' });
     expect(m.drawer).toBe((d + 1) % 3);
   });
-  it('모두 그리면 끝 · 봇은 그릴 차례를 넘김', () => {
+  it('모두 그리면 끝 (그리는 사람이 넘기면 다음 사람)', () => {
     const m = start(3);
     let guard = 0;
     while (m.status === 'playing' && guard++ < 100) {
-      const s = actors(m)[0];
-      applyMove(m, s, sketchBot.choose({ view: viewFor(m, s), seat: s, level: 'hard', rng: () => 0.5 }));
+      if (m.phase === 'reveal') for (const s of actors(m)) applyMove(m, s, { type: 'next' });
+      else applyMove(m, m.drawer, { type: 'skip' });
     }
     expect(m.status).toBe('match-over');
-  });
-  it('봇은 초성 힌트가 나오면 후보를 좁혀 맞힘', () => {
-    const m = start(2, { ...CLASSIC, drawSec: 100 });
-    applyMove(m, m.drawer, { type: 'pick', idx: 0 });
-    const g = 1 - m.drawer;
-    now += 70_000;
-    let tries = 0;
-    while (m.phase === 'draw' && tries++ < 40) applyMove(m, g, sketchBot.choose({ view: viewFor(m, g), seat: g, level: 'hard', rng: Math.random }));
-    expect(m.phase).toBe('reveal');
-    console.log('sketch-quiz 봇이 맞히기까지', tries, '번');
+    expect(m.log.filter((e) => e.type === 'skip')).toHaveLength(3);
   });
 });
