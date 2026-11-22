@@ -350,3 +350,20 @@ button.rcard:hover {
 .rcard.pc.sm .rcard-name {
   margin-top: 0;
 }
+
+/* 역할 초상 (art.tsx) */
+.rcard.pc .rcard-art {
+  display: block;
+  width: 100%;
+  aspect-ratio: 60 / 40;
+  border-radius: calc(var(--w) * 0.05);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--tone) 50%, black), inset 0 0 0 1px rgba(255, 255, 255, 0.2);
+}
+.rcard.pc:has(.rcard-art) {
+  background: var(--card-tex), linear-gradient(180deg, var(--tone) 0 4%, #fbf3e2 4%, #ecdcbc) !important;
+  padding: calc(var(--w) * 0.06);
+  gap: calc(var(--w) * 0.03);
+}
+.rcard.pc.sm:has(.rcard-art) .rcard-name {
+  font-size: 0.58rem;
+}

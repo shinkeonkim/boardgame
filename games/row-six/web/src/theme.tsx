@@ -5,6 +5,39 @@ import { penaltyOf } from '@bg/row-six-engine';
 export const PENALTY_TONE: Record<number, string> = { 1: 'p1', 2: 'p2', 3: 'p3', 5: 'p5', 7: 'p7' };
 
 /** 숫자 카드: 가운데 큰 숫자 + 위쪽 벌점 마름모 */
+/**
+ * 카드 아랫단 그림: 벌점이 클수록 하늘이 어두워지고 양이 늘어난다 (1 = 맑은 풀밭, 7 = 번개 치는 밤).
+ */
+const SKY: Record<number, [string, string, string]> = {
+  1: ['#cfe8f6', '#9fd07a', '#7ab654'],
+  2: ['#f6e7b8', '#c9c56a', '#a8a84a'],
+  3: ['#f6c79a', '#c99a5a', '#a87a3a'],
+  5: ['#b9a8d8', '#7a6a9a', '#5a4a7a'],
+  7: ['#4a3a5a', '#5a3a3a', '#3a2228'],
+};
+function Pasture({ p }: { p: number }) {
+  const [sky, hill, ground] = SKY[p] ?? SKY[1];
+  return (
+    <svg className="ncard-art" viewBox="0 0 60 26" preserveAspectRatio="xMidYMid slice" aria-hidden>
+      <rect width="60" height="26" fill={sky} />
+      {p >= 7 && <path d="M40 0 l-4 8 h3 l-3 7 7 -9 h-3 l3 -6 z" fill="#ffe27a" />}
+      {p <= 2 && <circle cx="50" cy="6" r="3.4" fill="#fff3b0" />}
+      <path d="M0 16 Q15 9 30 14 T60 12 V26 H0 Z" fill={hill} />
+      <path d="M0 21 Q20 16 40 20 T60 19 V26 H0 Z" fill={ground} />
+      {Array.from({ length: p }, (_, i) => {
+        const x = 7 + ((i * 47) % 50);
+        const y = 19 + (i % 2) * 3;
+        return (
+          <g key={i}>
+            <ellipse cx={x} cy={y} rx="3" ry="2" fill={p >= 5 ? '#e8e2ea' : '#fffdf6'} />
+            <circle cx={x + 2.6} cy={y - 0.6} r="1.1" fill="#3a3030" />
+          </g>
+        );
+      })}
+    </svg>
+  );
+}
+
 export function NumberCard({
   n,
   flat,
@@ -46,6 +79,7 @@ export function NumberCard({
           <i key={i} />
         ))}
       </span>
+      {size !== 'xs' && <Pasture p={p} />}
       <span className="ncard-num pc-num">{n}</span>
       <span className="ncard-corner" aria-hidden>
         {n}

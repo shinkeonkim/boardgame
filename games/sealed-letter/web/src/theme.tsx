@@ -1,3 +1,4 @@
+import { RoleArt } from './art';
 import { CARD_DEFS, Kind } from '@bg/sealed-letter-engine';
 
 const TONE: Record<Kind, string> = {
@@ -39,9 +40,13 @@ export function LetterCard({
   return (
     <Tag data-flip={flip} className={`lcard pc light ${size} ${selected ? 'selected' : ''} ${className}`} style={{ ['--tone' as string]: TONE[kind] }} onClick={onClick} disabled={onClick ? disabled : undefined} title={title ?? `${value} ${d.name}: ${d.text}`} aria-label={`${value} ${d.name}`}>
       <span className="lcard-val pc-num">{value}</span>
-      <span className="lcard-icon" aria-hidden>
-        {d.icon}
-      </span>
+      {size === 'xs' ? (
+        <span className="lcard-icon" aria-hidden>
+          {d.icon}
+        </span>
+      ) : (
+        <RoleArt kind={kind} tone={TONE[kind]} />
+      )}
       <span className="lcard-name">{d.name}</span>
       {(size === 'md' || size === 'lg') && <span className="lcard-text">{d.text}</span>}
     </Tag>

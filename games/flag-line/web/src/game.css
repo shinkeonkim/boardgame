@@ -257,3 +257,20 @@ button.troop:hover {
   box-shadow: 0 0 0 1.5px color-mix(in srgb, var(--tc) 60%, black);
   z-index: 2;
 }
+
+/* 부대 카드 그림 (theme.tsx TroopArt) */
+.troop.pc {
+  overflow: hidden;
+}
+.troop .troop-art {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.troop.pc .troop-num {
+  margin-bottom: 20%;
+}
+.troop.pc.sm .troop-num {
+  margin-bottom: 0;
+}

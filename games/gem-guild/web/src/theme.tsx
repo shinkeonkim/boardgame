@@ -42,11 +42,83 @@ export function CostDots({ cost }: { cost: number[] }) {
   );
 }
 
+/**
+ * 개발 카드 윗단 그림: 보너스 보석의 고장 + 단계별 건물.
+ * 다이아몬드 = 설산, 사파이어 = 바닷가 절벽, 에메랄드 = 숲, 루비 = 화산, 오닉스 = 동굴 · 1단계 천막 → 2단계 공방 → 3단계 성.
+ */
+function GemScene({ gem, tier }: { gem: number; tier: number }) {
+  const land = [
+    <g key="0">
+      <rect width="60" height="34" fill="#cfe0f2" />
+      <path d="M-2 34 L16 10 L26 22 L36 6 L62 34 Z" fill="#f7fbff" />
+      <path d="M16 10 L20 16 L14 18 Z M36 6 L41 13 L33 14 Z" fill="#b9c8dc" />
+    </g>,
+    <g key="1">
+      <rect width="60" height="34" fill="#9fd0f2" />
+      <path d="M0 24 q8 -2 15 0 t15 0 t15 0 t15 0 V34 H0 Z" fill="#2f78c8" />
+      <path d="M38 34 V14 q8 -2 22 2 V34 Z" fill="#8a7a62" />
+    </g>,
+    <g key="2">
+      <rect width="60" height="34" fill="#cfe8c8" />
+      {[6, 16, 26, 50, 58].map((x, i) => (
+        <path key={i} d={`M${x} 30 l-6 0 6 -14 6 14 z`} fill={i % 2 ? '#2f7a4a' : '#3e9a63'} />
+      ))}
+      <rect width="60" height="4" y="30" fill="#2f6a3a" />
+    </g>,
+    <g key="3">
+      <rect width="60" height="34" fill="#f3c9a8" />
+      <path d="M4 34 L22 12 h8 L48 34 Z" fill="#5a2a22" />
+      <path d="M22 12 q4 6 8 0" fill="#ff8a3d" />
+      <circle cx="26" cy="6" r="2.4" fill="#9a8a8a" opacity="0.6" />
+      <circle cx="30" cy="3" r="1.8" fill="#9a8a8a" opacity="0.5" />
+    </g>,
+    <g key="4">
+      <rect width="60" height="34" fill="#4a4a58" />
+      <path d="M0 34 V8 Q30 -4 60 8 V34 Z" fill="#2b2b33" />
+      <path d="M12 34 Q14 14 30 12 Q46 14 48 34 Z" fill="#15151b" />
+      <path d="M20 34 l3 -8 3 8 z M34 34 l2.5 -6 2.5 6 z" fill="#6a6a7a" />
+    </g>,
+    <g key="5">
+      <rect width="60" height="34" fill="#f6e3a8" />
+    </g>,
+  ][gem];
+  const building =
+    tier === 1 ? (
+      <g>
+        <path d="M6 32 l7 -9 7 9 z" fill="#d8b48a" stroke="#7a5a3a" strokeWidth="0.6" />
+        <path d="M13 32 v-6" stroke="#7a5a3a" strokeWidth="0.8" />
+      </g>
+    ) : tier === 2 ? (
+      <g>
+        <rect x="5" y="22" width="14" height="10" fill="#c9a27a" stroke="#6a4a2a" strokeWidth="0.6" />
+        <path d="M4 22 l8 -6 8 6 z" fill="#8a3a2a" />
+        <rect x="10" y="26" width="4" height="6" fill="#4a2a1a" />
+        <path d="M17 17 v-5 h2 v6" fill="#6a6a6a" />
+      </g>
+    ) : (
+      <g>
+        <rect x="4" y="18" width="20" height="14" fill="#e8dcc8" stroke="#6a5a4a" strokeWidth="0.6" />
+        <rect x="3" y="12" width="6" height="20" fill="#f0e6d4" stroke="#6a5a4a" strokeWidth="0.6" />
+        <rect x="19" y="12" width="6" height="20" fill="#f0e6d4" stroke="#6a5a4a" strokeWidth="0.6" />
+        <path d="M2.5 12 l3.5 -5 3.5 5 z M18.5 12 l3.5 -5 3.5 5 z" fill="#3a5aa0" />
+        <path d="M11 32 v-6 a3 3 0 0 1 6 0 v6 z" fill="#4a3a2a" />
+        <path d="M6 7 v-4 l3 1 -3 1" stroke="#6a5a4a" strokeWidth="0.5" fill="#d0533f" />
+      </g>
+    );
+  return (
+    <svg className="devcard-art" viewBox="0 0 60 34" preserveAspectRatio="xMidYMid slice" aria-hidden>
+      {land}
+      {building}
+    </svg>
+  );
+}
+
 export function DevCardView({ card, onClick, selected, affordable, size = 'md' }: { card: DevCard; onClick?: () => void; selected?: boolean; affordable?: boolean; size?: 'sm' | 'md' }) {
   const g = GEM_INFO[card.bonus];
   const Tag = onClick ? 'button' : 'div';
   return (
     <Tag data-flip={`g${card.id}`} className={`devcard pc light t${card.tier} ${size} ${selected ? 'selected' : ''} ${affordable ? 'affordable' : ''}`} style={{ ['--bonus' as string]: g.fill, ['--bonus-ink' as string]: g.ink }} onClick={onClick} aria-label={`${card.tier}단계 ${g.name} 카드, ${card.points}점`}>
+      <GemScene gem={card.bonus} tier={card.tier} />
       <div className="devcard-top">
         <b className="devcard-pts">{card.points || ''}</b>
         <GemToken gem={card.bonus} size={size === 'sm' ? 16 : 22} />

@@ -244,3 +244,18 @@ button.dcard:hover {
 .dcard.pc.selected {
   outline: 3px solid var(--gold);
 }
+
+/* 메뉴 그림 (art.tsx) */
+.dcard .dcard-icon {
+  display: grid;
+  place-items: center;
+}
+.dcard .dcard-art {
+  width: calc(var(--w) * 0.62);
+  height: calc(var(--w) * 0.62);
+  filter: drop-shadow(0 2px 1.5px rgba(0, 0, 0, 0.25));
+}
+.dcard.xs .dcard-art {
+  width: calc(var(--w) * 0.8);
+  height: calc(var(--w) * 0.8);
+}

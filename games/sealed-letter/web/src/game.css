@@ -286,3 +286,25 @@ button.lcard:hover {
 .lcard.pc .lcard-name {
   font-family: Georgia, 'Nanum Myeongjo', serif;
 }
+
+/* 역할 초상 (art.tsx): 카드 위쪽 칸을 가득 채움, 숫자 도장은 초상 왼쪽 위에 */
+.lcard.pc .lcard-art {
+  display: block;
+  width: 100%;
+  aspect-ratio: 60 / 40;
+  border-radius: calc(var(--w) * 0.05);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--tone) 50%, black), inset 0 0 0 1px rgba(255, 255, 255, 0.2);
+  margin-top: calc(var(--w) * 0.04);
+}
+.lcard.pc:has(.lcard-art) .lcard-val {
+  position: absolute;
+  top: calc(var(--w) * 0.05);
+  left: calc(var(--w) * 0.05);
+}
+.lcard.pc:has(.lcard-art) {
+  grid-template-rows: auto auto 1fr;
+  padding-top: calc(var(--w) * 0.06);
+}
+.lcard.sm .lcard-art {
+  margin-top: 0;
+}

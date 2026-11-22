@@ -41,23 +41,63 @@ export function FlareCard({
   return (
     <Tag className={`fcard pc ${size} ${color === 5 && c.sixth === 'rainbow' ? 'rainbow' : ''} ${className}`} style={colorStyle(c, color)} onClick={onClick} title={title} aria-label={`${colorName(c, color)} ${value}`}>
       <span className="fcard-num pc-num">{value}</span>
-      <Burst value={value} />
+      <Burst value={value} color={color === 5 && c.sixth === 'rainbow' ? '#d46ab8' : COLORS[color].hex} rainbow={color === 5 && c.sixth === 'rainbow'} />
       {children}
     </Tag>
   );
 }
 
 /** 숫자만큼 퍼지는 불꽃 무늬 */
-function Burst({ value }: { value: number }) {
+/**
+ * 카드 그림: 밤하늘 + 도시 지붕선 + 그 색 불꽃. 숫자가 클수록 불꽃이 크고 겹이 많아진다 (1 = 작은 한 송이, 5 = 하늘 가득).
+ * 무지개 카드는 여러 색 불꽃.
+ */
+const SKYLINE = 'M0 84 V70 h5 v-4 h4 v6 h5 v-9 h3 v-3 h3 v12 h6 v-6 h5 v8 h4 v-11 h4 v4 h5 v-6 h4 v9 h5 v-5 h3 V84 Z';
+function Burst({ value, color, rainbow }: { value: number; color: string; rainbow: boolean }) {
+  const cx = 30;
+  const cy = 30;
+  const rays = 10 + value * 4;
+  const len = 8 + value * 3.4;
+  const palette = rainbow ? ['#e0483c', '#e6b422', '#2fa865', '#3b7be0', '#9b5ad6'] : [color];
+  // 별: 자리 고정 (카드마다 같은 하늘)
+  const stars = [[8, 8], [50, 6], [44, 18], [12, 22], [54, 30], [6, 40], [20, 12], [36, 6]];
   return (
-    <svg className="fcard-burst" viewBox="0 0 40 40" aria-hidden>
-      {Array.from({ length: value * 2 + 2 }, (_, i) => {
-        const a = (i / (value * 2 + 2)) * Math.PI * 2;
-        const r1 = 5;
-        const r2 = 9 + value * 2;
-        return <line key={i} x1={20 + Math.cos(a) * r1} y1={20 + Math.sin(a) * r1} x2={20 + Math.cos(a) * r2} y2={20 + Math.sin(a) * r2} />;
-      })}
-      <circle cx="20" cy="20" r="3" />
+    <svg className="fcard-burst" viewBox="0 0 60 84" preserveAspectRatio="xMidYMid slice" aria-hidden>
+      <defs>
+        <linearGradient id={`fs-sky-${value}`} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#0e1230" />
+          <stop offset="1" stopColor="#262a5a" />
+        </linearGradient>
+      </defs>
+      <rect width="60" height="84" fill={`url(#fs-sky-${value})`} />
+      <rect width="60" height="84" style={{ fill: rainbow ? '#9b5ad6' : color }} opacity="0.16" />
+      {stars.map(([x, y], i) => (
+        <circle key={i} cx={x} cy={y} r={i % 3 === 0 ? 0.7 : 0.45} fill="#fff" opacity="0.7" />
+      ))}
+      {/* 빛 번짐 */}
+      <circle cx={cx} cy={cy} r={len * 1.1} style={{ fill: palette[0] }} opacity="0.18" />
+      {/* 불꽃 줄기 (겹: 숫자가 클수록 많음) */}
+      {Array.from({ length: Math.min(value, 3) }, (_, ring) =>
+        Array.from({ length: rays }, (_, i) => {
+          const a = (i / rays) * Math.PI * 2 + ring * 0.13;
+          const r1 = 3 + ring * 2;
+          const r2 = len * (1 - ring * 0.22);
+          const col = palette[(i + ring) % palette.length];
+          return (
+            <g key={`${ring}-${i}`}>
+              <line x1={cx + Math.cos(a) * r1} y1={cy + Math.sin(a) * r1} x2={cx + Math.cos(a) * r2} y2={cy + Math.sin(a) * r2} style={{ stroke: col }} strokeWidth={ring ? 0.7 : 1.1} strokeLinecap="round" opacity={ring ? 0.75 : 0.95} />
+              {ring === 0 && <circle cx={cx + Math.cos(a) * (r2 + 1.6)} cy={cy + Math.sin(a) * (r2 + 1.6)} r="0.9" fill="#fff8d8" />}
+            </g>
+          );
+        }),
+      )}
+      <circle cx={cx} cy={cy} r={2 + value * 0.5} fill="#fff8e0" />
+      {/* 올라간 자국 */}
+      <path d={`M${cx} 70 Q${cx - 2} 55 ${cx} ${cy + len + 4}`} stroke="#ffe6a8" strokeWidth="0.6" strokeDasharray="1.2 1.6" fill="none" opacity="0.6" />
+      <path d={SKYLINE} fill="#0a0c1c" />
+      {[[9, 74], [16, 70], [29, 73], [44, 72], [52, 75]].map(([x, y], i) => (
+        <rect key={i} x={x} y={y} width="1.4" height="1.6" fill="#f6d27a" opacity="0.8" />
+      ))}
     </svg>
   );
 }

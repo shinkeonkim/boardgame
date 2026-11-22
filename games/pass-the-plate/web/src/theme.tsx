@@ -1,3 +1,4 @@
+import { DishArt } from './art';
 import { DISH, Dish, Group } from '@bg/pass-the-plate-engine';
 
 export const GROUP_COLOR: Record<Group, string> = {
@@ -17,9 +18,7 @@ export function DishCard({ dish, size = 'md', selected, onClick, className = '',
   return (
     <Tag data-flip={flip} data-flip-enter={noEnter ? 'none' : undefined} className={`dcard pc light ${size} ${selected ? 'selected' : ''} ${dim ? 'dim' : ''} ${className}`} style={{ ['--tone' as string]: GROUP_COLOR[d.group], ...style }} onClick={onClick} title={`${d.name}: ${d.hint}`} aria-label={d.name}>
       <span className="dcard-icon" aria-hidden>
-        {d.icon}
-        {dish === 'maki2' && d.icon}
-        {dish === 'maki3' && d.icon + d.icon}
+        <DishArt dish={dish} />
       </span>
       {size !== 'xs' && <span className="dcard-name">{d.name}</span>}
       {size === 'md' && <span className="dcard-hint">{d.hint}</span>}
