@@ -82,11 +82,19 @@
   font-weight: 800;
   font-size: 1.05rem;
   line-height: 1.3;
+  /* 문구가 바뀌어도 띠 높이는 그대로 (줄 수가 바뀌면 아래 판 전체가 출렁임) */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .tb-hint {
   font-size: 0.82rem;
+  line-height: 1.35;
   opacity: 0.85;
   margin-top: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .turn-banner.theirs .tb-hint {
   color: var(--muted);
@@ -468,4 +476,16 @@
 }
 .cfg-row.choice .segmented {
   flex: none;
+}
+
+/* 좁은 화면: 설명은 늘 두 줄 자리 (넘치면 …) */
+@media (max-width: 759px), (max-aspect-ratio: 1/1) {
+  .tb-hint {
+    white-space: normal;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    min-height: calc(2 * 1.35em);
+  }
 }

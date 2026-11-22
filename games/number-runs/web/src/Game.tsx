@@ -200,16 +200,13 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
                   <button className="btn" onClick={() => act('move', { move: { type: 'draw' } })} disabled={changed}>
                     1장 가져오기 ({g.poolCount})
                   </button>
-                  {sel.length > 0 && (
-                    <button className="btn ghost" onClick={backToHand}>
-                      손으로
-                    </button>
-                  )}
-                  {changed && (
-                    <button className="btn ghost" onClick={reset}>
-                      되돌리기
-                    </button>
-                  )}
+                  {/* 늘 자리를 차지 (타일을 고르거나 끌면 생겼다 사라지며 줄이 바뀌어 화면이 출렁이지 않게) */}
+                  <button className={`btn ghost ${sel.length > 0 ? '' : 'nr-hidden'}`} onClick={backToHand} tabIndex={sel.length > 0 ? 0 : -1} aria-hidden={sel.length === 0}>
+                    손으로
+                  </button>
+                  <button className={`btn ghost ${changed ? '' : 'nr-hidden'}`} onClick={reset} tabIndex={changed ? 0 : -1} aria-hidden={!changed}>
+                    되돌리기
+                  </button>
                 </div>
               )}
             </section>

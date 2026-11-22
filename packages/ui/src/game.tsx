@@ -122,7 +122,8 @@ export function TurnBanner({
       <div className={`tb-body ${shake ? 'shake' : ''}`} key={`${shake}-${shakeKey ?? ''}`}>
         <div className="tb-text">
           <div className="tb-title">{title}</div>
-          {hint && <div className="tb-hint">{hint}</div>}
+          {/* 설명이 없어도 자리는 둔다 (있다 없다 하면 띠 높이가 바뀜) */}
+          <div className="tb-hint">{hint || '\u00a0'}</div>
         </div>
         {side && <div className="tb-side">{side}</div>}
       </div>

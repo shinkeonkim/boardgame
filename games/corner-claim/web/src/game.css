@@ -140,7 +140,7 @@
 @media (max-width: 759px), (max-aspect-ratio: 1/1) {
   .cc-board {
     /* 세로 화면: 판 아래 조각 줄이 함께 보이게 높이도 맞춤 */
-    width: min(100%, calc(66dvh / var(--z, 1) - 170px));
+    width: min(100%, calc(66dvh / var(--z, 1) - 215px));
     margin: 0 auto;
   }
   .cc-star {
@@ -235,5 +235,40 @@
   .cc-shadow i {
     transition: none;
     animation: none;
+  }
+}
+
+/* 조각 줄 아래 버튼·안내: 늘 한 줄을 차지 (끄는 동안 판 크기가 출렁이지 않게) */
+.cc-hidden {
+  visibility: hidden;
+}
+.cc-note {
+  min-height: 1.4em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* 판과 조각 줄: 보통은 위아래 (wrapper 없는 것처럼) */
+.cc-stage {
+  display: contents;
+}
+/* 폰 가로처럼 키가 낮은 화면: 판(왼쪽, 높이에 맞춤) + 조각 줄(오른쪽, 넘치면 그 안에서 스크롤) */
+@media (max-height: 520px) and (orientation: landscape) {
+  .cc-stage {
+    flex: 1;
+    min-height: 0;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(240px, 1fr);
+    gap: 12px;
+    align-items: stretch;
+  }
+  .cc-stage .table-fit {
+    min-height: 0;
+  }
+  .cc-stage .cc-tray {
+    min-height: 0;
+    overflow-y: auto;
+    align-content: start;
   }
 }

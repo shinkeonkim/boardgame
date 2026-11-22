@@ -190,3 +190,8 @@ button.rtile:hover {
   font-family: Georgia, 'Times New Roman', serif;
   text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.18), 0 1px 0 rgba(255, 255, 255, 0.9);
 }
+
+/* 숨겨도 자리는 그대로 (끄는 동안 손패 영역 높이가 바뀌지 않게) */
+.nr-hidden {
+  visibility: hidden;
+}

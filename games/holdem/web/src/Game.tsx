@@ -2,23 +2,10 @@ import { useEffect, useState } from 'react';
 import type { RoomView } from '@bg/core';
 import { GameConfig, GameView, LogEntry } from '@bg/holdem-engine';
 import { CardBack, CountBadge, EmoteBubble, PlayingCard, SeatDot, seatColor } from '@bg/ui';
-import { GameScreenProps, ResultSheet, SideNote, TableBanner, TableEmotes, TableLayout, TableTopBar, Ticker, emotesBySeat, rankOf, useLogSounds, usePeek, useTable } from '@bg/web';
+import { GameScreenProps, useNarrow, ResultSheet, SideNote, TableBanner, TableEmotes, TableLayout, TableTopBar, Ticker, emotesBySeat, rankOf, useLogSounds, usePeek, useTable } from '@bg/web';
 import { ChipStack } from './theme';
 
 type View = RoomView<GameView, GameConfig>;
-const NARROW = '(max-width: 759px), (max-aspect-ratio: 1/1)';
-/** 좁은 화면(세로)에선 자리를 세로로 긴 타원에, 바닥 카드는 위쪽에 */
-function useNarrow() {
-  const [n, setN] = useState(() => typeof window !== 'undefined' && !!window.matchMedia?.(NARROW).matches);
-  useEffect(() => {
-    const mq = window.matchMedia?.(NARROW);
-    if (!mq) return;
-    const on = () => setN(mq.matches);
-    mq.addEventListener('change', on);
-    return () => mq.removeEventListener('change', on);
-  }, []);
-  return n;
-}
 const STREET = { preflop: '프리플랍', flop: '플랍', turn: '턴', river: '리버' } as const;
 
 export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreenProps<GameView, GameConfig>) {

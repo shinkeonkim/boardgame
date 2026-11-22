@@ -15,7 +15,8 @@
     "typecheck": "node scripts/typecheck.mjs",
     "media": "node scripts/media/record.mjs",
     "local": "node scripts/local.mjs",
-    "new-game": "node scripts/new-game.mjs"
+    "new-game": "node scripts/new-game.mjs",
+    "test:e2e": "node --test --test-concurrency=1 tests/e2e/"
   },
   "devDependencies": {
     "playwright": "^1.56.1",

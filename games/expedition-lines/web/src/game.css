@@ -871,8 +871,9 @@ button.card:focus-visible {
     padding-top: 2px;
     padding-bottom: 8px;
   }
+  /* 카드를 고르면 안내 글이 버튼으로 바뀜 → 버튼 높이만큼 늘 자리를 둬서 끄는 동안 손패가 출렁이지 않게 */
   .game > .hand-area .actions {
-    min-height: 0;
+    min-height: 42px;
   }
 }
 /* 로비: 지금 설정된 지역(색) 띠 */

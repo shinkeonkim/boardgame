@@ -633,7 +633,8 @@ button.move-card {
   justify-content: center;
   flex-wrap: wrap;
   margin-top: 8px;
-  min-height: 38px;
+  /* 버튼 한 줄 높이 (카드를 고르면 「돌 놓기」가 생겨도 손패 영역이 그대로) */
+  min-height: 44px;
   align-items: center;
 }
 .btn.hero-btn {

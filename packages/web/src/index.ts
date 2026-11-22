@@ -12,3 +12,4 @@ export type { Fx } from './fx';
 export { FX_NAMES } from './fx';
 export { useFlip, flyClone } from './motion';
 export type { Table, SeatRow, ResultRow, TableOptions } from './table';
+export * from './narrow';
