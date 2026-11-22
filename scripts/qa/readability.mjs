@@ -52,6 +52,10 @@ for (const id of ids) {
         const cs = getComputedStyle(el);
         if (cs.visibility === 'hidden' || cs.opacity === '0') continue;
         if (el.closest('button:disabled')) continue;
+        // 움직이는 중(카드가 날아가거나 나타나는 중)이면 크기·투명도가 잠깐 작아 보임 → 건너뜀
+        let moving = false;
+        for (let a = el; a && a !== document.body; a = a.parentElement) if (a.getAnimations().some((x) => x.playState === 'running')) moving = true;
+        if (moving || el.closest('.drag-ghost, .cc-ghost, .nr-ghost')) continue;
         // 진한 외곽선: rgba(…, 0.5 이상) 그림자가 두 겹 이상
         // 외곽선: 글자색과 밝기가 크게 다른 진한(불투명도 0.5 이상) 그림자가 두 겹 이상
         const ink = cs.color.match(/[\d.]+/g).map(Number);

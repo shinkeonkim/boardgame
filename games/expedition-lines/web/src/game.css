@@ -93,7 +93,8 @@
   transform: rotate(180deg);
 }
 .card.xs .idx {
-  font-size: calc(var(--w) * 0.34);
+  /* 탐험대 줄에 겹쳐 쌓인 작은 카드: 숫자가 10px 아래로 작아지지 않게 */
+  font-size: max(10px, calc(var(--w) * 0.34));
   top: 1px;
   left: 2px;
 }
