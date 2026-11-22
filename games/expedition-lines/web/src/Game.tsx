@@ -2,7 +2,7 @@ import { forwardRef, useEffect, useMemo, useRef, useState } from 'react';
 import type { EmoteEvent, RoomView } from '@bg/core';
 import { Card, GameConfig, GameView, LogEntry, canPlayOnExpedition, playBlockReason, scoreColumn, scorePlayer, teamOf } from '@bg/expedition-lines-engine';
 import { AlertBanner, EmoteBubble, EmoteButton, EmoteFeed, ThemeToggle, TurnBanner as BannerFrame, TurnSplash, TurnSteps, TurnTimer, useCountdown, iconize } from '@bg/ui';
-import { CloseRoomButton, GameScreenProps, GuideButton, StopGameButton, sound, useFitZoom, useLogSounds } from '@bg/web';
+import { CloseRoomButton, GameScreenProps, GuideButton, StopGameButton, sound, useFitZoom, useLogSounds, useDealFx } from '@bg/web';
 import { Glyph, SUITS, cardLabel, suitVars } from './theme';
 import { CardBack, CardFace } from './cards';
 import { hasOrigin, setOrigin } from './flip';
@@ -67,6 +67,8 @@ export function Game({
   useLogSounds(g.log, (e) => (e.move.type === 'draw' ? 'deal' : 'card'));
   const c = g.config;
   const range: [number, number] = [c.minValue, c.maxValue];
+  // 새 판마다 카드를 섞고 나눠 주는 연출 (@bg/web deal-fx)
+  useDealFx(`${g.round}`, { per: 3, seats: '.opponents', hand: '.hand-area', origin: '.game', initial: g.log.length <= 1 });
   const names = view.seats;
   const me = g.me;
   const myTurn = me >= 0 && g.turn === me && g.status === 'playing';

@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState, useLayoutEffect, useRef } from 'react';
 import type { RoomView } from '@bg/core';
 import { Card, GameConfig, GameView, LogEntry, copiesOf, hintColors, possibilities, touchesColor } from '@bg/flare-signals-engine';
 import { AlertBanner, EmoteBubble, SeatDot, Icon } from '@bg/ui';
-import { GameScreenProps, ResultSheet, TableBanner, TableEmotes, TableLayout, TableTopBar, Ticker, emotesBySeat, usePeek, useTable, flyClone, useLogSounds } from '@bg/web';
+import { GameScreenProps, ResultSheet, TableBanner, TableEmotes, TableLayout, TableTopBar, Ticker, emotesBySeat, usePeek, useTable, flyClone, useLogSounds, useDealFx } from '@bg/web';
 import { COLORS, ClueMarks, FlareCard, MysteryCard, RATING, colorName, colorStyle } from './theme';
 
 type View = RoomView<GameView, GameConfig>;
@@ -48,6 +48,8 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
   });
   // 소리: 힌트는 토큰 딸깍, 성공하면 불꽃 쉭-펑, 실패는 불발, 버리기는 카드, 뽑기는 미끄러짐
   useLogSounds(g.log, (e) => (e.type === 'hint' ? 'chip' : e.type === 'play' ? (e.ok ? 'firework' : 'fizzle') : e.type === 'discard' ? 'card' : e.type === 'draw' ? 'deal' : null));
+  // 새 판마다 카드를 섞고 나눠 주는 연출 (@bg/web deal-fx)
+  useDealFx(`${g.round}`, { per: 2, seats: '.hand-panel:not(.mine)', hand: '.hand-panel.mine', initial: g.log.length <= 1 });
   const names = t.names;
   const me = t.me;
   const myTurn = t.myTurn;

@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import type { RoomView } from '@bg/core';
 import { Card, GameConfig, GameView, LogEntry } from '@bg/one-card-engine';
 import { EmoteBubble, SeatDot, seatColor, iconize } from '@bg/ui';
-import { GameScreenProps, ResultSheet, SideNote, TableBanner, TableEmotes, TableLayout, TableTopBar, Ticker, emotesBySeat, rankOf, useLogSounds, usePeek, useTable } from '@bg/web';
+import { GameScreenProps, ResultSheet, SideNote, TableBanner, TableEmotes, TableLayout, TableTopBar, Ticker, emotesBySeat, rankOf, useLogSounds, usePeek, useTable, useDealFx } from '@bg/web';
 import { CardBack, PlayingCard, SUITS, SUIT_NAMES, cardName, isRed } from './theme';
 
 type View = RoomView<GameView, GameConfig>;
@@ -22,6 +22,8 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
   });
   // 소리: 내면 카드 탁(공격이면 경고), 가져오면 미끄러짐(많이면 여러 장), 원카드 외치기는 종, 잡히면 실패음, 나가면 축하
   useLogSounds(g.log, (e) => (e.type === 'play' ? (e.attack > 0 ? ['card', 'alert'] : 'card') : e.type === 'draw' ? (e.count > 1 ? 'shuffle' : 'deal') : e.type === 'call' ? (e.caught ? ['alert', 'fail'] : 'bell') : e.type === 'out' ? (e.bankrupt ? 'thud' : 'success') : e.type === 'end' ? 'win' : null));
+  // 새 판마다 카드를 섞고 나눠 주는 연출 (@bg/web deal-fx)
+  useDealFx(`${g.round}`, { per: 3, seats: '.oc-opp', initial: g.log.length <= 2 });
   const names = t.names;
   const me = t.me;
   const myTurn = t.myTurn;

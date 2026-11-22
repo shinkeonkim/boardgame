@@ -15,8 +15,7 @@ import {
   usePeek,
   useTable,
   waitingText,
-  useLogSounds,
-} from '@bg/web';
+  useLogSounds, useDealFx } from '@bg/web';
 import { useReplay } from './replay';
 import { CardBack, NumberCard, Penalty } from './theme';
 
@@ -50,6 +49,8 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
   });
   // 소리: 공개는 카드를 한꺼번에 뒤집고, 놓을 때마다 탁, 줄을 가져가면 쓸어 모음
   useLogSounds(g.log, (e) => (e.type === 'reveal' ? 'shuffle' : e.type === 'place' ? (e.took.length ? ['card', 'sweep'] : 'card') : e.type === 'round' ? 'shuffle' : null));
+  // 새 판마다 카드를 섞고 나눠 주는 연출 (@bg/web deal-fx)
+  useDealFx(`${g.round}`, { per: 3, initial: g.turn === 1 && g.log.length <= 2 });
   const names = t.names;
   const me = t.me;
   const [peek, setPeek] = usePeek(`${g.status}-${g.round}`);

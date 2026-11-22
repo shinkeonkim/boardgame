@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import type { RoomView } from '@bg/core';
 import { ACTION_DEFS, ActionKind, GameConfig, GameView, LogEntry, ROLE_DEFS, ROLES, Role } from '@bg/court-intrigue-engine';
 import { AlertBanner, EmoteBubble, SeatDot, seatColor, Icon, iconize } from '@bg/ui';
-import { GameScreenProps, ResultSheet, TableBanner, TableEmotes, TableLayout, TableTopBar, Ticker, emotesBySeat, rankOf, usePeek, useTable, SideNote, useLogSounds } from '@bg/web';
+import { GameScreenProps, ResultSheet, TableBanner, TableEmotes, TableLayout, TableTopBar, Ticker, emotesBySeat, rankOf, usePeek, useTable, SideNote, useLogSounds, useDealFx } from '@bg/web';
 import { Coins, RoleCard } from './theme';
 
 type View = RoomView<GameView, GameConfig>;
@@ -65,6 +65,8 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
                 ? 'win'
                 : null,
   );
+  // 새 판마다 카드를 섞고 나눠 주는 연출 (@bg/web deal-fx)
+  useDealFx(`${g.round}`, { per: 2, seats: '.ci-seat', initial: g.log.length <= 1 });
   const names = t.names;
   const me = t.me;
   const myTurn = t.myTurn;

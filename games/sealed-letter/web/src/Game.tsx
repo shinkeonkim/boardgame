@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import type { RoomView } from '@bg/core';
 import { CARD_DEFS, GameConfig, GameView, Kind, LogEntry, deckSpec } from '@bg/sealed-letter-engine';
 import { AlertBanner, SeatDot, seatColor, Icon, iconize } from '@bg/ui';
-import { GameScreenProps, ResultSheet, SeatList, TableBanner, TableEmotes, TableLayout, TableTopBar, Ticker, rankOf, usePeek, useTable, useLogSounds } from '@bg/web';
+import { GameScreenProps, ResultSheet, SeatList, TableBanner, TableEmotes, TableLayout, TableTopBar, Ticker, rankOf, usePeek, useTable, useLogSounds, useDealFx } from '@bg/web';
 import { CardBackMini, LetterCard, Seal } from './theme';
 
 type View = RoomView<GameView, GameConfig>;
@@ -34,6 +34,8 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
   const lastPlay = lastEvent?.type === 'play' ? lastEvent : null;
   // 소리: 편지(카드)를 내면 종이, 탈락은 쿵, 판이 끝나면 축하
   useLogSounds(g.log, (e) => (e.type === 'play' ? ['paper', 'card'] : e.type === 'out' ? 'thud' : e.type === 'round' ? 'success' : null));
+  // 새 판마다 카드를 섞고 나눠 주는 연출 (@bg/web deal-fx)
+  useDealFx(`${g.round}`, { per: 1, initial: g.log.length <= 2 });
   const names = t.names;
   const me = t.me;
   const myTurn = t.myTurn;

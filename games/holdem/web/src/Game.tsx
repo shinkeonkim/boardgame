@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import type { RoomView } from '@bg/core';
 import { GameConfig, GameView, LogEntry } from '@bg/holdem-engine';
 import { CardBack, CountBadge, EmoteBubble, PlayingCard, SeatDot, seatColor, iconize } from '@bg/ui';
-import { GameScreenProps, useNarrow, ResultSheet, SideNote, TableBanner, TableEmotes, TableLayout, TableTopBar, Ticker, emotesBySeat, rankOf, useLogSounds, usePeek, useTable } from '@bg/web';
+import { GameScreenProps, useNarrow, ResultSheet, SideNote, TableBanner, TableEmotes, TableLayout, TableTopBar, Ticker, emotesBySeat, rankOf, useLogSounds, usePeek, useTable, useDealFx } from '@bg/web';
 import { ChipStack } from './theme';
 
 type View = RoomView<GameView, GameConfig>;
@@ -16,6 +16,8 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
   const t = useTable(view, notify, { title: "Hold'em", turn: g.turn, playing: g.status === 'playing', simultaneous: showdown, quiet: showdown, stepKey: `${g.handNo}-${g.street}-${g.log.length ? g.log[g.log.length - 1].n : 0}`, mySub: g.toCall ? `${g.toCall} 콜?` : '체크 또는 베팅' });
   // 소리: 콜·레이즈는 칩, 올인은 칩 여러 개, 접기는 카드, 새 카드는 카드 깔기, 이기면 칩 쓸어 담기
   useLogSounds(g.log, (e) => (e.type === 'act' ? (e.act === 'allin' ? 'chips' : e.act === 'fold' ? 'card' : e.act === 'check' ? 'tick' : 'chip') : e.type === 'street' ? 'deal' : e.type === 'hand' ? 'shuffle' : e.type === 'win' ? ['sweep', 'coins'] : e.type === 'end' ? 'win' : e.type === 'bust' ? 'thud' : null));
+  // 새 판마다 카드를 섞고 나눠 주는 연출 (@bg/web deal-fx)
+  useDealFx(`${g.round}-${g.handNo}`, { per: 2, seats: '.hd-seat:not(.busted)', hand: null, origin: '.hd-center', initial: g.log.length <= 4 });
   const names = t.names;
   const me = t.me;
   const myTurn = t.myTurn && !showdown;

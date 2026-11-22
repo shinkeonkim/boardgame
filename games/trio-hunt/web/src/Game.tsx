@@ -1,7 +1,7 @@
 import type { RoomView } from '@bg/core';
 import { Flip, GameConfig, GameView, LogEntry, Move } from '@bg/trio-hunt-engine';
 import { EmoteBubble, SeatDot, seatColor, Icon, iconize } from '@bg/ui';
-import { GameScreenProps, ResultSheet, SideNote, TableBanner, TableEmotes, TableLayout, TableTopBar, Ticker, emotesBySeat, rankOf, useLogSounds, usePeek, useTable } from '@bg/web';
+import { GameScreenProps, ResultSheet, SideNote, TableBanner, TableEmotes, TableLayout, TableTopBar, Ticker, emotesBySeat, rankOf, useLogSounds, usePeek, useTable, useDealFx } from '@bg/web';
 import { TrioCard } from './theme';
 
 type View = RoomView<GameView, GameConfig>;
@@ -16,6 +16,8 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
   const t = useTable(view, notify, { title: 'Trio Hunt', turn: g.turn, playing: g.status === 'playing', mySub: '같은 숫자 세 장을 찾아요' });
   // 소리: 뒤집으면 카드 뒤집기, 세트는 축하, 틀리면 실패음
   useLogSounds(g.log, (e) => (e.type === 'flip' ? 'flip' : e.type === 'trio' ? 'success' : e.type === 'miss' ? 'fail' : e.type === 'win' ? 'win' : null));
+  // 새 판마다 카드를 섞고 나눠 주는 연출 (@bg/web deal-fx)
+  useDealFx(`${g.round}`, { per: 3, seats: '.th-seat', hand: null, origin: '.th-middle', initial: g.flips.length === 0 && g.log.length === 0 });
   const names = t.names;
   const me = t.me;
   const myTurn = t.myTurn;
