@@ -1,4 +1,5 @@
 import { Clip, type GuideDef } from '@bg/web/guide-kit';
+import { Icon } from '@bg/ui';
 import { Logo, RoleCard, TokenCard } from './theme';
 
 export const guide: GuideDef = {
@@ -27,7 +28,7 @@ export const guide: GuideDef = {
       content: (
         <ul className="g-list">
           <li>
-            <b>대장</b>(👑)이 정해진 수만큼 원정대를 골라요. 이야기하며 설득하세요.
+            <b>대장</b>(<Icon name="crown" />)이 정해진 수만큼 원정대를 골라요. 이야기하며 설득하세요.
           </li>
           <li>모두 동시에 찬성·반대. 과반이 찬성하면 출발, 아니면 대장이 다음 사람에게 넘어가요.</li>
           <li>
@@ -104,7 +105,7 @@ export const guide: GuideDef = {
       title: '화면 사용법',
       content: (
         <ul className="g-list">
-          <li>원탁: 대장 👑, 원정대 파란 배지, 투표 후 찬성/반대 공개. 내가 아는 첩자·예언자 후보는 나에게만 표시.</li>
+          <li>원탁: 대장 <Icon name="crown" />, 원정대 파란 배지, 투표 후 찬성/반대 공개. 내가 아는 첩자·예언자 후보는 나에게만 표시.</li>
           <li>내 역할 카드는 눌러서 가릴 수 있어요 (옆 사람이 볼 때).</li>
           <li>오른쪽: 원정대 기록 — 누가 고르고 누가 찬성했는지.</li>
         </ul>

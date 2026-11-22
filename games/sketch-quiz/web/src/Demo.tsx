@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { iconize } from '@bg/ui';
 import { SAMPLE, Sketch } from './theme';
 
 /** 첫 화면 시연: 선이 하나씩 그려지고 「집!」 */
@@ -12,7 +13,7 @@ export function Demo() {
   return (
     <div className="sq-demo" aria-hidden>
       <Sketch strokes={SAMPLE.slice(0, n)} />
-      <b>{n > SAMPLE.length ? '🎉 「집」 정답!' : '무엇일까요?'}</b>
+      <b>{n > SAMPLE.length ? iconize('🎉 「집」 정답!') : '무엇일까요?'}</b>
     </div>
   );
 }

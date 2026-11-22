@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { ThemeToggle } from '@bg/ui';
+import { ThemeToggle, Icon } from '@bg/ui';
 import { Link, useRoute } from './router';
 import { HomePage } from './pages/Home';
 import { SearchPage } from './pages/Search';
@@ -75,7 +75,9 @@ function Footer() {
 function NotFound() {
   return (
     <section className="empty-state">
-      <div className="es-icon">🧭</div>
+      <div className="es-icon">
+            <Icon name="compass" size={48} />
+          </div>
       <h1>페이지를 찾을 수 없어요</h1>
       <p className="muted">주소가 바뀌었을 수 있어요. 게임 찾기에서 다시 찾아보세요.</p>
       <Link className="btn primary" href="/games">

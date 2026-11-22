@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState, useLayoutEffect, useRef } from 'react';
 import type { RoomView } from '@bg/core';
 import { Card, GameConfig, GameView, LogEntry, copiesOf, hintColors, possibilities, touchesColor } from '@bg/flare-signals-engine';
-import { AlertBanner, EmoteBubble, SeatDot } from '@bg/ui';
+import { AlertBanner, EmoteBubble, SeatDot, Icon } from '@bg/ui';
 import { GameScreenProps, ResultSheet, TableBanner, TableEmotes, TableLayout, TableTopBar, Ticker, emotesBySeat, usePeek, useTable, flyClone, useLogSounds } from '@bg/web';
 import { COLORS, ClueMarks, FlareCard, MysteryCard, RATING, colorName, colorStyle } from './theme';
 
@@ -199,7 +199,7 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
                     <span className="seat-name">
                       <EmoteBubble e={bySeat.get(seat)} />
                       <SeatDot seat={seat} size={14} /> <b>{names[seat]}</b>
-                      {m?.bot && <span className={`tag bot ${m.bot}`}>🤖</span>}
+                      {m?.bot && <span className={`tag bot ${m.bot}`}><Icon name="bot" /></span>}
                       {m && !m.connected && <span className="tag away-tag">연결 끊김</span>}
                     </span>
                     {me >= 0 && g.status === 'playing' && (
@@ -279,7 +279,7 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
               </div>
               <div className="action-row">
                 <button className="btn primary" disabled={!selCard || !myTurn} onClick={play}>
-                  🎆 쏘아 올리기
+                  <Icon name="firework" /> 쏘아 올리기
                 </button>
                 <button className="btn" disabled={!selCard || !myTurn || g.hints >= c.hints} onClick={discard}>
                   버리기 (힌트 +1)
@@ -293,9 +293,9 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
       side={
         <>
           {g.finalTurns !== null && g.status === 'playing' && (
-            <AlertBanner icon="⏳" title={`마지막 바퀴 · ${g.finalTurns}번 남았어요`} critical={g.finalTurns <= 1} compactKey={g.finalTurns} sub="덱이 바닥났어요. 지금 낼 수 있는 걸 내 보세요" />
+            <AlertBanner icon={<Icon name="hourglass" />} title={`마지막 바퀴 · ${g.finalTurns}번 남았어요`} critical={g.finalTurns <= 1} compactKey={g.finalTurns} sub="덱이 바닥났어요. 지금 낼 수 있는 걸 내 보세요" />
           )}
-          {g.status === 'playing' && c.fuses - g.fuses === 1 && <AlertBanner icon="💥" title="한 번만 더 틀리면 실패" critical sub="확실한 카드만 쏘아 올려요" />}
+          {g.status === 'playing' && c.fuses - g.fuses === 1 && <AlertBanner icon={<Icon name="boom" />} title="한 번만 더 틀리면 실패" critical sub="확실한 카드만 쏘아 올려요" />}
           <section className="panel tokens">
             <div className="token-row">
               <span className="small">힌트</span>

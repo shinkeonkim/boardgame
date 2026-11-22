@@ -489,3 +489,10 @@
     min-height: calc(2 * 1.35em);
   }
 }
+
+/* 아이콘 (icons.tsx): 글자 줄 안에 맞춤 */
+.ic {
+  display: inline-block;
+  vertical-align: -0.18em;
+  flex: none;
+}

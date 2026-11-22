@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { GameQuery, TAG_LABELS, searchGames } from '@bg/core';
-import { SegmentedControl } from '@bg/ui';
+import { SegmentedControl, Icon } from '@bg/ui';
 import { GAMES } from '../catalog';
 import { GameCard } from '../GameCard';
 import { navigate } from '../router';
@@ -135,7 +135,9 @@ export function SearchPage({ search }: { search: string }) {
             </div>
           ) : (
             <div className="empty-state">
-              <div className="es-icon">🔍</div>
+              <div className="es-icon">
+            <Icon name="search" size={48} />
+          </div>
               <h2>조건에 맞는 게임이 없어요</h2>
               <p className="muted">조건을 줄이면 더 많은 게임을 볼 수 있어요.</p>
               <button className="btn" onClick={() => navigate('/games')}>

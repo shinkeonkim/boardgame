@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { AlertBanner, ConfirmButton, EmoteButton, Modal, Notice, SegmentedControl, Stepper, ThemeToggle, Toggle, TurnBanner, TurnSplash, TurnSteps, TurnTimer } from '@bg/ui';
+import { AlertBanner, ConfirmButton, EmoteButton, Modal, Notice, SegmentedControl, Stepper, ThemeToggle, Toggle, TurnBanner, TurnSplash, TurnSteps, TurnTimer, Icon } from '@bg/ui';
 
 const COLORS = [
   ['--bg', '바탕'],
@@ -93,7 +93,8 @@ export function DesignPage() {
 
       <section className="panel ds-block">
         <h2>안내 · 경고</h2>
-        <Notice>🏁 지난 게임이 끝났어요. 로비로 돌아오면 함께 시작할 수 있어요.</Notice>
+        <Notice>
+          <Icon name="flag" /> 지난 게임이 끝났어요. 로비로 돌아오면 함께 시작할 수 있어요.</Notice>
         <div className="alert">암호가 틀렸어요</div>
         <AlertBanner title="남은 돌 6개">{' '}· 다 쓰면 판이 끝나요</AlertBanner>
         <AlertBanner title="덱 2장 남음" critical sub="이번 바퀴 안에 끝날 수 있어요">
@@ -134,7 +135,7 @@ export function DesignPage() {
               <h2>예시 모달</h2>
             </div>
             <button className="icon-btn g-close" onClick={() => setModal(false)} aria-label="닫기">
-              ✕
+              <Icon name="x" />
             </button>
           </header>
           <div className="g-body">

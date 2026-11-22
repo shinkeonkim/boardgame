@@ -12,7 +12,7 @@
  */
 import { CSSProperties, ReactNode, useEffect, useMemo, useRef, useState } from 'react';
 import type { EmoteEvent, RoomView } from '@bg/core';
-import { EmoteBubble, EmoteButton, EmoteFeed, SkinButton, ThemeToggle, TurnBanner, TurnSplash, TurnTimer, useCountdown } from '@bg/ui';
+import { EmoteBubble, EmoteButton, EmoteFeed, SkinButton, ThemeToggle, TurnBanner, TurnSplash, TurnTimer, useCountdown, Icon, iconize } from '@bg/ui';
 import { useFlip } from './motion';
 import { fitZoom } from './fit';
 export { fitZoom };
@@ -161,7 +161,7 @@ export function TableTopBar({ view, act, round, rounds, over, children }: { view
       </div>
       <div className="small right">
         <button className="btn ghost tiny" aria-label={muted ? '소리 켜기' : '소리 끄기'} onClick={() => sound.setMuted(!muted)}>
-          {muted ? '🔕' : '🔔'}
+          <Icon name={muted ? 'bellOff' : 'bell'} />
         </button>
         {/* 넓은 화면: 한 줄로 · 좁은 화면: 「⋯」 안으로 */}
         <span className="tb-inline">
@@ -221,10 +221,10 @@ export function TableBanner({
       shakeKey={t.actors.join('.')}
       title={
         <>
-          {icon} {title}
+          {icon} {iconize(title)}
         </>
       }
-      hint={hint}
+      hint={iconize(hint)}
       footer={footer}
       side={
         <>
@@ -287,7 +287,11 @@ export function SeatList({ t, view, rows, emotes, onSeat, className = '' }: { t:
                 {active && <span className="pulse" aria-hidden />}
                 <b>{t.names[r.seat]}</b>
                 {r.seat === t.me && <span className="tag mine">나</span>}
-                {m?.bot && <span className={`tag bot ${m.bot}`}>🤖</span>}
+                {m?.bot && (
+                  <span className={`tag bot ${m.bot}`}>
+                    <Icon name="bot" />
+                  </span>
+                )}
                 {m && !m.connected && <span className="tag away-tag">연결 끊김</span>}
                 {r.badge}
               </span>
@@ -357,8 +361,8 @@ export function ResultSheet({
   return (
     <div className="overlay" role="dialog" aria-modal="true" aria-label="결과">
       <div className="panel sheet">
-        <h2>{headline}</h2>
-        {sub && <p className="muted small">{sub}</p>}
+        <h2>{iconize(headline)}</h2>
+        {sub && <p className="muted small">{iconize(sub)}</p>}
         {children}
         <div className="table-wrap">
           <table className="scores">
@@ -456,7 +460,15 @@ export function TableLayout({ className = '', top, main, side, mine, splash, ove
         <aside className="table-side">{side}</aside>
       </div>
       <button className="side-toggle btn small" onClick={() => setSideOpen((x) => !x)} aria-expanded={sideOpen}>
-        {sideOpen ? '정보 닫기 ✕' : '👥 정보'}
+        {sideOpen ? (
+          <>
+            정보 닫기 <Icon name="x" />
+          </>
+        ) : (
+          <>
+            <Icon name="users" /> 정보
+          </>
+        )}
       </button>
       <TurnSplash splash={splash ?? null} />
       {overlay}
@@ -468,7 +480,7 @@ export function TableLayout({ className = '', top, main, side, mine, splash, ove
 export function Ticker({ text }: { text: ReactNode }) {
   return (
     <div className="ticker small muted" aria-live="polite">
-      {text || ' '}
+      {iconize(text) || ' '}
     </div>
   );
 }

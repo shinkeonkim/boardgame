@@ -1,4 +1,5 @@
 import { CLASSIC, penaltyOf, targetRow } from '@bg/row-six-engine';
+import { Icon } from '@bg/ui';
 import { Clip, type GuideDef } from '@bg/web/guide-kit';
 import { Logo, NumberCard, Penalty } from './theme';
 
@@ -206,7 +207,7 @@ export const guide: GuideDef = {
       content: (
         <ul className="g-list">
           <li>내 카드를 누르면 바로 골라져요. 카드에 마우스를 올리거나 고르면 <b>지금 줄 기준으로 어디로 갈지</b>와 위험(빨간 테두리)이 보여요.</li>
-          <li>오른쪽 플레이어 목록에서 누가 골랐는지(✓) 보여요. 끊긴 사람이 있으면 20초 뒤 「대신 진행」을 누를 수 있어요.</li>
+          <li>오른쪽 플레이어 목록에서 누가 골랐는지(<Icon name="check" />) 보여요. 끊긴 사람이 있으면 20초 뒤 「대신 진행」을 누를 수 있어요.</li>
           <li>줄을 골라야 할 때는 줄을 누르거나 숫자 키 1~{CLASSIC.rows}를 눌러요.</li>
           <li>공개된 카드는 줄 아래 「이번 공개」에 놓인 순서대로 보이고, 새로 놓인 카드는 낸 사람 색으로 반짝여요.</li>
         </ul>

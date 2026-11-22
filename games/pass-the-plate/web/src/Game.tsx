@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import type { RoomView } from '@bg/core';
 import { DISH, Dish, GROUPS, GameConfig, GameView, Played } from '@bg/pass-the-plate-engine';
-import { AlertBanner, SeatDot, seatColor } from '@bg/ui';
+import { AlertBanner, SeatDot, seatColor, Icon, iconize } from '@bg/ui';
 import { GameScreenProps, ResultSheet, SeatList, TableBanner, TableEmotes, TableLayout, TableTopBar, Ticker, rankOf, usePeek, useTable, waitingText, SideNote, useChangeSound } from '@bg/web';
 import { DishCard } from './theme';
 
@@ -114,7 +114,7 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
                 <span>돌아온 접시 {g.hand.length}장</span>
                 {g.canChopsticks && !g.myPick && (
                   <button className={`btn tiny ${two ? 'on' : 'ghost'}`} onClick={() => (setTwo((x) => !x), setFirst(null))}>
-                    🥢 젓가락으로 2장{two ? ' (끄기)' : ''}
+                    <Icon name="chopsticks" /> 젓가락으로 2장{two ? ' (끄기)' : ''}
                   </button>
                 )}
               </div>
@@ -131,7 +131,7 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
       }
       side={
         <>
-          {g.status === 'playing' && g.hand.length === 1 && <AlertBanner icon="🍽️" title="이번 판 마지막 접시" sub={last ? '마지막 판이에요. 푸딩 순위가 곧 정해져요' : '판이 끝나면 점수를 계산해요'} />}
+          {g.status === 'playing' && g.hand.length === 1 && <AlertBanner icon={<Icon name="plate" />} title="이번 판 마지막 접시" sub={last ? '마지막 판이에요. 푸딩 순위가 곧 정해져요' : '판이 끝나면 점수를 계산해요'} />}
           <SeatList
             t={t}
             view={view}
@@ -141,13 +141,13 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
               accent: seatColor(seat),
               score: g.totals[seat] + (g.status === 'playing' ? g.preview[seat].total : 0),
               scoreLabel: '지금까지 점수 (이번 판 포함)',
-              badge: g.status === 'playing' ? <span className={`tag ${pk ? 'ready' : ''}`}>{pk ? '골랐어요 ✓' : '고르는 중…'}</span> : null,
+              badge: g.status === 'playing' ? <span className={`tag ${pk ? 'ready' : ''}`}>{pk ? iconize('골랐어요 ✓') : '고르는 중…'}</span> : null,
               children: seat !== me && g.tableaus[seat] ? <Tableau t={g.tableaus[seat]!} size="xs" /> : seat !== me ? <span className="muted small">먹은 접시 비공개</span> : undefined,
             }))}
           />
           <SideNote title="점수" className="pp-ref">
             <div>🍙 김밥 줄 수 1등 6 · 2등 3 · 🍤 튀김 2개 5 · 🐟 회 3개 10</div>
-            <div>🥟 만두 1·3·6·10·15 · 🍣 초밥 1·2·3 (🌿 겨자 위면 ×3)</div>
+            <div>🥟 만두 1·3·6·10·15 · <Icon name="plate" /> 초밥 1·2·3 (🌿 겨자 위면 ×3)</div>
             <div>🍮 푸딩: 게임 끝에 가장 많으면 +6, 가장 적으면 −6</div>
           </SideNote>
         </>

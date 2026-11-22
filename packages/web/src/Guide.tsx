@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Modal } from '@bg/ui';
+import { Modal, Icon } from '@bg/ui';
 import { useGameClient } from './App';
 import { GuideSections } from './guide-kit';
 
@@ -9,7 +9,7 @@ export function GuideButton({ className = 'btn ghost', label = '게임 방법' }
   return (
     <>
       <button className={className} onClick={() => setOpen(true)} aria-label={label}>
-        📖 <span className="guide-label">{label}</span>
+        <Icon name="book" /> <span className="guide-label">{label}</span>
       </button>
       {open && <GuideModal onClose={() => setOpen(false)} />}
     </>
@@ -35,7 +35,7 @@ export function GuideModal({ onClose }: { onClose: () => void }) {
           </div>
         </div>
         <button className="icon-btn g-close" onClick={onClose} aria-label="닫기">
-          ✕
+          <Icon name="x" />
         </button>
       </header>
       <GuideSections sections={guide.sections} scrollable />

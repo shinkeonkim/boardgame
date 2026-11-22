@@ -1,4 +1,5 @@
 /** 단어 카드 (카드 키트 pc) — 맞히는 사람에게는 뒷면 */
+import { iconize } from '@bg/ui';
 export function WordCard({ word, size = 'lg' }: { word: string | null; size?: 'md' | 'lg' }) {
   if (word === null)
     return (
@@ -18,7 +19,7 @@ export function WordCard({ word, size = 'lg' }: { word: string | null; size?: 'm
 export function ClueNote({ text, seatColor, state }: { text: string | null; seatColor: string; state: 'writing' | 'done' | 'shown' | 'erased' | 'hidden-erased' }) {
   return (
     <span className={`ow-note ${state}`} style={{ ['--note' as string]: seatColor }}>
-      {state === 'writing' ? '…' : state === 'done' ? '✓' : state === 'hidden-erased' ? '겹침' : text}
+      {state === 'writing' ? '…' : state === 'done' ? iconize('✓') : state === 'hidden-erased' ? '겹침' : text}
     </span>
   );
 }

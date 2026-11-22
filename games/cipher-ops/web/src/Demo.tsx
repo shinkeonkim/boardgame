@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { Icon } from '@bg/ui';
 
 const WORDS = ['고래', '피아노', '태풍', '상어', '케이크', '문어', '로켓', '진주', '거미'];
 const KEY = ['r', 'b', 'n', 'r', 'n', 'r', 'b', 'r', 'x'];
@@ -16,7 +17,7 @@ export function Demo() {
   return (
     <div className="co-demo" aria-hidden>
       <div className={`co-demo-clue ${step >= 1 ? 'show' : ''}`}>
-        🔴 팀장: 「<b>바다</b>」 3
+        <Icon name="dot" color="#d0453a" /> 팀장: 「<b>바다</b>」 3
       </div>
       <div className="co-demo-grid">
         {WORDS.map((w, i) => (

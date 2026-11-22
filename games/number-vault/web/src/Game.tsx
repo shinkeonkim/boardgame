@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import type { RoomView } from '@bg/core';
 import { GameConfig, GameView, LogEntry } from '@bg/number-vault-engine';
-import { AlertBanner, EmoteBubble, SeatDot } from '@bg/ui';
+import { AlertBanner, EmoteBubble, SeatDot, Icon } from '@bg/ui';
 import { GameScreenProps, ResultSheet, TableBanner, TableEmotes, TableLayout, TableTopBar, Ticker, emotesBySeat, rankOf, usePeek, useTable, useLogSounds } from '@bg/web';
 import { TileView } from './theme';
 
@@ -107,7 +107,7 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
                     <span className="seat-name">
                       <EmoteBubble e={bySeat.get(seat)} />
                       <SeatDot seat={seat} size={14} /> <b>{names[seat]}</b>
-                      {m?.bot && <span className={`tag bot ${m.bot}`}>🤖</span>}
+                      {m?.bot && <span className={`tag bot ${m.bot}`}><Icon name="bot" /></span>}
                       {m && !m.connected && <span className="tag away-tag">끊김</span>}
                       {out && <span className="tag">열림</span>}
                     </span>
@@ -120,7 +120,7 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
                         {!tile.revealed && missesFor(tile.id).size > 0 && (
                           <span className="nv-miss" title="틀린 추측">
                             {[...missesFor(tile.id)].map((x) => (
-                              <s key={x}>✕{num(x)}</s>
+                              <s key={x}><Icon name="x" />{num(x)}</s>
                             ))}
                           </span>
                         )}
@@ -214,7 +214,7 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
                 )}
                 {myTurn && g.phase === 'continue' && (
                   <button className="btn primary" onClick={() => act('move', { move: { type: 'stop' } })}>
-                    여기서 멈추기 🔐
+                    여기서 멈추기 <Icon name="lock" />
                   </button>
                 )}
               </div>
@@ -225,7 +225,7 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
       }
       side={
         <>
-          {me >= 0 && myHidden === 1 && g.status === 'playing' && <AlertBanner icon="🔐" title="마지막 타일 하나" critical sub="이게 열리면 탈락이에요" />}
+          {me >= 0 && myHidden === 1 && g.status === 'playing' && <AlertBanner icon={<Icon name="lock" />} title="마지막 타일 하나" critical sub="이게 열리면 탈락이에요" />}
           <section className="panel tokens small">
             남은 타일 ⬛ {g.poolCount[0]} · ⬜ {g.poolCount[1]}
             {g.poolCount[0] + g.poolCount[1] === 0 && <div className="muted">더미가 비었어요 — 틀리면 내 타일을 직접 공개해요</div>}

@@ -1,4 +1,5 @@
 import { RoleArt } from './art';
+import { Icon } from '@bg/ui';
 import { ROLE_DEFS, Role } from '@bg/court-intrigue-engine';
 
 export function RoleCard({ role, lost, size = 'md', selected, onClick, hidden, flip }: { role: Role | null; lost?: boolean; size?: 'xs' | 'sm' | 'md'; selected?: boolean; onClick?: () => void; hidden?: boolean; flip?: string }) {
@@ -18,7 +19,7 @@ export function RoleCard({ role, lost, size = 'md', selected, onClick, hidden, f
       {size === 'md' && (
         <span className="rcard-text">
           {d.action !== '—' && <span>{d.action}</span>}
-          {d.block !== '—' && <span>🚫 {d.block}</span>}
+          {d.block !== '—' && <span><Icon name="ban" /> {d.block}</span>}
         </span>
       )}
     </Tag>

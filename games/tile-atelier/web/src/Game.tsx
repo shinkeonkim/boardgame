@@ -1,7 +1,7 @@
 import { useEffect, useLayoutEffect, useMemo, useState } from 'react';
 import type { RoomView } from '@bg/core';
 import { FIRST, GameConfig, GameView, LogEntry, lineProblem } from '@bg/tile-atelier-engine';
-import { AlertBanner, SeatDot, seatColor } from '@bg/ui';
+import { AlertBanner, SeatDot, seatColor, Icon } from '@bg/ui';
 import { GameScreenProps, ResultSheet, SeatList, TableBanner, TableEmotes, TableLayout, TableTopBar, Ticker, rankOf, usePeek, useTable, SideNote, flyClone, useLogSounds } from '@bg/web';
 import { BoardView, TILE, TileView } from './theme';
 
@@ -157,7 +157,7 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
       }
       side={
         <>
-          {nearEnd && g.status === 'playing' && <AlertBanner icon="🏁" title="가로줄 완성이 가까워요" sub="누군가 가로줄을 채우면 이번 판 끝에 게임이 끝나요" />}
+          {nearEnd && g.status === 'playing' && <AlertBanner icon={<Icon name="flag" />} title="가로줄 완성이 가까워요" sub="누군가 가로줄을 채우면 이번 판 끝에 게임이 끝나요" />}
           <SeatList
             t={t}
             view={view}

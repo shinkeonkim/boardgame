@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import type { RoomView } from '@bg/core';
 import { ACTION_DEFS, ActionKind, GameConfig, GameView, LogEntry, ROLE_DEFS, ROLES, Role } from '@bg/court-intrigue-engine';
-import { AlertBanner, EmoteBubble, SeatDot, seatColor } from '@bg/ui';
+import { AlertBanner, EmoteBubble, SeatDot, seatColor, Icon, iconize } from '@bg/ui';
 import { GameScreenProps, ResultSheet, TableBanner, TableEmotes, TableLayout, TableTopBar, Ticker, emotesBySeat, rankOf, usePeek, useTable, SideNote, useLogSounds } from '@bg/web';
 import { Coins, RoleCard } from './theme';
 
@@ -137,7 +137,7 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
                       <span className="seat-name">
                         <EmoteBubble e={bySeat.get(s)} />
                         <b>{names[s]}</b>
-                        {m?.bot && <span className={`tag bot ${m.bot}`}>🤖</span>}
+                        {m?.bot && <span className={`tag bot ${m.bot}`}><Icon name="bot" /></span>}
                         {m && !m.connected && <span className="tag away-tag">끊김</span>}
                       </span>
                       <Coins n={g.coins[s]} />
@@ -147,7 +147,7 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
                         <RoleCard key={h.id} flip={`r${h.id}`} role={h.role} lost={h.lost} size="sm" />
                       ))}
                     </div>
-                    {reaction && g.passed.includes(s) && <span className="ci-pass">통과 ✓</span>}
+                    {reaction && g.passed.includes(s) && <span className="ci-pass">통과 <Icon name="check" /></span>}
                   </div>
                 );
               })}
@@ -171,7 +171,7 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
               )}
               {pend.blocker !== null && pend.blockRole && (
                 <span className="ci-claim-block">
-                  🚫 {names[pend.blocker]} · {ROLE_DEFS[pend.blockRole].icon} {rn(pend.blockRole)}로 막기
+                  <Icon name="ban" /> {names[pend.blocker]} · {ROLE_DEFS[pend.blockRole].icon} {rn(pend.blockRole)}로 막기
                 </span>
               )}
               {reaction && <span className="small muted ci-claim-wait">통과 {g.passed.length}명</span>}
@@ -243,14 +243,14 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
                 <div className="action-row ci-react">
                   {g.phase !== 'block' && (
                     <button className="btn danger-btn" onClick={() => act('move', { move: { type: 'challenge' } })}>
-                      ⚡ 도전! 「거짓말이야」
+                      <Icon name="zap" /> 도전! 「거짓말이야」
                     </button>
                   )}
                   {g.phase === 'block' &&
                     pend &&
                     ACTION_DEFS[pend.action].blockers.map((r) => (
                       <button key={r} className={`btn ${myLive.some((h) => h.role === r) ? 'primary' : ''}`} onClick={() => act('move', { move: { type: 'block', role: r } })}>
-                        🚫 {rn(r)}로 막기{myLive.some((h) => h.role === r) ? '' : ' (허풍)'}
+                        <Icon name="ban" /> {rn(r)}로 막기{myLive.some((h) => h.role === r) ? '' : ' (허풍)'}
                       </button>
                     ))}
                   <button className="btn" onClick={() => act('move', { move: { type: 'pass' } })}>
@@ -260,13 +260,13 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
               )}
             </section>
           )}
-          {me >= 0 && g.influence[me] === 0 && g.status === 'playing' && <p className="muted center">궁정에서 쫓겨났어요. 남은 사람들의 음모를 지켜봐요 👀</p>}
+          {me >= 0 && g.influence[me] === 0 && g.status === 'playing' && <p className="muted center">궁정에서 쫓겨났어요. 남은 사람들의 음모를 지켜봐요 <Icon name="eye" /></p>}
           <Ticker text={describe(g.log[g.log.length - 1], names)} />
         </>
       }
       side={
         <>
-          {me >= 0 && g.influence[me] === 1 && g.status === 'playing' && <AlertBanner icon="⚠️" title="영향력이 하나 남았어요" critical sub="한 번만 더 잃으면 탈락이에요" />}
+          {me >= 0 && g.influence[me] === 1 && g.status === 'playing' && <AlertBanner icon={<Icon name="warning" />} title="영향력이 하나 남았어요" critical sub="한 번만 더 잃으면 탈락이에요" />}
           <SideNote title={`역할 (각 ${c.copies}장)`} className="ci-ref">
             {ROLES.map((r) => (
               <div key={r} className="ci-ref-row">
@@ -275,7 +275,7 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
                 </span>
                 <span className="muted">
                   {ROLE_DEFS[r].action !== '—' ? ROLE_DEFS[r].action : ''}
-                  {ROLE_DEFS[r].block !== '—' ? ` · 🚫 ${ROLE_DEFS[r].block}` : ''}
+                  {ROLE_DEFS[r].block !== '—' ? iconize(` · 🚫 ${ROLE_DEFS[r].block}`) : ''}
                 </span>
               </div>
             ))}

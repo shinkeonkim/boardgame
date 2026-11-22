@@ -1,4 +1,5 @@
 import { CLASSIC, layout } from '@bg/cipher-ops-engine';
+import { Icon } from '@bg/ui';
 import { Clip, type GuideDef } from '@bg/web/guide-kit';
 import { Logo, TEAMS } from './theme';
 
@@ -6,7 +7,7 @@ const l = layout(CLASSIC);
 const Card = ({ w, k, open }: { w: string; k: 'red' | 'blue' | 'neutral' | 'assassin' | 'unknown'; open?: boolean }) => (
   <span className={`co-card ${k} ${open ? 'open' : k !== 'unknown' ? 'hinted' : ''}`}>
     <span className="co-word">{w}</span>
-    {k === 'assassin' && <span className="co-skull">💀</span>}
+    {k === 'assassin' && <span className="co-skull"><Icon name="skull" /></span>}
   </span>
 );
 
@@ -36,7 +37,7 @@ export const guide: GuideDef = {
         <ul className="g-list">
           <li>대기실 순서대로 1·3·5…번째가 빨강 팀, 2·4·6…번째가 파랑 팀이에요. 방장이 순서를 바꿔 팀을 정해요.</li>
           <li>
-            각 팀 첫 번째 사람이 <b>🕵️ 팀장</b>, 나머지는 <b>요원</b>. 「판마다 팀장 돌아가며」를 켜면 판마다 바뀌어요.
+            각 팀 첫 번째 사람이 <b><Icon name="spy" /> 팀장</b>, 나머지는 <b>요원</b>. 「판마다 팀장 돌아가며」를 켜면 판마다 바뀌어요.
           </li>
           <li>사람이 모자라면 봇을 넣어요. 봇도 팀장·요원을 모두 할 수 있어요.</li>
         </ul>
@@ -93,7 +94,7 @@ export const guide: GuideDef = {
             우리 단어면 계속 고를 수 있어요(원작: 숫자+1번까지). <b>중립이나 상대 단어</b>면 차례가 넘어가요.
           </li>
           <li>
-            <b>💀 암살자</b>를 고르면 그 팀은 바로 져요.
+            <b><Icon name="skull" /> 암살자</b>를 고르면 그 팀은 바로 져요.
           </li>
           <li>언제든 「이번 차례 마치기」로 멈출 수 있어요.</li>
         </ol>

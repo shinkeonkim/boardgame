@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { EmoteEvent, RoomView } from '@bg/core';
 import { Card, DIRS, EMPTY, GameConfig, GameView, HOLE, LogEntry, playOutcome, sameSide, scoreBoard } from '@bg/crown-march-engine';
-import { AlertBanner, EmoteBubble, EmoteButton, EmoteFeed, ThemeToggle, TurnBanner as BannerFrame, TurnSplash, TurnTimer, useCountdown } from '@bg/ui';
+import { AlertBanner, EmoteBubble, EmoteButton, EmoteFeed, ThemeToggle, TurnBanner as BannerFrame, TurnSplash, TurnTimer, useCountdown, iconize } from '@bg/ui';
 import { CloseRoomButton, GameScreenProps, GuideButton, StopGameButton, sound, useFitZoom, useLogSounds } from '@bg/web';
 import { CrownIcon, KnightIcon, MoveCard, SeatStone, cardText, seatName, seatVars } from './theme';
 
@@ -269,7 +269,7 @@ export function Game({
         </div>
         <div className="small right">
           <button className="btn ghost tiny" aria-label={muted ? '소리 켜기' : '소리 끄기'} onClick={() => sound.setMuted(!muted)}>
-            {muted ? '🔕' : '🔔'}
+            {muted ? iconize('🔕') : iconize('🔔')}
           </button>
           {view.hostId === view.you && g.status !== 'match-over' && <StopGameButton act={act} small />}
           {view.hostId === view.you && <CloseRoomButton act={act} small />}
@@ -458,7 +458,7 @@ export function Game({
               <div className="actions">
                 {myTurn && selCard && isOutcomeOk(outcomes.get(selCard.id)!) ? (
                   <button className={`btn primary ${(outcomes.get(selCard.id) as { kind: string }).kind === 'hero' ? 'hero-btn' : ''}`} onClick={() => play(selCard)}>
-                    {(outcomes.get(selCard.id) as { kind: string }).kind === 'hero' ? '⚔ 기사로 뒤집기' : '돌 놓기'}
+                    {(outcomes.get(selCard.id) as { kind: string }).kind === 'hero' ? iconize('⚔ 기사로 뒤집기') : '돌 놓기'}
                   </button>
                 ) : null}
                 {myTurn && g.can.draw && (

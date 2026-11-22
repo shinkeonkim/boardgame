@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import type { RoomView } from '@bg/core';
 import { GameConfig, GameView, LogEntry } from '@bg/holdem-engine';
-import { CardBack, CountBadge, EmoteBubble, PlayingCard, SeatDot, seatColor } from '@bg/ui';
+import { CardBack, CountBadge, EmoteBubble, PlayingCard, SeatDot, seatColor, iconize } from '@bg/ui';
 import { GameScreenProps, useNarrow, ResultSheet, SideNote, TableBanner, TableEmotes, TableLayout, TableTopBar, Ticker, emotesBySeat, rankOf, useLogSounds, usePeek, useTable } from '@bg/web';
 import { ChipStack } from './theme';
 
@@ -75,7 +75,7 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
                 {g.sb === s && <span className="hd-btn">SB</span>}
                 {g.bb === s && <span className="hd-btn">BB</span>}
                 <b>{s === me ? '나' : names[s]}</b>
-                {m?.bot && ' 🤖'}
+                {m?.bot && iconize(' 🤖')}
               </div>
               <div className="hd-chips">
                 {g.busted[s] ? <span className="tag">탈락</span> : <span className="hd-chipcount">{g.chips[s]}</span>}
@@ -143,7 +143,7 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
               {showdown ? (
                 <div className="action-row">
                   <button className="btn primary" disabled={g.ready[me]} onClick={() => act('move', { move: { type: 'next' } })}>
-                    {g.ready[me] ? '다른 사람을 기다려요…' : '다음 핸드 ▶'}
+                    {g.ready[me] ? '다른 사람을 기다려요…' : iconize('다음 핸드 ▶')}
                   </button>
                 </div>
               ) : (

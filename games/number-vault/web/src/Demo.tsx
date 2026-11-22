@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { iconize } from '@bg/ui';
 import { TileView } from './theme';
 
 const ROW = [
@@ -24,7 +25,7 @@ export function Demo() {
           <TileView key={i} t={{ ...t, n: opened.includes(i) ? t.n : null, revealed: opened.includes(i) }} size="md" selected={(step === 1 && i === 1) || (step === 3 && i === 2)} />
         ))}
       </div>
-      <div className="nv-demo-say">{step === 1 ? '「두 번째는 4!」' : step === 2 ? '맞았어요 🔓 하나 더?' : step === 3 ? '「세 번째는 7!」' : step >= 4 ? '또 맞았어요!' : '가려진 타일은 왼쪽부터 커져요'}</div>
+      <div className="nv-demo-say">{step === 1 ? '「두 번째는 4!」' : step === 2 ? iconize('맞았어요 🔓 하나 더?') : step === 3 ? '「세 번째는 7!」' : step >= 4 ? '또 맞았어요!' : '가려진 타일은 왼쪽부터 커져요'}</div>
     </div>
   );
 }

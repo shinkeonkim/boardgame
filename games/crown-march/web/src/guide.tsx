@@ -1,4 +1,5 @@
 import { CLASSIC, Card, EMPTY, HOLE, scoreBoard } from '@bg/crown-march-engine';
+import { Icon } from '@bg/ui';
 import { Clip, type GuideSection } from '@bg/web/guide-kit';
 import { CrownIcon, KnightIcon, MoveCard, SeatStone } from './theme';
 
@@ -29,7 +30,7 @@ function MiniBoard({
         return (
           <div key={i} className={`g-cell ${v === HOLE ? 'hole' : ''} ${marks[i] ? `m-${marks[i]}` : ''}`}>
             {v >= 0 && <SeatStone seat={v} size="78%" />}
-            {marks[i] === 'no' && <span className="g-x">✕</span>}
+            {marks[i] === 'no' && <span className="g-x"><Icon name="x" /></span>}
             {marks[i] === 'hero' && (
               <span className="g-k">
                 <KnightIcon size={12} />
@@ -202,13 +203,13 @@ function sections(): GuideSection[] {
               />
               <ul className="g-list">
                 <li>
-                  <b>보드 밖</b>으로 나가는 카드 ✕
+                  <b>보드 밖</b>으로 나가는 카드 <Icon name="x" />
                 </li>
                 <li>
-                  <b>내 돌</b>(팀전이면 같은 팀 돌)이 있는 칸 ✕
+                  <b>내 돌</b>(팀전이면 같은 팀 돌)이 있는 칸 <Icon name="x" />
                 </li>
                 <li>
-                  <b>막힌 칸</b>(빨간 빗금, "폐허 지도" 설정) ✕
+                  <b>막힌 칸</b>(빨간 빗금, "폐허 지도" 설정) <Icon name="x" />
                 </li>
                 <li>
                   <b>상대 돌</b> 칸은 기사가 있을 때만 <KnightIcon size={12} />
@@ -338,7 +339,7 @@ function sections(): GuideSection[] {
               </li>
               <li>카드를 보드로 끌어다 놓아도 내려놓을 수 있어요.</li>
               <li>"영역" 버튼: 돌마다 속한 영역의 칸 수 표시 · "기록": 지금까지의 수</li>
-              <li>😊 버튼으로 감정 표현 · 연결이 끊겨도 같은 기기로 다시 열면 그대로 돌아와요.</li>
+              <li><Icon name="smile" /> 버튼으로 감정 표현 · 연결이 끊겨도 같은 기기로 다시 열면 그대로 돌아와요.</li>
             </ul>
         </>
       ),

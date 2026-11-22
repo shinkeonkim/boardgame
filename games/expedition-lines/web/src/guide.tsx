@@ -1,4 +1,5 @@
 import { CLASSIC, Card, scoreColumn } from '@bg/expedition-lines-engine';
+import { Icon } from '@bg/ui';
 import { Clip, type GuideSection } from '@bg/web/guide-kit';
 import { CardBack, CardFace } from './cards';
 import { Glyph, SUITS, suitVars } from './theme';
@@ -17,7 +18,7 @@ function Column({ cards, note, bad }: { cards: Card[]; note?: React.ReactNode; b
         {cards.map((c, i) => (
           <span key={c.id} className={`g-col-card ${bad === i ? 'bad' : ''}`}>
             <CardFace card={c} size="sm" />
-            {bad === i && <span className="g-x">✕</span>}
+            {bad === i && <span className="g-x"><Icon name="x" /></span>}
           </span>
         ))}
       </div>
@@ -148,8 +149,8 @@ function sections(): GuideSection[] {
               <li>건너뛴 숫자는 다시 돌아갈 수 없으니, 작은 숫자를 아껴 두는 것도 전략이에요.</li>
             </ul>
             <div className="g-row">
-              <Column cards={[k(2, 0), k(2, 3), k(2, 7), k(2, 5)]} bad={3} note={<span>7 다음에 5 ✕ — 이 카드는 버림 더미로</span>} />
-              <Column cards={[k(4, 4), k(4, 0)]} bad={1} note={<span>숫자 뒤에 투자 ✕</span>} />
+              <Column cards={[k(2, 0), k(2, 3), k(2, 7), k(2, 5)]} bad={3} note={<span>7 다음에 5 <Icon name="x" /> — 이 카드는 버림 더미로</span>} />
+              <Column cards={[k(4, 4), k(4, 0)]} bad={1} note={<span>숫자 뒤에 투자 <Icon name="x" /></span>} />
             </div>
             <p className="muted small">설정의 "같은 숫자 이어 놓기 허용"을 켜면 같은 숫자도 놓을 수 있어요(4명용 2벌 덱에 추천).</p>
         </>
@@ -280,7 +281,7 @@ function sections(): GuideSection[] {
               </li>
               <li>놓을 수 없는 카드는 흐리게 보이고, 이유가 배너에 떠요.</li>
               <li>덱이나 빛나는 버림 더미를 눌러 가져오기.</li>
-              <li>😊 감정 표현은 덱 아래 · 방장은 "게임 중지"로 설정을 바꿔 이어서 할 수 있어요.</li>
+              <li><Icon name="smile" /> 감정 표현은 덱 아래 · 방장은 "게임 중지"로 설정을 바꿔 이어서 할 수 있어요.</li>
               <li>연결이 끊겨도 같은 기기로 다시 열면 그대로 돌아와요. 서버를 업데이트해도 게임은 이어져요.</li>
             </ul>
         </>

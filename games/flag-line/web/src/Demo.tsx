@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { iconize } from '@bg/ui';
 import { FlagIcon, Troop } from './theme';
 
 /** 첫 화면 시연: 파랑 8·9·10 쐐기 완성 → 깃발 차지 */
@@ -24,7 +25,7 @@ export function Demo() {
           <Troop key={v} color={3} value={v} size="sm" />
         ))}
       </div>
-      <div className="fl-demo-say">{step >= 4 ? '쐐기 완성! 상대는 못 이겨요 → 깃발 차지 🚩' : '같은 색 연속 숫자를 모아요…'}</div>
+      <div className="fl-demo-say">{step >= 4 ? iconize('쐐기 완성! 상대는 못 이겨요 → 깃발 차지 🚩') : '같은 색 연속 숫자를 모아요…'}</div>
     </div>
   );
 }

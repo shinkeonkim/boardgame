@@ -1,3 +1,4 @@
+import { Icon, type IconName } from './icons';
 import { ReactNode, useEffect, useRef, useState } from 'react';
 import { ThemeChoice, useTheme } from './theme';
 
@@ -6,10 +7,10 @@ import { ThemeChoice, useTheme } from './theme';
  * 목록과 쓰임새는 packages/ui/README.md, 실제 모습은 포털의 /design 페이지.
  */
 
-const THEME_OPTIONS: { value: ThemeChoice; icon: string; label: string }[] = [
-  { value: 'light', icon: '☀️', label: '라이트' },
-  { value: 'dark', icon: '🌙', label: '다크' },
-  { value: 'system', icon: '💻', label: '시스템' },
+const THEME_OPTIONS: { value: ThemeChoice; icon: IconName; label: string }[] = [
+  { value: 'light', icon: 'sun', label: '라이트' },
+  { value: 'dark', icon: 'moon', label: '다크' },
+  { value: 'system', icon: 'monitor', label: '시스템' },
 ];
 
 /** 테마 전환. variant="segmented"(메인 화면, 세 가지 다 보임) | "icon"(게임 상단 바, 눌러서 라이트↔다크) */
@@ -19,7 +20,7 @@ export function ThemeToggle({ variant = 'segmented', className = '' }: { variant
     const next = shown === 'dark' ? 'light' : 'dark';
     return (
       <button className={`btn ghost tiny theme-icon ${className}`} onClick={() => set(next)} aria-label={`${next === 'dark' ? '다크' : '라이트'} 모드로 바꾸기`} title="화면 밝기 바꾸기">
-        {shown === 'dark' ? '🌙' : '☀️'}
+        <Icon name={shown === 'dark' ? 'moon' : 'sun'} />
       </button>
     );
   }
@@ -27,7 +28,7 @@ export function ThemeToggle({ variant = 'segmented', className = '' }: { variant
     <div className={`segmented theme-toggle ${className}`} role="radiogroup" aria-label="화면 테마">
       {THEME_OPTIONS.map((o) => (
         <button key={o.value} role="radio" aria-checked={choice === o.value} className={choice === o.value ? 'on' : ''} onClick={() => set(o.value)} title={o.label}>
-          <span aria-hidden>{o.icon}</span>
+          <Icon name={o.icon} />
           <span className="seg-label">{o.label}</span>
         </button>
       ))}
@@ -134,7 +135,7 @@ export function Notice({ children, className = '' }: { children: ReactNode; clas
 }
 
 /** 눈에 띄는 경고 띠 (남은 돌·남은 덱 등). critical이면 빨간색·깜빡임 */
-export function AlertBanner({ icon = '⏳', title, children, sub, critical, compactKey }: { icon?: ReactNode; title: ReactNode; children?: ReactNode; sub?: ReactNode; critical?: boolean; compactKey?: string | number }) {
+export function AlertBanner({ icon = <Icon name="hourglass" />, title, children, sub, critical, compactKey }: { icon?: ReactNode; title: ReactNode; children?: ReactNode; sub?: ReactNode; critical?: boolean; compactKey?: string | number }) {
   return (
     <div className={`side-alert ${critical ? 'critical' : ''}`} role="status" key={compactKey}>
       <span className="sa-icon" aria-hidden>

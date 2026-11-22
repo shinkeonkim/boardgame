@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import type { RoomView } from '@bg/core';
 import { GameConfig, GameView, Key, LogEntry, clueProblem } from '@bg/cipher-ops-engine';
-import { AlertBanner, EmoteBubble } from '@bg/ui';
+import { AlertBanner, EmoteBubble, Icon, iconize } from '@bg/ui';
 import { GameScreenProps, ResultSheet, TableBanner, TableEmotes, TableLayout, TableTopBar, Ticker, emotesBySeat, usePeek, useTable, useLogSounds } from '@bg/web';
 import { TEAMS } from './theme';
 
@@ -120,10 +120,10 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
         return (
           <div key={seat} className={`co-member ${g.actors.includes(seat) ? 'acting' : ''}`}>
             <EmoteBubble e={bySeat.get(seat)} />
-            <span className="co-role">{seat === g.spymasters[team] ? '🕵️ 팀장' : '요원'}</span>
+            <span className="co-role">{seat === g.spymasters[team] ? iconize('🕵️ 팀장') : '요원'}</span>
             <b>{names[seat]}</b>
             {seat === me && <span className="tag mine">나</span>}
-            {m?.bot && <span className={`tag bot ${m.bot}`}>🤖</span>}
+            {m?.bot && <span className={`tag bot ${m.bot}`}><Icon name="bot" /></span>}
             {m && !m.connected && <span className="tag away-tag">끊김</span>}
           </div>
         );
@@ -134,7 +134,7 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
           .map((cl, i) => (
             <span key={i} className="co-clue" title={`${cl.hits.length}개 맞힘`}>
               {cl.word} <b>{countText(cl.count)}</b>
-              {cl.hits.length > 0 && <em>✓{cl.hits.length}</em>}
+              {cl.hits.length > 0 && <em><Icon name="check" />{cl.hits.length}</em>}
             </span>
           ))}
       </div>
@@ -160,7 +160,7 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
             <span className="red">
               {TEAMS[0].icon} {g.remaining[0]}
             </span>
-            <span className="muted small">{g.spymaster ? '🕵️ 팀장 화면 · 정답 지도가 보여요' : myTeam !== null ? `나는 ${TEAMS[myTeam].name} 요원` : '관전 중'}</span>
+            <span className="muted small">{g.spymaster ? iconize('🕵️ 팀장 화면 · 정답 지도가 보여요') : myTeam !== null ? `나는 ${TEAMS[myTeam].name} 요원` : '관전 중'}</span>
             <span className="blue">
               {g.remaining[1]} {TEAMS[1].icon}
             </span>
@@ -179,7 +179,7 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
                     disabled={open}
                   >
                     <span className="co-word">{w}</span>
-                    {g.key[i] === 'X' && (open || g.spymaster) && <span className="co-skull">💀</span>}
+                    {g.key[i] === 'X' && (open || g.spymaster) && <span className="co-skull"><Icon name="skull" /></span>}
                     {marks.length > 0 && !open && (
                       <span className="co-marks">
                         {marks.map((s) => (
@@ -225,7 +225,7 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
       }
       side={
         <>
-          {assassinNear && g.guessesLeft === 1 && <AlertBanner icon="🎯" title="마지막 한 번" sub="확실하지 않으면 「이번 차례 마치기」도 좋아요" />}
+          {assassinNear && g.guessesLeft === 1 && <AlertBanner icon={<Icon name="target" />} title="마지막 한 번" sub="확실하지 않으면 「이번 차례 마치기」도 좋아요" />}
           {teamPanel(0)}
           {teamPanel(1)}
           {g.log.length > 0 && (

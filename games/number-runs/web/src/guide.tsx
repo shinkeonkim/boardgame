@@ -1,4 +1,5 @@
 import { CLASSIC, tileTotal } from '@bg/number-runs-engine';
+import { Icon } from '@bg/ui';
 import { Clip, type GuideDef } from '@bg/web/guide-kit';
 import { Logo, TileFace } from './theme';
 
@@ -97,7 +98,7 @@ export const guide: GuideDef = {
       content: (
         <ul className="g-list">
           <li>타일을 눌러 고르고(여러 장 가능), 테이블의 묶음이나 「+ 새 묶음」을 누르면 옮겨져요.</li>
-          <li>틀린 묶음은 빨간 테두리와 ✕. 모두 맞으면 「내기」가 켜져요.</li>
+          <li>틀린 묶음은 빨간 테두리와 <Icon name="x" />. 모두 맞으면 「내기」가 켜져요.</li>
           <li>「되돌리기」로 처음 상태로, 「손으로」로 내 타일을 다시 손에.</li>
           <li>방금 낸 타일은 노란 테두리로 보여요.</li>
         </ul>

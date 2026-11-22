@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import type { RoomListing } from '@bg/core';
 import { ORIGINAL_NOTE, originalLabel } from '@bg/core';
-import { ThemeToggle } from '@bg/ui';
+import { ThemeToggle, Icon, iconize } from '@bg/ui';
 import { useGameClient } from './App';
 import { GuideButton } from './Guide';
 import { BASE, call, store } from './runtime';
@@ -52,7 +52,7 @@ export function HomeShell({ children }: { children: React.ReactNode }) {
           <Demo />
           <ul className="home-chips">
             {client.chips.map((c) => (
-              <li key={c}>{c}</li>
+              <li key={c}>{iconize(c)}</li>
             ))}
           </ul>
           <GuideButton className="btn guide-cta" label="게임 방법 보기" />
@@ -103,7 +103,7 @@ export function Home({ onEnter, flash }: { onEnter: (code: string) => void; flas
         <div className="entry create">
           <div className="entry-head">
             <span className="entry-icon" aria-hidden>
-              👑
+              <Icon name="crown" />
             </span>
             <div>
               <h3>새 방 만들기</h3>
@@ -124,7 +124,7 @@ export function Home({ onEnter, flash }: { onEnter: (code: string) => void; flas
         <div className="entry join">
           <div className="entry-head">
             <span className="entry-icon" aria-hidden>
-              🔑
+              <Icon name="key" />
             </span>
             <div>
               <h3>친구 방에 들어가기</h3>
@@ -194,7 +194,7 @@ function RoomList({ onPick }: { onPick: (code: string) => void }) {
                 <span className="code">{r.code}</span>
                 <span className="grow room-row-main">
                   <span className="room-row-host">
-                    {r.host} 님의 방 {r.hasPassword && <span aria-label="암호 걸린 방">🔒</span>}
+                    {r.host} 님의 방 {r.hasPassword && <Icon name="lock" title="암호 걸린 방" />}
                   </span>
                   <span className="muted small">
                     {r.state === 'playing' ? `게임 중 · ${r.round}/${r.rounds}판` : r.state === 'paused' ? '잠깐 멈춤' : '대기실'} · 플레이어 {r.players}/{r.maxPlayers}명

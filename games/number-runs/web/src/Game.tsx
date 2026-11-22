@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import type { RoomView } from '@bg/core';
 import { GameConfig, GameView, LogEntry, Tile, analyze, arrange, setValue, tableProblem } from '@bg/number-runs-engine';
-import { AlertBanner, seatColor } from '@bg/ui';
+import { AlertBanner, seatColor, Icon } from '@bg/ui';
 import { GameScreenProps, ResultSheet, fitZoom, SeatList, TableBanner, TableEmotes, TableLayout, TableTopBar, Ticker, rankOf, usePeek, useTable, SideNote, useLogSounds } from '@bg/web';
 import { TileFace } from './theme';
 
@@ -162,7 +162,7 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
                       }
                     />
                   ))}
-                  {!ok && <span className="nr-bad">✕</span>}
+                  {!ok && <span className="nr-bad"><Icon name="x" /></span>}
                 </div>
               );
             })}
@@ -223,7 +223,7 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
       }
       side={
         <>
-          {g.handCounts.some((n, i) => n <= 2 && i !== me) && g.status === 'playing' && <AlertBanner icon="⚠️" title="타일이 거의 없는 사람이 있어요" sub="곧 손을 비울지도 몰라요" />}
+          {g.handCounts.some((n, i) => n <= 2 && i !== me) && g.status === 'playing' && <AlertBanner icon={<Icon name="warning" />} title="타일이 거의 없는 사람이 있어요" sub="곧 손을 비울지도 몰라요" />}
           <SeatList
             t={t}
             view={view}

@@ -1,4 +1,5 @@
 import { DISH, Dish } from '@bg/pass-the-plate-engine';
+import { Icon } from '@bg/ui';
 import { Clip, type GuideDef } from '@bg/web/guide-kit';
 import { DishCard, Logo } from './theme';
 
@@ -90,7 +91,7 @@ export const guide: GuideDef = {
       content: (
         <ul className="g-list">
           <li>접시를 누르면 바로 골라져요. 공개 전에는 다른 접시로 바꿀 수 있어요.</li>
-          <li>젓가락이 있으면 「🥢 젓가락으로 2장」을 켜고 두 접시를 차례로 눌러요.</li>
+          <li>젓가락이 있으면 「<Icon name="chopsticks" /> 젓가락으로 2장」을 켜고 두 접시를 차례로 눌러요.</li>
           <li>「내가 먹은 접시」 옆 점수는 이번 판 지금까지(김밥은 지금 순위 기준)예요.</li>
           <li>오른쪽 목록에서 다른 사람이 무엇을 모으는지 보고 가로챌 수 있어요 — 어려움 봇이 그렇게 해요.</li>
         </ul>

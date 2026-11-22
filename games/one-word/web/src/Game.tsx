@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import type { RoomView } from '@bg/core';
 import { GameConfig, GameView, LogEntry } from '@bg/one-word-engine';
-import { SeatDot, seatColor } from '@bg/ui';
+import { SeatDot, seatColor, iconize } from '@bg/ui';
 import { GameScreenProps, ResultSheet, SeatList, SideNote, TableBanner, TableEmotes, TableLayout, TableTopBar, Ticker, useLogSounds, usePeek, useTable } from '@bg/web';
 import { ClueNote, WordCard } from './theme';
 
@@ -143,7 +143,7 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
             rows={Array.from({ length: g.players }, (_, seat) => ({
               seat,
               accent: seatColor(seat),
-              badge: seat === g.guesser ? <span className="tag results">맞히는 사람</span> : g.phase === 'clue' ? <span className={`tag ${g.clues.find((x) => x.seat === seat)?.done ? 'ready' : ''}`}>{g.clues.find((x) => x.seat === seat)?.done ? '썼어요 ✓' : '쓰는 중…'}</span> : null,
+              badge: seat === g.guesser ? <span className="tag results">맞히는 사람</span> : g.phase === 'clue' ? <span className={`tag ${g.clues.find((x) => x.seat === seat)?.done ? 'ready' : ''}`}>{g.clues.find((x) => x.seat === seat)?.done ? iconize('썼어요 ✓') : '쓰는 중…'}</span> : null,
             }))}
           />
           <SideNote title="지난 카드" className="ow-history">

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import type { RoomView } from '@bg/core';
 import { Cat, GameConfig, GameView, LogEntry, UPPER } from '@bg/yacht-engine';
-import { SeatDot, seatColor } from '@bg/ui';
+import { SeatDot, seatColor, Icon, iconize } from '@bg/ui';
 import { GameScreenProps, ResultSheet, SeatList, SideNote, TableBanner, TableEmotes, TableLayout, TableTopBar, Ticker, rankOf, useLogSounds, usePeek, useTable } from '@bg/web';
 import { CAT_INFO, Die } from './theme';
 
@@ -125,7 +125,7 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
             {me >= 0 && g.status === 'playing' && (focus === me || !together) && (
               <div className="action-row">
                 <button className="btn primary ya-roll" disabled={!myTurn || left <= 0} onClick={roll}>
-                  🎲 {mine!.rolled === 0 ? '주사위 굴리기' : `다시 굴리기 (${left}번 남음)`}
+                  <Icon name="dice" /> {mine!.rolled === 0 ? '주사위 굴리기' : `다시 굴리기 (${left}번 남음)`}
                 </button>
                 {canHold && <span className="small muted">주사위를 누르면 남겨 둬요</span>}
               </div>
@@ -192,7 +192,7 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
               accent: seatColor(seat),
               score: `${g.totals[seat]}점`,
               scoreLabel: '지금까지 점수 (지난 게임 포함)',
-              badge: together && g.status === 'playing' ? <span className={`tag ${g.actors.includes(seat) ? '' : 'ready'}`}>{g.actors.includes(seat) ? '굴리는 중…' : '적었어요 ✓'}</span> : null,
+              badge: together && g.status === 'playing' ? <span className={`tag ${g.actors.includes(seat) ? '' : 'ready'}`}>{g.actors.includes(seat) ? '굴리는 중…' : iconize('적었어요 ✓')}</span> : null,
               children: (
                 <span className="ya-mini">
                   {s.dice.map((d, i) => (

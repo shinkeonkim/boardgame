@@ -1,4 +1,5 @@
 import { PointerEvent, useEffect, useRef, useState } from 'react';
+import { Icon } from '@bg/ui';
 import { Move, PALETTE, SIZES, Stroke, decodePts } from '@bg/sketch-quiz-engine';
 import { H, W, drawStroke } from './theme';
 
@@ -115,13 +116,13 @@ export function Board({ strokes, canDraw, send }: { strokes: Stroke[]; canDraw: 
           </span>
           <span className="row tight">
             <button className={`btn tiny ${eraser ? 'primary' : ''}`} onClick={() => setEraser((x) => !x)}>
-              🧽 지우개
+              <Icon name="eraser" /> 지우개
             </button>
             <button className="btn tiny" onClick={() => send({ type: 'undo' })} disabled={!strokes.length}>
-              ↶ 되돌리기
+              <Icon name="undo" /> 되돌리기
             </button>
             <button className="btn tiny" onClick={() => send({ type: 'clear' })} disabled={!strokes.length}>
-              🗑 모두 지우기
+              <Icon name="trash" /> 모두 지우기
             </button>
           </span>
         </div>

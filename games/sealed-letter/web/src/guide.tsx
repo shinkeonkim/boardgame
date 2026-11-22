@@ -1,4 +1,5 @@
 import { CARD_DEFS, deckSpec } from '@bg/sealed-letter-engine';
+import { Icon } from '@bg/ui';
 import { Clip, type GuideDef } from '@bg/web/guide-kit';
 import { LetterCard, Logo } from './theme';
 
@@ -112,7 +113,7 @@ export const guide: GuideDef = {
       content: (
         <ul className="g-list">
           <li>카드를 누르면 효과가 보이고, 지목할 사람(보호 중인 사람은 빠짐)과 파수꾼 추측을 고른 뒤 「내기」.</li>
-          <li>오른쪽 목록에 각자 낸 카드가 쌓여요. 👁 표시는 점술가·결투·재상으로 내가 알게 된 카드예요.</li>
+          <li>오른쪽 목록에 각자 낸 카드가 쌓여요. <Icon name="eye" /> 표시는 점술가·결투·재상으로 내가 알게 된 카드예요.</li>
           <li>「카드 목록」을 펼치면 남은 장수를 셀 수 있어요. 봇(어려움)은 버려진 카드를 세서 추측해요.</li>
         </ul>
       ),

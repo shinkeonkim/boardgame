@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import type { RoomView } from '@bg/core';
 import { CARD_DEFS, GameConfig, GameView, Kind, LogEntry, deckSpec } from '@bg/sealed-letter-engine';
-import { AlertBanner, SeatDot, seatColor } from '@bg/ui';
+import { AlertBanner, SeatDot, seatColor, Icon, iconize } from '@bg/ui';
 import { GameScreenProps, ResultSheet, SeatList, TableBanner, TableEmotes, TableLayout, TableTopBar, Ticker, rankOf, usePeek, useTable, useLogSounds } from '@bg/web';
 import { CardBackMini, LetterCard, Seal } from './theme';
 
@@ -148,7 +148,7 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
             <section className="hand-panel" aria-label="내 카드">
               <div className="hand-panel-head small">
                 <span>
-                  <SeatDot seat={me} size={14} /> 내 카드{g.protectedSeats[me] ? ' · 🛡️ 보호 중' : ''}
+                  <SeatDot seat={me} size={14} /> 내 카드{g.protectedSeats[me] ? iconize(' · 🛡️ 보호 중') : ''}
                 </span>
               </div>
               <div className="hand-row">
@@ -194,13 +194,13 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
               )}
             </section>
           )}
-          {me >= 0 && !g.alive[me] && g.status === 'playing' && <p className="muted center">이번 판은 탈락했어요. 다음 판을 기다려요 ✉️</p>}
+          {me >= 0 && !g.alive[me] && g.status === 'playing' && <p className="muted center">이번 판은 탈락했어요. 다음 판을 기다려요 <Icon name="mail" /></p>}
           <Ticker text={describe(g.log[g.log.length - 1], names)} />
         </>
       }
       side={
         <>
-          {me >= 0 && g.hand.some((h) => h.kind === 'queen') && g.status === 'playing' && <AlertBanner icon="👑" title="여왕을 들고 있어요" sub="여왕을 내거나 버리게 되면 탈락해요. 사절을 조심!" />}
+          {me >= 0 && g.hand.some((h) => h.kind === 'queen') && g.status === 'playing' && <AlertBanner icon={<Icon name="crown" />} title="여왕을 들고 있어요" sub="여왕을 내거나 버리게 되면 탈락해요. 사절을 조심!" />}
           <SeatList
             t={t}
             view={view}
@@ -216,12 +216,12 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
                   ))}
                 </span>
               ),
-              badge: !alive ? <span className="tag">탈락</span> : g.protectedSeats[seat] ? <span className="tag ready">🛡️ 보호</span> : null,
+              badge: !alive ? <span className="tag">탈락</span> : g.protectedSeats[seat] ? <span className="tag ready"><Icon name="shield" /> 보호</span> : null,
               children: (
                 <>
                   {g.known[seat] && (
                     <span className="sl-known" title="내가 아는 이 사람의 카드">
-                      👁 <LetterCard kind={g.known[seat]!.kind} value={g.known[seat]!.value} size="xs" />
+                      <Icon name="eye" /> <LetterCard kind={g.known[seat]!.kind} value={g.known[seat]!.value} size="xs" />
                     </span>
                   )}
                   <span className="sl-discards">

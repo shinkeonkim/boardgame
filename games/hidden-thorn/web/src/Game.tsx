@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import type { RoomView } from '@bg/core';
 import { Disc, GameConfig, GameView, LogEntry } from '@bg/hidden-thorn-engine';
-import { AlertBanner, EmoteBubble, SeatDot, seatColor } from '@bg/ui';
+import { AlertBanner, EmoteBubble, SeatDot, seatColor, Icon, iconize } from '@bg/ui';
 import { GameScreenProps, ResultSheet, TableBanner, TableEmotes, TableLayout, TableTopBar, Ticker, emotesBySeat, rankOf, usePeek, useTable, waitingText, SideNote, useLogSounds, useChangeSound } from '@bg/web';
 import { DiscView } from './theme';
 
@@ -105,7 +105,7 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
                     <span className="seat-name">
                       <EmoteBubble e={bySeat.get(s)} />
                       <b>{names[s]}</b>
-                      {m?.bot && <span className={`tag bot ${m.bot}`}>🤖</span>}
+                      {m?.bot && <span className={`tag bot ${m.bot}`}><Icon name="bot" /></span>}
                       {g.passed.includes(s) && g.phase === 'bidding' && <span className="tag">포기</span>}
                     </span>
                     <span className="ht-points" title="성공 횟수">
@@ -124,7 +124,7 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
                         // 뒤집히면 key가 바뀌어 뒤집히는 움직임이 한 번 나온다
                         <span key={`${i}-${flipped ?? 'x'}`} data-flip={`ht${s}-${i}`} className={`ht-slot ${own && !flipped ? 'peek' : ''} ${flipped ? 'flipped' : ''}`} style={{ ['--i' as string]: i }}>
                           <DiscView disc={flipped ?? (own && g.status !== 'playing' ? own : flipped ?? null)} seat={s} size={44} />
-                          {own && !flipped && <span className="ht-peek">{own === 'rose' ? '🌹' : '🌵'}</span>}
+                          {own && !flipped && <span className="ht-peek">{own === 'rose' ? iconize('🌹') : iconize('🌵')}</span>}
                         </span>
                       );
                     })}
@@ -140,7 +140,7 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
             <section className="hand-panel" aria-label="내 원판">
               <div className="hand-panel-head small">
                 <span>
-                  <SeatDot seat={me} size={14} /> 내 손의 원판 {g.hand.length}개 · 가진 원판 {g.myOwned.map((d) => (d === 'rose' ? '🌹' : '🌵')).join('')}
+                  <SeatDot seat={me} size={14} /> 내 손의 원판 {g.hand.length}개 · 가진 원판 {g.myOwned.map((d, i) => (d === 'rose' ? <Icon key={i} name="rose" color="#c0392b" /> : <Icon key={i} name="cactus" color="#2e8b57" />))}
                 </span>
               </div>
               {(g.phase === 'open' || g.phase === 'turn') && (
@@ -196,7 +196,7 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
       }
       side={
         <>
-          {me >= 0 && g.ownedCounts[me] === 1 && g.status === 'playing' && <AlertBanner icon="⚠️" title="원판이 하나 남았어요" critical sub="한 번 더 찔리면 탈락이에요" />}
+          {me >= 0 && g.ownedCounts[me] === 1 && g.status === 'playing' && <AlertBanner icon={<Icon name="warning" />} title="원판이 하나 남았어요" critical sub="한 번 더 찔리면 탈락이에요" />}
           <SideNote title="규칙 요약" className="ht-ref">
             <div>· 처음엔 모두 한 장씩 몰래 놓아요</div>
             <div>· 차례에 한 장 더 놓거나 「몇 장 뒤집을게」 도전</div>

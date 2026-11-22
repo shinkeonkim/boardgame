@@ -1,5 +1,5 @@
 import type { DevCard, Noble } from '@bg/gem-guild-engine';
-import { ChipSvg, CountBadge } from '@bg/ui';
+import { ChipSvg, CountBadge, Icon } from '@bg/ui';
 
 export const GEM_INFO = [
   { name: '다이아몬드', short: '흰', fill: '#f4f4f6', ink: '#333', stroke: '#b9bcc6' },
@@ -135,7 +135,7 @@ export function NobleView({ noble, onClick, size = 'md' }: { noble: Noble; onCli
     <Tag className={`noble pc light ${size}`} onClick={onClick} aria-label={`귀족 ${noble.points}점`}>
       <b>{noble.points}</b>
       <span className="noble-icon" aria-hidden>
-        🎩
+        <Icon name="hat" />
       </span>
       <span className="noble-need">
         {noble.need.map((n, i) =>

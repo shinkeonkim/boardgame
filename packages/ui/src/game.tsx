@@ -1,3 +1,4 @@
+import { Icon } from './icons';
 import { CSSProperties, ReactNode, createContext, useContext, useEffect, useRef, useState } from 'react';
 import { BASE_EMOTES, EmoteDef, EmoteEvent } from '@bg/core';
 
@@ -34,7 +35,7 @@ export function EmoteButton({ onSend, small }: { onSend: (id: string) => void; s
   return (
     <div className="emote-wrap" ref={wrap}>
       <button className={`btn ghost ${small ? 'tiny' : ''} emote-toggle`} aria-expanded={open} aria-label="감정 표현 보내기" onClick={() => setOpen((v) => !v)}>
-        😊
+        <Icon name="smile" />
       </button>
       {open && (
         <div className="emote-palette" role="menu">

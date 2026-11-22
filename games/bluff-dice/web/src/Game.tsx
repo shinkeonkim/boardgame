@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import type { RoomView } from '@bg/core';
 import { GameConfig, GameView, LogEntry, ga, myeon } from '@bg/bluff-dice-engine';
-import { AlertBanner, SeatDot, seatColor } from '@bg/ui';
+import { AlertBanner, SeatDot, seatColor, Icon } from '@bg/ui';
 import { GameScreenProps, ResultSheet, SeatList, TableBanner, TableEmotes, TableLayout, TableTopBar, Ticker, rankOf, usePeek, useTable, useLogSounds, useChangeSound } from '@bg/web';
 import { Cup, Die } from './theme';
 
@@ -215,20 +215,20 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
                 myTurn && (
                   <div className="action-row">
                     <button className="btn primary" onClick={() => act('move', { move: { type: 'roll' } })}>
-                      🎲 주사위 굴리기
+                      <Icon name="dice" /> 주사위 굴리기
                     </button>
                   </div>
                 )
               )}
             </section>
           )}
-          {me >= 0 && g.counts[me] === 0 && g.status === 'playing' && <p className="muted center">주사위를 모두 잃었어요. 남은 사람들의 승부를 지켜봐요 👀</p>}
+          {me >= 0 && g.counts[me] === 0 && g.status === 'playing' && <p className="muted center">주사위를 모두 잃었어요. 남은 사람들의 승부를 지켜봐요 <Icon name="eye" /></p>}
           <Ticker text={describe(g.log[g.log.length - 1], names)} />
         </>
       }
       side={
         <>
-          {me >= 0 && g.counts[me] === 1 && g.status === 'playing' && <AlertBanner icon="🎲" title="주사위가 하나 남았어요" critical sub="한 번만 더 지면 탈락이에요" />}
+          {me >= 0 && g.counts[me] === 1 && g.status === 'playing' && <AlertBanner icon={<Icon name="dice" />} title="주사위가 하나 남았어요" critical sub="한 번만 더 지면 탈락이에요" />}
           <SeatList
             t={t}
             view={view}

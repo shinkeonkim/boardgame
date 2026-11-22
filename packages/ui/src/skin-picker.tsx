@@ -1,3 +1,4 @@
+import { Icon } from './icons';
 import { CSSProperties, useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Modal } from './components';
@@ -43,9 +44,11 @@ export function SkinPicker({ onClose }: { onClose: () => void }) {
   return (
     <Modal onClose={onClose} label="카드 꾸미기" className="skin-sheet">
       <div className="skin-head">
-        <h3>🎨 카드 꾸미기</h3>
+        <h3>
+          <Icon name="palette" /> 카드 꾸미기
+        </h3>
         <button className="btn ghost tiny" onClick={onClose} aria-label="닫기">
-          ✕
+          <Icon name="x" />
         </button>
       </div>
       <p className="small muted">모든 게임에 함께 적용되고, 이 기기에만 저장돼요. 다른 사람 화면은 바뀌지 않아요.</p>
@@ -78,7 +81,7 @@ export function SkinButton({ className = 'btn ghost tiny' }: { className?: strin
   return (
     <>
       <button className={className} onClick={() => setOpen(true)} aria-label="카드 꾸미기" title="카드 꾸미기">
-        🎨
+        <Icon name="palette" />
       </button>
       {/* 게임 화면(배율·움직임 레이어) 밖, 문서 맨 위에 띄운다 */}
       {open && createPortal(<SkinPicker onClose={() => setOpen(false)} />, document.body)}

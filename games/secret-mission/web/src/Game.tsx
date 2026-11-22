@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import type { RoomView } from '@bg/core';
 import { GameConfig, GameView, LogEntry, ROLES_ORDER, TEAM_SIZES, failsNeeded, isSpy } from '@bg/secret-mission-engine';
-import { EmoteBubble, SeatDot, seatColor } from '@bg/ui';
+import { EmoteBubble, SeatDot, seatColor, Icon, iconize } from '@bg/ui';
 import { GameScreenProps, ResultSheet, SideNote, TableBanner, TableEmotes, TableLayout, TableTopBar, Ticker, emotesBySeat, rankOf, useLogSounds, usePeek, useTable } from '@bg/web';
 import { ROLE_INFO, RoleCard, TokenCard } from './theme';
 
@@ -100,8 +100,8 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
               <div className="sm-track" aria-label="원정 기록">
                 {sizes.map((n, i) => (
                   <span key={i} className={`sm-mission ${g.results[i] === true ? 'win' : g.results[i] === false ? 'lose' : ''} ${i === g.mission && g.status === 'playing' ? 'now' : ''}`} title={`${i + 1}번째 원정 · ${n}명${failsNeeded(g.players, i) > 1 ? ' · 실패 2장 필요' : ''}`}>
-                    <b>{g.results[i] === true ? '✔' : g.results[i] === false ? '✖' : n}</b>
-                    {failsNeeded(g.players, i) > 1 && <small>✖✖</small>}
+                    <b>{g.results[i] === true ? iconize('✔') : g.results[i] === false ? iconize('✖') : n}</b>
+                    {failsNeeded(g.players, i) > 1 && <small><Icon name="x" /><Icon name="x" /></small>}
                   </span>
                 ))}
               </div>
@@ -133,14 +133,14 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
                   aria-label={`${names[s]}${onTeam ? ', 원정대' : ''}`}
                 >
                   <EmoteBubble e={bySeat.get(s)} />
-                  {g.leader === s && g.status === 'playing' && <span className="sm-crown" title="대장">👑</span>}
+                  {g.leader === s && g.status === 'playing' && <span className="sm-crown" title="대장"><Icon name="crown" /></span>}
                   <span className="sm-seat-name">
                     {names[s]}
-                    {m?.bot && ' 🤖'}
+                    {m?.bot && iconize(' 🤖')}
                   </span>
                   {role ? <span className="sm-tag">{ROLE_INFO[role].name}</span> : known === 'spy' ? <span className="sm-tag spy">첩자</span> : known === 'seer' ? <span className="sm-tag seer">예언자?</span> : null}
                   {onTeam && <span className="sm-badge">원정대</span>}
-                  {g.phase === 'vote' && <span className={`sm-voted ${g.voted[s] ? 'done' : ''}`}>{g.voted[s] ? '✓' : '…'}</span>}
+                  {g.phase === 'vote' && <span className={`sm-voted ${g.voted[s] ? 'done' : ''}`}>{g.voted[s] ? iconize('✓') : '…'}</span>}
                   {vote !== null && vote !== undefined && <span className={`sm-vote ${vote ? 'yes' : 'no'}`}>{vote ? '찬성' : '반대'}</span>}
                 </button>
               );
@@ -205,7 +205,7 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
                 </span>
                 <span className="sm-hist-team">{h.team.map((s) => names[s]).join(', ')}</span>
                 <span>
-                  {h.approved ? (h.fails === null ? '출발' : h.fails > 0 ? `실패 ✖${h.fails}` : '성공 ✔') : '부결'} · 찬성 {h.yes}
+                  {h.approved ? (h.fails === null ? '출발' : h.fails > 0 ? iconize(`실패 ✖${h.fails}`) : iconize('성공 ✔')) : '부결'} · 찬성 {h.yes}
                   {h.votes && (
                     <span className="muted">
                       {' '}

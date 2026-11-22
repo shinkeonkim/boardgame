@@ -1,7 +1,7 @@
 import { forwardRef, useEffect, useMemo, useRef, useState } from 'react';
 import type { EmoteEvent, RoomView } from '@bg/core';
 import { Card, GameConfig, GameView, LogEntry, canPlayOnExpedition, playBlockReason, scoreColumn, scorePlayer, teamOf } from '@bg/expedition-lines-engine';
-import { AlertBanner, EmoteBubble, EmoteButton, EmoteFeed, ThemeToggle, TurnBanner as BannerFrame, TurnSplash, TurnSteps, TurnTimer, useCountdown } from '@bg/ui';
+import { AlertBanner, EmoteBubble, EmoteButton, EmoteFeed, ThemeToggle, TurnBanner as BannerFrame, TurnSplash, TurnSteps, TurnTimer, useCountdown, iconize } from '@bg/ui';
 import { CloseRoomButton, GameScreenProps, GuideButton, StopGameButton, sound, useFitZoom, useLogSounds } from '@bg/web';
 import { Glyph, SUITS, cardLabel, suitVars } from './theme';
 import { CardBack, CardFace } from './cards';
@@ -283,7 +283,7 @@ export function Game({
         </div>
         <div className="small right">
           <button className="btn ghost tiny" aria-label={muted ? '소리 켜기' : '소리 끄기'} onClick={() => sound.setMuted(!muted)}>
-            {muted ? '🔕' : '🔔'}
+            {muted ? iconize('🔕') : iconize('🔔')}
           </button>
           {view.hostId === view.you && g.status !== 'match-over' && <StopGameButton act={act} small />}
           {view.hostId === view.you && <CloseRoomButton act={act} small />}

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import QRCode from 'qrcode';
 import { BOT_LEVELS, BotLevel, EmoteEvent, RoomView, botLevelLabel } from '@bg/core';
-import { ConfirmButton, EmoteBubble, EmoteButton, EmoteFeed, Notice, ThemeToggle, Toggle } from '@bg/ui';
+import { ConfirmButton, EmoteBubble, EmoteButton, EmoteFeed, Notice, ThemeToggle, Toggle, Icon } from '@bg/ui';
 import { useGameClient } from './App';
 import type { Act } from './client';
 import { GuideButton } from './Guide';
@@ -64,7 +64,7 @@ export function Lobby({ view, act, onLeave, emotes, onEmote }: { view: RoomView;
       </header>
       {view.lobby.inResults.length > 0 && (
         <Notice>
-          🏁 <b>{view.lobby.inResults.join(', ')}</b> 님이 아직 결과를 보고 있어요. 대기실로 돌아오면 함께 시작할 수 있어요.
+          <Icon name="flag" /> <b>{view.lobby.inResults.join(', ')}</b> 님이 아직 결과를 보고 있어요. 대기실로 돌아오면 함께 시작할 수 있어요.
         </Notice>
       )}
       {view.lobby.paused && <PausedNotice view={view} isHost={isHost} />}
@@ -87,7 +87,9 @@ export function Lobby({ view, act, onLeave, emotes, onEmote }: { view: RoomView;
                   <EmoteBubble e={emoteOf(m.id)} />
                   {m.name}
                   {client.seatLabel && <span className="muted small">{client.seatLabel(i)}</span>}
-                  {m.bot && <span className={`tag bot ${m.bot}`}>🤖 {botLevelLabel(m.bot)}</span>}
+                  {m.bot && <span className={`tag bot ${m.bot}`}>
+                    <Icon name="bot" /> {botLevelLabel(m.bot)}
+                  </span>}
                   {m.isHost && <span className="tag">방장</span>}
                   {m.id === view.you && <span className="tag mine">나</span>}
                   {teams && <span className="tag">{i % 2 === 0 ? 'A팀' : 'B팀'}</span>}
@@ -114,7 +116,7 @@ export function Lobby({ view, act, onLeave, emotes, onEmote }: { view: RoomView;
                     </button>
                     {m.id !== view.you && (
                       <button className="icon-btn" aria-label={m.bot ? '봇 빼기' : '내보내기'} onClick={() => act('kick', { id: m.id })}>
-                        ✕
+                        <Icon name="x" />
                       </button>
                     )}
                   </span>
@@ -187,7 +189,7 @@ function AddBot({ act }: { act: Act }) {
   return (
     <div className="bot-add">
       <div className="bot-add-head">
-        <span aria-hidden>🤖</span> <b>빈자리에 봇 넣기</b>
+        <Icon name="bot" /> <b>빈자리에 봇 넣기</b>
         <span className="muted small"> · 사람이 모자랄 때 함께해요</span>
       </div>
       <div className="row tight">
@@ -220,7 +222,7 @@ function PausedNotice({ view, isHost }: { view: RoomView; isHost: boolean }) {
   return (
     <Notice className="paused-notice">
       <div>
-        ⏸ 방장이 게임을 멈췄어요 · <b>
+        <Icon name="pause" /> 방장이 게임을 멈췄어요 · <b>
           {p.round}/{p.rounds}판
         </b>
         {p.roundOver ? ' 끝난 뒤' : ' 하는 중'} ·{' '}
@@ -291,7 +293,9 @@ function ShareBox({ view, isHost, act }: { view: RoomView; isHost: boolean; act:
         </button>
       </div>
       <div className="pw-row small">
-        {view.hasPassword ? <span>🔒 암호 걸린 방</span> : <span className="muted">암호 없이 링크만 있으면 들어올 수 있어요</span>}
+        {view.hasPassword ? <span>
+              <Icon name="lock" /> 암호 걸린 방
+            </span> : <span className="muted">암호 없이 링크만 있으면 들어올 수 있어요</span>}
         {view.hasPassword && savedPw && (
           <label className="check">
             <input type="checkbox" checked={includePw} onChange={(e) => setIncludePw(e.target.checked)} /> QR과 링크에 암호 넣기

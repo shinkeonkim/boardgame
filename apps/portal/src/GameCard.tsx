@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Icon } from '@bg/ui';
 import type { GameMeta } from '@bg/core';
 import { TAG_LABELS } from '@bg/core';
 import { minutesText, playersText, weightText } from './catalog';
@@ -37,9 +38,15 @@ export function GameIcon({ game, size = 40 }: { game: GameMeta; size?: number })
 export function GameStats({ game }: { game: GameMeta }) {
   return (
     <ul className="game-stats">
-      <li title="인원">👥 {playersText(game)}</li>
-      <li title="걸리는 시간">⏱ {minutesText(game)}</li>
-      <li title="난이도">⚖️ {weightText(game)}</li>
+      <li title="인원">
+          <Icon name="users" /> {playersText(game)}
+        </li>
+      <li title="걸리는 시간">
+          <Icon name="timer" /> {minutesText(game)}
+        </li>
+      <li title="난이도">
+          <Icon name="scale" /> {weightText(game)}
+        </li>
     </ul>
   );
 }

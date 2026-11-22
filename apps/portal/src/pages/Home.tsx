@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { iconize } from '@bg/ui';
 import { TAG_LABELS, searchGames } from '@bg/core';
 import { GAMES } from '../catalog';
 import { GameCard } from '../GameCard';
@@ -42,7 +43,7 @@ export function HomePage() {
           <div className="quick-chips">
             {QUICK.map((c) => (
               <Link key={c.href} href={c.href} className="chip">
-                {c.label}
+                {iconize(c.label)}
               </Link>
             ))}
           </div>

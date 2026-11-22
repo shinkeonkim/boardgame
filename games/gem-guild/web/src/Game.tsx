@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import type { RoomView } from '@bg/core';
 import { DevCard, GameConfig, GameView, LogEntry } from '@bg/gem-guild-engine';
-import { AlertBanner, SeatDot, seatColor } from '@bg/ui';
+import { AlertBanner, SeatDot, seatColor, Icon, iconize } from '@bg/ui';
 import { GameScreenProps, ResultSheet, SeatList, TableBanner, TableEmotes, TableLayout, TableTopBar, Ticker, rankOf, usePeek, useTable, useLogSounds } from '@bg/web';
 import { DevCardView, GEM_INFO, GemToken, NobleView } from './theme';
 
@@ -118,7 +118,7 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
           {myTurn && card && g.phase === 'turn' && (
             <div className="action-row">
               <button className="btn primary" disabled={!g.affordable.includes(card.id)} onClick={() => act('move', { move: { type: 'buy', cardId: card.id } })}>
-                💎 사기
+                <Icon name="gem" /> 사기
               </button>
               {g.market.flat().some((x) => x.id === card.id) && (
                 <button className="btn" disabled={(mine?.reservedCount ?? 0) >= c.maxReserve} onClick={() => act('move', { move: { type: 'reserve', cardId: card.id } })}>
@@ -201,7 +201,7 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
       }
       side={
         <>
-          {g.finalRound && g.status === 'playing' && <AlertBanner icon="🏁" title="마지막 바퀴" critical sub={`누군가 ${c.winPoints}점에 닿았어요. 첫 사람 차례 전까지 하고 끝나요`} />}
+          {g.finalRound && g.status === 'playing' && <AlertBanner icon={<Icon name="flag" />} title="마지막 바퀴" critical sub={`누군가 ${c.winPoints}점에 닿았어요. 첫 사람 차례 전까지 하고 끝나요`} />}
           <SeatList
             t={t}
             view={view}
@@ -225,7 +225,7 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
                   </span>
                   <span className="muted">
                     예약 {s.reservedCount}
-                    {s.nobles.length ? ` · 🎩${s.nobles.length}` : ''}
+                    {s.nobles.length ? iconize(` · 🎩${s.nobles.length}`) : ''}
                   </span>
                 </span>
               ),

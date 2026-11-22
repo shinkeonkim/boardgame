@@ -1,4 +1,5 @@
 import { ACTION_DEFS, ActionKind, CLASSIC, ROLE_DEFS, ROLES } from '@bg/court-intrigue-engine';
+import { Icon, iconize } from '@bg/ui';
 import { Clip, type GuideDef } from '@bg/web/guide-kit';
 import { Logo, RoleCard } from './theme';
 
@@ -29,7 +30,7 @@ export const guide: GuideDef = {
               <div className="small">
                 <b>{ROLE_DEFS[r].name}</b>
                 <div>{ROLE_DEFS[r].action !== '—' ? ROLE_DEFS[r].action : '행동 없음'}</div>
-                <div className="muted">{ROLE_DEFS[r].block !== '—' ? `🚫 ${ROLE_DEFS[r].block}` : ''}</div>
+                <div className="muted">{ROLE_DEFS[r].block !== '—' ? iconize(`🚫 ${ROLE_DEFS[r].block}`) : ''}</div>
               </div>
             </div>
           ))}
@@ -109,7 +110,7 @@ export const guide: GuideDef = {
       content: (
         <ul className="g-list">
           <li>행동 버튼에 필요한 역할이 적혀 있어요. 그 카드가 없으면 「허풍」 표시가 붙어요.</li>
-          <li>도전·막기 창에서는 「도전!」·「막기」·「통과」 버튼이 떠요. 이미 통과한 사람은 ✓.</li>
+          <li>도전·막기 창에서는 「도전!」·「막기」·「통과」 버튼이 떠요. 이미 통과한 사람은 <Icon name="check" />.</li>
           <li>봇은 공개된 카드를 세서 거짓말 확률을 계산해요. 어려움은 허풍도 섞어요.</li>
         </ul>
       ),

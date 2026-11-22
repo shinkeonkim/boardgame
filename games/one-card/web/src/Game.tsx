@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import type { RoomView } from '@bg/core';
 import { Card, GameConfig, GameView, LogEntry } from '@bg/one-card-engine';
-import { EmoteBubble, SeatDot, seatColor } from '@bg/ui';
+import { EmoteBubble, SeatDot, seatColor, iconize } from '@bg/ui';
 import { GameScreenProps, ResultSheet, SideNote, TableBanner, TableEmotes, TableLayout, TableTopBar, Ticker, emotesBySeat, rankOf, useLogSounds, usePeek, useTable } from '@bg/web';
 import { CardBack, PlayingCard, SUITS, SUIT_NAMES, cardName, isRed } from './theme';
 
@@ -100,7 +100,7 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
                   <span className="oc-opp-name">
                     <EmoteBubble e={bySeat.get(s)} />
                     <SeatDot seat={s} size={11} /> <b>{names[s]}</b>
-                    {m?.bot && ' 🤖'}
+                    {m?.bot && iconize(' 🤖')}
                   </span>
                   <span className="oc-opp-hand" aria-label={`카드 ${n}장`}>
                     {Array.from({ length: Math.min(n, 10) }, (_, i) => (
@@ -141,7 +141,7 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
               {g.callWaiting.includes(me) ? (
                 <>
                   <button className={`btn oc-call-btn ${iAmCalled ? 'mine' : 'catch'}`} onClick={() => act('move', { move: { type: 'call' } })}>
-                    {iAmCalled ? '☝️ 원카드!' : '🖐 잡았다!'}
+                    {iAmCalled ? iconize('☝️ 원카드!') : iconize('🖐 잡았다!')}
                   </button>
                   <button className="btn ghost small" onClick={() => act('move', { move: { type: 'pass' } })}>
                     넘기기

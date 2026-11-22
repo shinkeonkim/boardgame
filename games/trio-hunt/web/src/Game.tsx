@@ -1,6 +1,6 @@
 import type { RoomView } from '@bg/core';
 import { Flip, GameConfig, GameView, LogEntry, Move } from '@bg/trio-hunt-engine';
-import { EmoteBubble, SeatDot, seatColor } from '@bg/ui';
+import { EmoteBubble, SeatDot, seatColor, Icon, iconize } from '@bg/ui';
 import { GameScreenProps, ResultSheet, SideNote, TableBanner, TableEmotes, TableLayout, TableTopBar, Ticker, emotesBySeat, rankOf, useLogSounds, usePeek, useTable } from '@bg/web';
 import { TrioCard } from './theme';
 
@@ -57,7 +57,7 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
           <span className="seat-name">
             <EmoteBubble e={bySeat.get(s)} />
             <SeatDot seat={s} size={11} /> <b>{mine ? '나' : names[s]}</b>
-            {view.members.find((x) => x.seat === s)?.bot && ' 🤖'}
+            {view.members.find((x) => x.seat === s)?.bot && iconize(' 🤖')}
           </span>
           <span className="th-trios">
             {g.trios[s].map((n, i) => (
@@ -94,7 +94,7 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
           })}
           {myTurn && h.highId && h.highId !== h.lowId && (
             <button className="th-end" onClick={() => reveal({ type: 'reveal', seat: s, end: 'high' })} title="가장 큰 카드 뒤집기">
-              큰 ▶
+              큰 <Icon name="play" />
             </button>
           )}
         </div>

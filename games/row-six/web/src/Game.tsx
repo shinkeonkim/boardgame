@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import type { RoomView } from '@bg/core';
 import { GameConfig, GameView, LogEntry } from '@bg/row-six-engine';
-import { AlertBanner, SeatDot, seatColor } from '@bg/ui';
+import { AlertBanner, SeatDot, seatColor, Icon, iconize } from '@bg/ui';
 import {
   GameScreenProps,
   ResultSheet,
@@ -182,7 +182,7 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
                       );
                     })}
                     <span className="slot danger" title={`${c.rowLimit + 1}번째 카드는 줄을 가져가요`}>
-                      {willTake && focus !== null ? <NumberCard n={focus} flat={flat} size="md" className="ghost" /> : <span>✋</span>}
+                      {willTake && focus !== null ? <NumberCard n={focus} flat={flat} size="md" className="ghost" /> : <span><Icon name="hand" /></span>}
                     </span>
                   </div>
                   {choosing && <span className="take-hint">이 줄 가져가기 · 벌점 {g.rowPenalties[i]}</span>}
@@ -254,7 +254,7 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
         <>
           {danger.length > 0 && g.status === 'playing' && (
             <AlertBanner
-              icon="⚠️"
+              icon={<Icon name="warning" />}
               title={`${names[danger[0].seat]} 님이 ${c.target}점까지 ${Math.max(0, danger[0].left)}점`}
               critical={danger[0].left <= 5}
               compactKey={danger[0].left}
@@ -276,7 +276,7 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
                     +{rp.pop.pen} 벌점
                   </span>
                 ) : g.status === 'playing' && g.phase === 'pick' ? (
-                  <span className={`tag ${pk ? 'ready' : ''}`}>{pk ? '골랐어요 ✓' : '고르는 중…'}</span>
+                  <span className={`tag ${pk ? 'ready' : ''}`}>{pk ? iconize('골랐어요 ✓') : '고르는 중…'}</span>
                 ) : g.chooser === seat ? (
                   <span className="tag results">줄 고르는 중</span>
                 ) : null,

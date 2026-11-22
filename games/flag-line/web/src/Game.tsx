@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import type { RoomView } from '@bg/core';
 import { FORMATIONS, GameConfig, GameView, LogEntry, Side, formationRank } from '@bg/flag-line-engine';
-import { EmoteBubble, SeatDot } from '@bg/ui';
+import { EmoteBubble, SeatDot, Icon } from '@bg/ui';
 import { GameScreenProps, ResultSheet, TableBanner, TableEmotes, TableLayout, TableTopBar, Ticker, emotesBySeat, usePeek, useTable, SideNote, useLogSounds } from '@bg/web';
 import { FlagIcon, TROOP_NAMES, Troop } from './theme';
 
@@ -156,7 +156,7 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
                   <EmoteBubble e={bySeat.get(s)} />
                   <span className={`fl-dot side${s % 2 === mySide ? 'm' : 't'}`} />
                   <b>{names[s]}</b>
-                  {m?.bot && <span className={`tag bot ${m.bot}`}>🤖</span>}
+                  {m?.bot && <span className={`tag bot ${m.bot}`}><Icon name="bot" /></span>}
                   {s === me && <span className="tag mine">나</span>}
                   <span className="muted">카드 {g.handCounts[s]}</span>
                 </div>

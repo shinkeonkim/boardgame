@@ -1,7 +1,7 @@
 import { FormEvent, useEffect, useRef, useState } from 'react';
 import type { RoomView } from '@bg/core';
 import { GameConfig, GameView, LogEntry } from '@bg/sketch-quiz-engine';
-import { SeatDot, seatColor } from '@bg/ui';
+import { SeatDot, seatColor, Icon, iconize } from '@bg/ui';
 import { GameScreenProps, ResultSheet, SeatList, SideNote, TableBanner, TableEmotes, TableLayout, TableTopBar, rankOf, useLogSounds, usePeek, useTable } from '@bg/web';
 import { Board } from './Board';
 
@@ -60,7 +60,7 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
   const line = (e: LogEntry) => {
     switch (e.type) {
       case 'turn':
-        return <div key={e.n} className="sq-msg sys">✏️ {names[e.drawer]} 님 차례 ({e.no}/{g.totalTurns})</div>;
+        return <div key={e.n} className="sq-msg sys"><Icon name="pencil" /> {names[e.drawer]} 님 차례 ({e.no}/{g.totalTurns})</div>;
       case 'skip':
         return <div key={e.n} className="sq-msg sys">{names[e.drawer]} 님이 넘겼어요</div>;
       case 'guess':
@@ -73,7 +73,7 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
       case 'correct':
         return (
           <div key={e.n} className="sq-msg ok">
-            🎉 {names[e.seat]} 님 정답! +{e.points}
+            <Icon name="party" /> {names[e.seat]} 님 정답! +{e.points}
           </div>
         );
       case 'reveal':
@@ -137,7 +137,7 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
               )}
               {g.phase === 'reveal' && me >= 0 && (
                 <button className="btn primary" disabled={g.ready[me]} onClick={() => send({ type: 'next' })}>
-                  {g.ready[me] ? '기다리는 중…' : '다음 그림 ▶'}
+                  {g.ready[me] ? '기다리는 중…' : iconize('다음 그림 ▶')}
                 </button>
               )}
             </div>
@@ -175,7 +175,7 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
               accent: seatColor(seat),
               score: `${total}점`,
               scoreLabel: '맞혀서 + 그려서 얻은 점수',
-              badge: seat === g.drawer && g.status === 'playing' ? <span className="tag">✏️ 그리는 중</span> : g.solved.includes(seat) ? <span className="tag ready">정답 ✓</span> : null,
+              badge: seat === g.drawer && g.status === 'playing' ? <span className="tag"><Icon name="pencil" /> 그리는 중</span> : g.solved.includes(seat) ? <span className="tag ready">정답 <Icon name="check" /></span> : null,
             }))}
           />
           <SideNote title="규칙" className="sq-ref">
