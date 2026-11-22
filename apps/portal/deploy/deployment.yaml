@@ -34,8 +34,8 @@ spec:
           env:
             # 관리자 페이지(/admin): Cloudflare Zero Trust에서 boardgame.shinkeonkim.com/admin 경로에 Access 앱을 만든 뒤
             # 팀 도메인과 그 앱의 AUD 태그를 넣는다. 비어 있으면 관리자 API는 503(꺼짐) — docs/admin.md
-            - { name: CF_ACCESS_TEAM_DOMAIN, value: "" } # 예: myteam.cloudflareaccess.com
-            - { name: CF_ACCESS_AUD, value: "" }
+            - { name: CF_ACCESS_TEAM_DOMAIN, value: "crimson-firefly-8b7d.cloudflareaccess.com" }
+            - { name: CF_ACCESS_AUD, value: "93f7341779e9750979880a506f3b24921cfd0944d027cef70eb95c8607bdea80" }
             # 게임 서버 내부 포트(관리자 API) 주소 — {id}가 게임 id로
             - { name: ADMIN_GAME_URL, value: "http://{id}.boardgame-{id}.svc.cluster.local:9464" }
             - { name: PROMETHEUS_URL, value: "http://prometheus-operated.monitoring.svc:9090" }
