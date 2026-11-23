@@ -780,3 +780,92 @@ a.chip {
   border-color: var(--danger);
   color: #fff;
 }
+.game-stats li.no-bots {
+  color: #2f6fb0;
+  font-weight: 700;
+}
+
+/* 디자인 시스템: 화면 영역 그림 */
+.zones {
+  display: grid;
+  grid-template-columns: minmax(0, 2.4fr) minmax(0, 1fr);
+  gap: 16px;
+  align-items: start;
+}
+.zones-wide {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  grid-template-rows: auto 160px;
+  gap: 8px;
+}
+.zones-wide .z-note {
+  grid-column: 1 / -1;
+}
+.zones-phone {
+  display: grid;
+  grid-template-rows: auto 170px 70px;
+  gap: 6px;
+  max-width: 180px;
+}
+.z {
+  border-radius: 12px;
+  padding: 10px;
+  font-size: 0.82rem;
+  border: 2px dashed var(--line);
+  display: grid;
+  align-content: start;
+  gap: 2px;
+}
+.z-note {
+  background: color-mix(in srgb, var(--accent) 16%, var(--panel));
+  border-color: var(--accent);
+}
+.z-board {
+  background: color-mix(in srgb, #2f9e6a 14%, var(--panel));
+  border-color: #2f9e6a;
+}
+.z-side {
+  background: color-mix(in srgb, #2f6fb0 12%, var(--panel));
+  border-color: #2f6fb0;
+}
+.ds-rules {
+  margin: 10px 0 0 1.2em;
+  display: grid;
+  gap: 4px;
+}
+.icon-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(84px, 1fr));
+  gap: 6px;
+}
+.icon-grid figure {
+  margin: 0;
+  display: grid;
+  justify-items: center;
+  gap: 4px;
+  padding: 8px 4px;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  background: var(--panel);
+}
+.icon-grid figcaption {
+  font-size: 0.68rem;
+  color: var(--muted);
+}
+.ds-pieces {
+  align-items: center;
+  gap: 12px;
+}
+.ds-notice {
+  position: relative;
+  height: 52px;
+}
+.ds-notice .site-notice {
+  position: absolute;
+  animation: none;
+}
+@media (max-width: 760px) {
+  .zones {
+    grid-template-columns: 1fr;
+  }
+}

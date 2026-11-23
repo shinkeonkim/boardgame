@@ -40,6 +40,8 @@ export interface GameMeta {
   icon: string;
   /** 'live' = 플레이 가능, 'soon' = 준비 중 */
   status: 'live' | 'soon';
+  /** false면 봇을 넣을 수 없는 게임 (사람끼리만). 없으면 봇과 함께 할 수 있음 — 엔진의 GameModule.bots와 맞춘다 */
+  bots?: boolean;
   /** 추가된 날 (YYYY-MM-DD) — "새로 나온 게임" 정렬 */
   addedAt: string;
   /** 상세 페이지 "이런 점이 재밌어요" */
@@ -81,3 +83,15 @@ export const TAG_LABELS: Record<string, string> = {
   'player-elimination': '탈락',
   'bot-friendly': '봇과 하기 좋은',
 };
+
+/** 봇 지원 문구 (어디서나 같은 말 — docs/ux-writing.md) */
+export const botsText = (g: { bots?: boolean; players?: { min: number } }) =>
+  g.bots === false
+    ? {
+        short: '사람끼리만',
+        long: `봇이 없어요. 사람끼리 하는 게임이라 ${g.players?.min ?? 2}명 이상 모여야 시작할 수 있어요.`,
+      }
+    : {
+        short: '봇과 함께',
+        long: '사람이 모자라면 빈자리에 봇(쉬움·보통·어려움)을 넣어 함께하거나 혼자 연습할 수 있어요.',
+      };

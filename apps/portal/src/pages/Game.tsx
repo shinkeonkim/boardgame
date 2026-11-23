@@ -1,4 +1,5 @@
-import { ORIGINAL_NOTE, TAG_LABELS, originalLabel } from '@bg/core';
+import { Icon } from '@bg/ui';
+import { ORIGINAL_NOTE, TAG_LABELS, originalLabel, botsText } from '@bg/core';
 import { GAMES, gameById } from '../catalog';
 import { GameArt, GameCard, GameIcon, GameShot, GameStats } from '../GameCard';
 import { Link } from '../router';
@@ -66,6 +67,12 @@ export function GamePage({ id }: { id: string }) {
                 <li key={h}>{h}</li>
               ))}
             </ul>
+          </section>
+          <section className="panel">
+            <h2>
+              <Icon name={g.bots === false ? 'users' : 'bot'} /> 봇 · {botsText(g).short}
+            </h2>
+            <p className="small">{botsText(g).long}</p>
           </section>
           <section className="panel">
             <h2>방장이 바꿀 수 있는 규칙</h2>

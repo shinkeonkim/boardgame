@@ -140,7 +140,8 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
             })}
           </section>
           <section className="th-seats" aria-label="손패">
-            {Array.from({ length: g.players }, (_, k) => (me >= 0 ? (me + 1 + k) % g.players : k)).map(handRow)}
+            {/* 내 손패를 맨 위에 (폰에서 스크롤하지 않아도 보이게), 그다음 내 왼쪽부터 */}
+            {Array.from({ length: g.players }, (_, k) => (me >= 0 ? (me + k) % g.players : k)).map(handRow)}
           </section>
           <Ticker text={describe(g.log[g.log.length - 1])} />
         </>

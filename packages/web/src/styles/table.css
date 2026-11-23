@@ -16,7 +16,8 @@
   padding: 0;
 }
 .table-game .turn-banner {
-  position: static;
+  /* 알림 자리(.tb-notice)의 기준 — static이면 알림이 화면 전체를 덮음 */
+  position: relative;
   flex: none;
   margin: 0 0 10px;
 }
@@ -33,10 +34,18 @@
   min-height: 0;
   display: flex;
   flex-direction: column;
-  gap: 10px;
   overflow-y: auto;
   overscroll-behavior: contain;
-  /* 남는 높이가 있으면 가운데로 (넘치면 safe라서 위에서부터 스크롤) */
+}
+/* 판 영역의 내용 (넘치면 TableLayout이 zoom으로 줄여 맞춤 — fitMain) */
+.table-main-in {
+  flex: 1 0 auto;
+  min-height: 100%;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  /* 남는 높이가 있으면 가운데로 (넘치면 safe라서 위에서부터) */
   justify-content: safe center;
 }
 .table-side {
@@ -173,8 +182,11 @@
     gap: 8px;
   }
   /* 테이블은 내용만큼(최대 화면의 66%), 넘치면 그 안에서만 스크롤. 나머지는 정보 패널 */
+  /* 폰: 판·손패가 중요하므로 화면의 76%까지 (정보 패널은 아래, 남는 만큼) */
   .table-main {
-    max-height: calc(66dvh / var(--z, 1));
+    max-height: calc(76dvh / var(--z, 1));
+  }
+  .table-main-in {
     gap: 6px;
   }
   /* 좁은 화면: 테이블은 너비 기준 (높이 컨테이너는 내용 높이가 0이 되어 겹침) */
@@ -316,13 +328,16 @@
   .table-game:not(.side-open) .table-side {
     display: none;
   }
+  /* 「정보」 버튼은 맨 위 줄 가운데(비어 있는 자리)에 — 손패·판을 가리지 않게 */
   .side-toggle {
     display: inline-flex;
     position: absolute;
-    right: 12px;
-    bottom: calc(10px + env(safe-area-inset-bottom));
+    left: 50%;
+    top: 6px;
+    transform: translateX(-50%);
     z-index: 20;
-    box-shadow: var(--shadow);
+    padding: 3px 10px;
+    font-size: 0.78rem;
   }
   .page.game.table-game {
     position: relative;

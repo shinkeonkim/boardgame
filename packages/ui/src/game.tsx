@@ -1,5 +1,6 @@
 import { Icon } from './icons';
-import { CSSProperties, ReactNode, createContext, useContext, useEffect, useRef, useState } from 'react';
+import { CSSProperties, ReactNode, createContext, useContext, useEffect, useRef, useState, useLayoutEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { BASE_EMOTES, EmoteDef, EmoteEvent } from '@bg/core';
 
 /*
@@ -129,8 +130,23 @@ export function TurnBanner({
         {side && <div className="tb-side">{side}</div>}
       </div>
       {footer}
+      {/* 알림 자리: 「내 차례!」·경고 같은 잠깐 뜨는 알림은 게임 판이 아니라 이 띠 위에만 겹쳐 보인다 (NoticeSlot) */}
+      <div className="tb-notice" />
     </section>
   );
+}
+
+/**
+ * 잠깐 뜨는 알림을 차례 띠(알림 영역) 위에 그린다. 띠가 없는 화면(대기실·결과)에서는 fallback 자리(화면 고정)에.
+ * 알림이 게임 판·손패를 가리지 않게 하는 장치 — 화면 영역: 알림(위 띠) · 게임 판(가운데) · 패널(옆/아래)
+ */
+export function NoticeSlot({ children, deps }: { children: ReactNode; deps?: unknown }) {
+  const [slot, setSlot] = useState<Element | null>(null);
+  useLayoutEffect(() => {
+    setSlot(document.querySelector('.turn-banner .tb-notice'));
+  }, [deps]); // eslint-disable-line react-hooks/exhaustive-deps
+  if (!slot) return <>{children}</>;
+  return createPortal(<div className="in-banner">{children}</div>, slot);
 }
 
 /** 남은 시간 표시 (10초 이하면 빨갛게) */
@@ -143,10 +159,12 @@ export function TurnTimer({ secs }: { secs: number | null }) {
 export function TurnSplash({ splash }: { splash: { text: string; sub?: string; mine: boolean; k: number } | null }) {
   if (!splash) return null;
   return (
-    <div className={`turn-splash ${splash.mine ? 'mine' : ''}`} key={splash.k} aria-hidden>
-      <div className="ts-text">{splash.text}</div>
-      {splash.sub && <div className="ts-sub">{splash.sub}</div>}
-    </div>
+    <NoticeSlot deps={splash.k}>
+      <div className={`turn-splash ${splash.mine ? 'mine' : ''}`} key={splash.k} aria-hidden>
+        <div className="ts-text">{splash.text}</div>
+        {splash.sub && <div className="ts-sub">{splash.sub}</div>}
+      </div>
+    </NoticeSlot>
   );
 }
 

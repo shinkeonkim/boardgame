@@ -10,7 +10,7 @@
  *  - TableLayout: 기기 화면에 고정된 [가운데 테이블 | 오른쪽 정보] (좁으면 위아래)
  * 새 게임은 이것들로 틀을 만들고 가운데 테이블과 손패만 그린다.
  */
-import { CSSProperties, ReactNode, useEffect, useMemo, useRef, useState } from 'react';
+import { CSSProperties, ReactNode, useEffect, useMemo, useRef, useState, useLayoutEffect } from 'react';
 import type { EmoteEvent, RoomView } from '@bg/core';
 import { EmoteBubble, EmoteButton, EmoteFeed, SkinButton, ThemeToggle, TurnBanner, TurnSplash, TurnTimer, useCountdown, Icon, iconize } from '@bg/ui';
 import { useFlip } from './motion';
@@ -446,9 +446,38 @@ export function useFitZoom(): number {
   return z;
 }
 
+/** 판 영역 맞춤: 100%로 재 보고 넘치면 그만큼 줄임 (같은 프레임 안이라 깜빡이지 않음) */
+const MIN_MAIN_FIT = 0.72;
+function fitMain(main: HTMLElement | null, inner: HTMLElement | null) {
+  if (!main || !inner) return;
+  inner.style.zoom = '';
+  const have = main.clientHeight;
+  let z = 1;
+  // 줄이면 판(남는 높이를 채우는 보드)이 다시 커질 수 있어 몇 번 다시 잰다
+  for (let i = 0; i < 4 && have > 0; i++) {
+    const need = main.scrollHeight;
+    if (need <= have + 2 || z <= MIN_MAIN_FIT) break;
+    z = Math.max(MIN_MAIN_FIT, Math.floor(z * (have / need) * 1000) / 1000);
+    inner.style.zoom = String(z);
+  }
+  main.dataset.fit = String(z);
+}
+
 export function TableLayout({ className = '', top, main, side, mine, splash, overlay }: { className?: string; top: ReactNode; main: ReactNode; side: ReactNode; mine?: boolean; splash?: Table['splash']; overlay?: ReactNode }) {
   const zoom = useFitZoom();
   const root = useRef<HTMLElement>(null);
+  const mainRef = useRef<HTMLElement>(null);
+  const innerRef = useRef<HTMLDivElement>(null);
+  // 판 영역에 다 안 들어가면(폰·폰 가로) 그 안의 내용을 넘친 만큼 줄여 스크롤 없이 보이게 (최소 72%).
+  // 움직임(FLIP)이 위치를 재기 전에 맞춰야 하므로 useFlip보다 먼저.
+  useLayoutEffect(() => fitMain(mainRef.current, innerRef.current));
+  useEffect(() => {
+    const m = mainRef.current;
+    if (!m) return;
+    const ro = new ResizeObserver(() => fitMain(mainRef.current, innerRef.current));
+    ro.observe(m);
+    return () => ro.disconnect();
+  }, []);
   useFlip(root);
   // 낮은 가로 화면(휴대폰 눕힘)에서는 정보 패널을 접어 테이블을 넓게 (버튼으로 펼침)
   const [sideOpen, setSideOpen] = useState(false);
@@ -456,7 +485,11 @@ export function TableLayout({ className = '', top, main, side, mine, splash, ove
     <main ref={root} className={`page game table-game ${mine ? 'my-turn' : ''} ${sideOpen ? 'side-open' : ''} ${className}`} style={{ '--z': zoom } as CSSProperties}>
       {top}
       <div className="table-layout">
-        <section className="table-main">{main}</section>
+        <section className="table-main" ref={mainRef}>
+          <div className="table-main-in" ref={innerRef}>
+            {main}
+          </div>
+        </section>
         <aside className="table-side">{side}</aside>
       </div>
       <button className="side-toggle btn small" onClick={() => setSideOpen((x) => !x)} aria-expanded={sideOpen}>

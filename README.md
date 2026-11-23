@@ -160,6 +160,8 @@ npm run build && npm run local   # 운영처럼 경로로 나눠 http://localhos
 npm run test:e2e                 # 끌어다 놓기(5종 × 넓은·폰·가로 짧은 화면 × 마우스·터치) · 게임 바꾸기
 E2E_GAMES=corner-claim E2E_VIEWS=phone E2E_INPUTS=touch npm run test:e2e   # 일부만
 node scripts/qa/readability.mjs [게임id …]   # 숫자 글자 대비·크기 검사
+node scripts/qa/mobile-fit.mjs [게임id …]   # 폰·작은 폰·폰 가로에서 내 손패·버튼이 스크롤 없이 보이나
+node scripts/qa/playthrough.mjs [게임id …]  # 봇으로 끝까지 돌리며 화면 문제 찾기 (QA_MODE=player: 직접 눌러 봄)
 npm run media                    # README·포털 표지·게임 방법 영상 다시 녹화 (ffmpeg 필요)
 node scripts/docs/readme-games.mjs           # README 게임 표·미리보기 다시 만들기
 ```

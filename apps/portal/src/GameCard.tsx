@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Icon } from '@bg/ui';
 import type { GameMeta } from '@bg/core';
-import { TAG_LABELS } from '@bg/core';
+import { TAG_LABELS, botsText } from '@bg/core';
 import { minutesText, playersText, weightText } from './catalog';
 import { Link } from './router';
 
@@ -47,6 +47,9 @@ export function GameStats({ game }: { game: GameMeta }) {
       <li title="난이도">
           <Icon name="scale" /> {weightText(game)}
         </li>
+      <li title={botsText(game).long} className={game.bots === false ? 'no-bots' : 'bots'}>
+        <Icon name={game.bots === false ? 'users' : 'bot'} /> {botsText(game).short}
+      </li>
     </ul>
   );
 }

@@ -19,6 +19,7 @@ export const meta: GameMeta = {
   accent: '#2c6fa8',
   icon: '<rect width="64" height="64" rx="14" fill="#2c6fa8"/><rect x="9" y="12" width="46" height="36" rx="4" fill="#fffdf6"/><path d="M16 38 q6 -14 12 -4 t12 -6" stroke="#c0392b" stroke-width="3.5" fill="none" stroke-linecap="round"/><circle cx="44" cy="22" r="4" fill="#f1c40f"/><path d="M40 54 l14 -14 l4 4 l-14 14 z" fill="#f1a33a"/>',
   status: 'live',
+  bots: false,
   addedAt: '2026-11-23',
   highlights: ['손가락·마우스로 그리는 실시간 그림판', '색·굵기·지우개·되돌리기', '초성 → 한 글자 힌트', '정답을 품은 말은 자동으로 가림'],
   customizable: ['그리는 횟수·시간', '고를 단어 수', '힌트 켜고 끄기', '단어 묶음 / 직접 넣은 단어'],

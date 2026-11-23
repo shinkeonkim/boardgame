@@ -766,7 +766,8 @@ button.move-card {
   }
   .board-fit {
     flex: none;
-    height: min(calc(100vw / var(--z, 1) - 24px), calc(56dvh / var(--z, 1)));
+    /* 판은 너비·화면 높이의 56%·「화면 높이 − (위 띠 + 내 손패) 자리」 중 작은 쪽 → 작은 폰에서도 손패가 스크롤 없이 보이게 */
+    height: min(calc(100vw / var(--z, 1) - 24px), calc(56dvh / var(--z, 1)), calc(100dvh / var(--z, 1) - 450px));
   }
   .board-area .ticker {
     margin-top: 8px;
@@ -855,3 +856,10 @@ button.move-card {
   box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.15), 0 0 0 5px var(--gold);
 }
 
+
+/* 폰·폰 가로: 내 손패(카드)를 옆 패널 맨 위로 — 스크롤하지 않아도 바로 보이게 (상대 줄·더미는 그 아래) */
+@media (max-width: 759px), (max-aspect-ratio: 1/1), (max-height: 520px) {
+  .side > .hand-area {
+    order: -1;
+  }
+}

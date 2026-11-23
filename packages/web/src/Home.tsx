@@ -56,6 +56,19 @@ export function HomeShell({ children }: { children: React.ReactNode }) {
               <li key={c}>{iconize(c)}</li>
             ))}
           </ul>
+          {/* 봇과 함께 할 수 있는지 늘 같은 자리·같은 말로 */}
+          <p className={`bot-note ${client.bots === false ? 'no-bots' : ''}`}>
+            <Icon name={client.bots === false ? 'users' : 'bot'} />
+            {client.bots === false ? (
+              <span>
+                <b>사람끼리만</b> · 봇 없이 하는 게임이에요. 방 코드나 링크로 친구를 불러 주세요
+              </span>
+            ) : (
+              <span>
+                <b>봇과 함께</b> · 사람이 모자라면 빈자리에 봇을 넣어 연습할 수 있어요
+              </span>
+            )}
+          </p>
           <GuideButton className="btn guide-cta" label="게임 방법 보기" />
         </section>
         <section className="home-card panel">{children}</section>

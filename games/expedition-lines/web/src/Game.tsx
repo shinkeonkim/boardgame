@@ -512,7 +512,8 @@ function TurnBanner({
   let title: string;
   let hint: string;
   if (myTurn && g.phase === 'play') {
-    title = '내 차례예요 · 카드를 1장 내려놓으세요';
+    // 「내 차례」는 주황 띠와 오른쪽 단계(① 내려놓기 ② 가져오기)가 알려 주므로 할 일만 짧게 (폰에서 잘리지 않게)
+    title = '카드를 1장 내려놓으세요';
     if (selCard) {
       const reason = playBlockReason(c, g.expeditions[g.me][selCard.color], selCard);
       hint = reason ? `${cardLabel(selCard)}: ${reason}. 버림 더미에는 버릴 수 있어요` : `${cardLabel(selCard)}: 탐험대에 놓거나 같은 색 더미에 버리세요`;

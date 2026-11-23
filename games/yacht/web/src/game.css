@@ -222,3 +222,33 @@ button.ya-die:hover {
 .ya-tray3d canvas {
   display: block;
 }
+
+/* 폰 가로(키가 낮은 화면): 주사위 판과 점수표를 나란히 — 점수표는 그 안에서 스크롤 */
+@media (max-height: 520px) and (orientation: landscape) {
+  .table-game .table-main-in {
+    display: grid;
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr) auto;
+    gap: 8px;
+    min-height: 0;
+    height: 100%;
+  }
+  .table-game .ya-tray {
+    grid-column: 1;
+    grid-row: 1;
+    align-content: center;
+  }
+  .table-game .ya-tray3d {
+    max-height: 190px;
+    min-height: 120px;
+  }
+  .table-game .ya-card-wrap {
+    grid-column: 2;
+    grid-row: 1;
+    min-height: 0;
+    overflow-y: auto;
+  }
+  .table-game .table-main-in > .ticker {
+    grid-column: 1 / -1;
+  }
+}

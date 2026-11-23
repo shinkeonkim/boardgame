@@ -3,7 +3,7 @@ import { useRelocate } from './switch-game';
 import { createContext, useCallback, useContext, useEffect, useState, ReactNode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { DRAIN_MESSAGE, type EmoteEvent, type RoomView } from '@bg/core';
-import { EmotesContext, Icon, applySkin, applyTheme, getTheme } from '@bg/ui';
+import { EmotesContext, Icon, NoticeSlot, applySkin, applyTheme, getTheme } from '@bg/ui';
 import type { GameClient } from './client';
 import { BASE, call, setGameId, socket, store } from './runtime';
 import { Home, HomeShell } from './Home';
@@ -227,9 +227,12 @@ function RoomPage({ code, onExit }: { code: string; onExit: (msg?: string) => vo
         <Lobby view={view} act={act} onLeave={leave} emotes={emotes} onEmote={(id) => act('emote', { id })} />
       )}
       {toast && (
-        <div className="toast" role="status">
-          {toast}
-        </div>
+        // 게임 중에는 차례 띠(알림 영역) 위에 — 손패·판을 가리지 않게
+        <NoticeSlot deps={toast}>
+          <div className="toast" role="status">
+            {toast}
+          </div>
+        </NoticeSlot>
       )}
       {!connected && <div className="offline">연결이 끊겼어요. 다시 연결하는 중이에요…</div>}
       <SiteNotice text={view.notice} maintenance={view.maintenance} />

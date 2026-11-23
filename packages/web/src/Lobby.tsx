@@ -127,6 +127,14 @@ export function Lobby({ view, act, onLeave, emotes, onEmote }: { view: RoomView;
             ))}
           </ol>
           {isHost && players.length < maxPlayers && client.bots !== false && <AddBot act={act} />}
+          {client.bots === false && (
+            <div className="bot-add no-bots">
+              <div className="bot-add-head">
+                <Icon name="users" /> <b>사람끼리만 하는 게임이에요</b>
+              </div>
+              <p className="muted small">봇이 없어요. 방 코드나 링크로 친구를 불러 주세요.</p>
+            </div>
+          )}
           <EmoteFeed items={emotes.filter((e) => spectators.some((s) => s.id === e.from))} />
           {spectators.length > 0 && <p className="muted small">관전 중: {spectators.map((m) => m.name).join(', ')}</p>}
           <div className="row">

@@ -342,3 +342,19 @@
 .room-row .tag {
   flex: none;
 }
+
+/* 봇과 함께 / 사람끼리만 (첫 화면) */
+.bot-note {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 2px 0 10px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--accent) 8%, var(--panel));
+  border: 1px solid var(--line);
+  font-size: 0.88rem;
+}
+.bot-note.no-bots {
+  background: color-mix(in srgb, #2f6fb0 8%, var(--panel));
+}

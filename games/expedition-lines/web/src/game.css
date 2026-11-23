@@ -893,3 +893,27 @@ button.card:focus-visible {
   background: var(--suit);
   color: var(--suit-ink);
 }
+
+/* 폰 가로(키가 낮은 화면): 상대 줄과 내 탐험대를 나란히, 그 아래 탁자 — 내 탐험대가 스크롤 없이 보이게 */
+@media (max-height: 520px) and (min-aspect-ratio: 1/1) and (max-width: 1099px) {
+  .game-scroll {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-areas: 'opp mine' 'table table' 'tick tick';
+    column-gap: 10px;
+    align-content: start;
+  }
+  .game-scroll > .opponents {
+    grid-area: opp;
+  }
+  .game-scroll > .table {
+    grid-area: table;
+    margin-top: 4px;
+  }
+  .game-scroll > .ticker {
+    grid-area: tick;
+  }
+  .game-scroll > .board {
+    grid-area: mine;
+  }
+}
