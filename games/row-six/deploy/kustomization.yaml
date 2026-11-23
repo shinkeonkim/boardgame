@@ -14,4 +14,4 @@ labels:
 images:
 - name: ghcr.io/shinkeonkim/boardgame-row-six
   newName: ghcr.io/shinkeonkim/boardgame-row-six
-  newTag: sha-43bc7cd
+  newTag: sha-bd43c76
