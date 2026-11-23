@@ -75,3 +75,21 @@ describe('진행', () => {
     }
   });
 });
+
+describe('남길 주사위 고르기 (hold)', () => {
+  it('굴린 뒤 고르면 모두에게 보이고, 그대로 굴림', () => {
+    const m = newMatch(CLASSIC, 2, () => 0);
+    const p = m.turn;
+    expect(() => applyMove(m, p, { type: 'hold', hold: [true, false, false, false, false] })).toThrow();
+    applyMove(m, p, { type: 'roll' });
+    const first = [...m.seats[p].dice];
+    applyMove(m, p, { type: 'hold', hold: [true, true, false, false, false] });
+    const v = viewFor(m, 1 - p);
+    expect(v.seats[p].held).toEqual([true, true, false, false, false]);
+    expect(v.seats[p].picked).toBe(true);
+    applyMove(m, p, { type: 'roll', hold: m.seats[p].held });
+    expect(m.seats[p].dice.slice(0, 2)).toEqual(first.slice(0, 2));
+    expect(m.seats[p].picked).toBe(false);
+    expect(m.seats[p].rolled).toBe(2);
+  });
+});

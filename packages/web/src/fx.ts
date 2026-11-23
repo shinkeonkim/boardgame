@@ -18,6 +18,7 @@ export type Fx =
   | 'coin'
   | 'coins'
   | 'dice'
+  | 'rattle'
   | 'cup'
   | 'tile'
   | 'tiles'
@@ -35,7 +36,7 @@ export type Fx =
   | 'fail'
   | 'win';
 
-export const FX_NAMES: Fx[] = ['myTurn', 'tick', 'pop', 'card', 'deal', 'flip', 'shuffle', 'sweep', 'chip', 'chips', 'coin', 'coins', 'dice', 'cup', 'tile', 'tiles', 'wood', 'stone', 'paper', 'plate', 'firework', 'fizzle', 'thud', 'lock', 'bell', 'alert', 'success', 'fail', 'win'];
+export const FX_NAMES: Fx[] = ['myTurn', 'tick', 'pop', 'card', 'deal', 'flip', 'shuffle', 'sweep', 'chip', 'chips', 'coin', 'coins', 'dice', 'rattle', 'cup', 'tile', 'tiles', 'wood', 'stone', 'paper', 'plate', 'firework', 'fizzle', 'thud', 'lock', 'bell', 'alert', 'success', 'fail', 'win'];
 
 let noise: AudioBuffer | null = null;
 function noiseBuf(ctx: AudioContext) {
@@ -139,6 +140,9 @@ export function playFx(ctx: AudioContext, name: Fx, delay = 0) {
         burst(ctx, at, { dur: 0.026, freq: rnd(1400, 2600), q: 4, gain: 0.55 });
         tone(ctx, at, { freq: rnd(700, 1100), dur: 0.03, gain: 0.03, type: 'square' });
       }
+      return;
+    case 'rattle': // 손에 쥔 주사위 달그락 (흔드는 동안 되풀이)
+      for (let i = 0; i < 3; i++) burst(ctx, t + i * 0.025 + rnd(0, 0.015), { dur: 0.025, freq: rnd(1100, 2000), q: 5, gain: 0.12, type: 'bandpass' });
       return;
     case 'cup': // 컵 속에서 흔들림 → 탁
       for (let i = 0; i < 12; i++) burst(ctx, t + i * 0.04 + rnd(0, 0.02), { dur: 0.03, freq: rnd(900, 1600), q: 4, gain: 0.16, type: 'bandpass' });

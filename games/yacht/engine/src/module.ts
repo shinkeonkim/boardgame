@@ -15,6 +15,7 @@ const CATS = new Set(['ones', 'twos', 'threes', 'fours', 'fives', 'sixes', 'choi
 function isMove(m: unknown): m is Move {
   if (!m || typeof m !== 'object') return false;
   const x = m as Record<string, unknown>;
+  if (x.type === 'hold') return Array.isArray(x.hold) && x.hold.length <= 5;
   if (x.type === 'roll') return x.hold === undefined || (Array.isArray(x.hold) && x.hold.length <= 5);
   return x.type === 'score' && typeof x.cat === 'string' && CATS.has(x.cat);
 }

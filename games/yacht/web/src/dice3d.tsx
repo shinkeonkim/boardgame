@@ -6,6 +6,10 @@
  *  2) 그 면에 서버가 준 눈이 오도록 주사위 면 그림을 바꿔 붙인다 (정육면체 회전 24가지 중 하나 → 마주 보는 면 합 7 유지).
  *  3) 기록해 둔 움직임을 그대로 재생한다 → 굴러서 멈춘 면이 곧 결과.
  *  멈춘 뒤에는 한 줄로 가지런히 모이고, 누르면 남기기(살짝 들리고 금색 받침).
+ *  흔들기(shaking): 굴리기 버튼을 꾹 누르는 동안 남기지 않은 주사위가 오른쪽 위에서 달그락거리다, 결과가 오면 그 자리에서 던져진다.
+ *
+ *  주의: 남긴 주사위의 눈은 「지금 화면의 기울기」가 아니라 마지막으로 멈춘 자세(restQ)로 읽는다.
+ *  (굴러가는 도중에 다음 굴림이 오면 기울어진 자세를 반듯하게 맞추다 다른 면이 위로 와서 눈이 틀려 보였음)
  */
 import { useEffect, useRef } from 'react';
 import * as THREE from 'three';
@@ -157,15 +161,21 @@ export interface TrayProps {
   rollKey: string | number;
   /** 아직 한 번도 안 굴렸으면 흐릿하게 */
   blank?: boolean;
+  /** 손에 쥐고 흔드는 중 (굴리기 버튼을 누르고 있음) */
+  shaking?: boolean;
+  /** 던지는 힘 0~1 (오래·세게 흔들수록) */
+  power?: number;
   onToggle?: (i: number) => void;
 }
 
 /** 줄로 놓일 자리 */
 const rowX = (i: number) => (i - (N - 1) / 2) * 2.05;
 
-export default function DiceTray({ values, held, rollKey, blank, onToggle }: TrayProps) {
+export default function DiceTray({ values, held, rollKey, blank, onToggle, shaking = false, power = 0.5 }: TrayProps) {
   const host = useRef<HTMLDivElement>(null);
-  const api = useRef<{ roll: (values: number[], held: boolean[]) => void; set: (values: number[], held: boolean[], blank: boolean) => void } | null>(null);
+  const api = useRef<{ roll: (values: number[], held: boolean[], power: number) => void; set: (values: number[], held: boolean[], blank: boolean) => void; shake: (on: boolean, held: boolean[]) => void } | null>(null);
+  const powerRef = useRef(power);
+  powerRef.current = power;
   const toggleRef = useRef(onToggle);
   toggleRef.current = onToggle;
   const lastKey = useRef(rollKey);
@@ -212,6 +222,8 @@ export default function DiceTray({ values, held, rollKey, blank, onToggle }: Tra
       scene.add(ring);
       return { mesh, ring, labels: [...STD] };
     });
+    /** 마지막으로 멈춘(멈출) 자세 — 눈을 읽는 기준 */
+    const restQ = dice.map((d) => d.mesh.quaternion.clone());
     const setLabels = (i: number, labels: number[]) => {
       dice[i].labels = labels;
       dice[i].mesh.material = labels.map((v) => mats[v - 1]);
@@ -249,6 +261,8 @@ export default function DiceTray({ values, held, rollKey, blank, onToggle }: Tra
     let settle: { from: Frame; to: Frame; t: number } | null = null;
     let heldNow: boolean[] = Array(N).fill(false);
     let dim = false;
+    let shaking = false;
+    let shakeT = 0;
     const reduced = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
 
     /** 줄로 놓인 자세: 위 면 유지, 반듯하게, 자리별 살짝 비뚤게 */
@@ -260,7 +274,7 @@ export default function DiceTray({ values, held, rollKey, blank, onToggle }: Tra
     const applyFrame = (f: Frame) => f.forEach((x, i) => (dice[i].mesh.position.copy(x.p), dice[i].mesh.quaternion.copy(x.q)));
     const current = (): Frame => dice.map((d) => ({ p: d.mesh.position.clone(), q: d.mesh.quaternion.clone() }));
     const toRow = (animate: boolean) => {
-      const to = dice.map((d, i) => restPose(i, d.mesh.quaternion));
+      const to = dice.map((_, i) => restPose(i, restQ[i]));
       if (animate && !reduced) settle = { from: current(), to, t: 0 };
       else applyFrame(to);
     };
@@ -272,30 +286,47 @@ export default function DiceTray({ values, held, rollKey, blank, onToggle }: Tra
       dim = blank;
       values.forEach((v, i) => {
         // 이미 그 눈이 위면 그대로 (남기기를 눌렀을 때 주사위가 휙 돌지 않게)
-        if (dice[i].labels[topFace(dice[i].mesh.quaternion)] === v) return;
+        if (dice[i].labels[topFace(snapQuat(restQ[i]))] === v) return;
         setLabels(i, [...STD]);
         const up = DIRS[STD.indexOf(v)];
         const q = new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(...up), new THREE.Vector3(0, 1, 0));
         dice[i].mesh.quaternion.copy(q);
+        restQ[i].copy(q);
       });
-      if (!frames) toRow(false);
+      if (!frames && !shaking) toRow(false);
       showRings();
     };
 
     /** 던지기: 남기지 않은 주사위만 */
-    const roll = (values: number[], held: boolean[]) => {
+    const roll = (values: number[], held: boolean[], power: number) => {
       heldNow = held;
       dim = false;
+      const fromHand = shaking;
+      shaking = false;
       const moving = values.map((_, i) => !held[i]);
+      // 남긴 주사위: 마지막으로 멈춘 자세에서 위를 향한 면에 서버 눈이 오게 (자세는 그대로, 그림만 맞춤)
+      values.forEach((v, i) => {
+        if (moving[i]) return;
+        const top = topFace(snapQuat(restQ[i]));
+        if (dice[i].labels[top] !== v) setLabels(i, labelsFor(top, v));
+      });
+      const heldPose = dice.map((_, i) => restPose(i, restQ[i]));
+      const speed = 10 + power * 10;
       bodies.forEach((b, i) => {
         if (moving[i]) {
           b.type = CANNON.Body.DYNAMIC;
           b.mass = 1;
           b.updateMassProperties();
-          b.position.set(TRAY_W / 2 - 0.9 - Math.random() * 0.6, 1.2 + Math.random() * 1.6, (i - 2) * 0.8 + (Math.random() - 0.5) * 0.3);
-          b.quaternion.setFromEuler(Math.random() * 6.28, Math.random() * 6.28, Math.random() * 6.28);
-          b.velocity.set(-13 - Math.random() * 5, 2 + Math.random() * 3, (Math.random() - 0.5) * 4);
-          b.angularVelocity.set((Math.random() - 0.5) * 30, (Math.random() - 0.5) * 30, (Math.random() - 0.5) * 30);
+          const mp = dice[i].mesh.position;
+          const mq = dice[i].mesh.quaternion;
+          // 흔들던 손에서 그대로 놓기 (화면이 끊기지 않게), 아니면 오른쪽 위에서 던짐
+          if (fromHand) b.position.set(Math.min(TRAY_W / 2 - 0.6, mp.x), Math.max(0.6, mp.y), Math.max(-TRAY_D / 2 + 0.6, Math.min(TRAY_D / 2 - 0.6, mp.z)));
+          else b.position.set(TRAY_W / 2 - 0.9 - Math.random() * 0.6, 1.2 + Math.random() * 1.6, (i - 2) * 0.8 + (Math.random() - 0.5) * 0.3);
+          if (fromHand) b.quaternion.set(mq.x, mq.y, mq.z, mq.w);
+          else b.quaternion.setFromEuler(Math.random() * 6.28, Math.random() * 6.28, Math.random() * 6.28);
+          b.velocity.set(-speed - Math.random() * 5, 2 + Math.random() * 3, (Math.random() - 0.5) * 4);
+          const spin = 22 + power * 18;
+          b.angularVelocity.set((Math.random() - 0.5) * spin, (Math.random() - 0.5) * spin, (Math.random() - 0.5) * spin);
         } else {
           // 남긴 주사위는 뒤쪽 줄에 고정 (부딪히는 벽 역할)
           b.type = CANNON.Body.STATIC;
@@ -311,12 +342,16 @@ export default function DiceTray({ values, held, rollKey, blank, onToggle }: Tra
       const rec: Frame[] = [];
       for (let s = 0; s < MAX_STEPS; s++) {
         world.step(STEP);
-        rec.push(bodies.map((b, i) => (moving[i] ? { p: new THREE.Vector3(b.position.x, b.position.y, b.position.z), q: new THREE.Quaternion(b.quaternion.x, b.quaternion.y, b.quaternion.z, b.quaternion.w) } : restPose(i, dice[i].mesh.quaternion))));
+        rec.push(bodies.map((b, i) => (moving[i] ? { p: new THREE.Vector3(b.position.x, b.position.y, b.position.z), q: new THREE.Quaternion(b.quaternion.x, b.quaternion.y, b.quaternion.z, b.quaternion.w) } : heldPose[i])));
         if (s > 30 && bodies.every((b, i) => !moving[i] || b.sleepState === CANNON.Body.SLEEPING)) break;
       }
       // 멈춘 면에 서버 눈이 오도록 그림을 바꿔 붙임
       const last = rec[rec.length - 1];
-      values.forEach((v, i) => moving[i] && setLabels(i, labelsFor(topFace(last[i].q), v)));
+      values.forEach((v, i) => {
+        if (!moving[i]) return;
+        setLabels(i, labelsFor(topFace(last[i].q), v));
+        restQ[i].copy(last[i].q);
+      });
       showRings();
       if (reduced) {
         applyFrame(last);
@@ -326,7 +361,25 @@ export default function DiceTray({ values, held, rollKey, blank, onToggle }: Tra
       frames = rec;
       frameAt = 0;
     };
-    api.current = { roll, set };
+    /** 손에 쥐고 흔들기 시작/멈춤 (멈추면 원래 자리로) */
+    const shake = (on: boolean, held: boolean[]) => {
+      if (on === shaking) return;
+      heldNow = held;
+      if (on) {
+        if (frames) {
+          applyFrame(frames[frames.length - 1]);
+          frames = null;
+        }
+        settle = null;
+        shaking = true;
+        dim = false;
+        shakeT = 0;
+      } else {
+        shaking = false;
+        toRow(true);
+      }
+    };
+    api.current = { roll, set, shake };
 
     // 크기
     const fit = () => {
@@ -365,18 +418,39 @@ export default function DiceTray({ values, held, rollKey, blank, onToggle }: Tra
     renderer.domElement.addEventListener('pointermove', onMove);
 
     let raf = 0;
+    let prev = performance.now();
     const loop = () => {
       raf = requestAnimationFrame(loop);
-      if (frames) {
-        // 1프레임 = 1/60초 (화면 주사율이 달라도 같은 빠르기)
+      // 실제 흐른 시간 기준 (느린 기기에서도 같은 시간 안에 끝나게, 한 번에 최대 0.1초)
+      const now = performance.now();
+      const dt = Math.min(0.1, (now - prev) / 1000);
+      prev = now;
+      if (shaking) {
+        // 오른쪽 위 「손」 속에서 달그락: 무작위로 튀고 돌아감 (점점 세게)
+        shakeT += dt * 60;
+        const amp = Math.min(1, 0.45 + shakeT / 90);
+        const hand = new THREE.Vector3(TRAY_W / 2 - 1.7 + Math.sin(shakeT * 0.55) * 0.35 * amp, 1.9 + Math.abs(Math.sin(shakeT * 0.9)) * 0.5 * amp, 0.2 + Math.cos(shakeT * 0.7) * 0.3 * amp);
+        let k = 0;
+        dice.forEach((d, i) => {
+          if (heldNow[i]) {
+            d.mesh.position.lerp(new THREE.Vector3(rowX(i), 0.85, -0.9), 0.2);
+            return;
+          }
+          const a = (k++ / 4) * Math.PI * 2 + shakeT * 0.3;
+          const target = hand.clone().add(new THREE.Vector3(Math.cos(a) * 0.75 + (Math.random() - 0.5) * 0.35 * amp, (Math.random() - 0.5) * 0.45 * amp, Math.sin(a) * 0.6 + (Math.random() - 0.5) * 0.35 * amp));
+          d.mesh.position.lerp(target, 0.35);
+          const spin = new THREE.Quaternion().setFromEuler(new THREE.Euler((Math.random() - 0.5) * 0.5 * amp, (Math.random() - 0.5) * 0.5 * amp, (Math.random() - 0.5) * 0.5 * amp));
+          d.mesh.quaternion.multiply(spin);
+        });
+      } else if (frames) {
         applyFrame(frames[Math.min(frames.length - 1, Math.floor(frameAt))]);
-        frameAt += 1;
+        frameAt += dt * 60;
         if (frameAt >= frames.length) {
           frames = null;
           toRow(true);
         }
       } else if (settle) {
-        settle.t = Math.min(1, settle.t + 1 / 22);
+        settle.t = Math.min(1, settle.t + dt * (60 / 22));
         const k = 1 - Math.pow(1 - settle.t, 3);
         dice.forEach((d, i) => {
           d.mesh.position.lerpVectors(settle!.from[i].p, settle!.to[i].p, k);
@@ -385,6 +459,9 @@ export default function DiceTray({ values, held, rollKey, blank, onToggle }: Tra
         if (settle.t >= 1) settle = null;
       } else {
         // 남긴 주사위는 살짝 들리고, 나머지는 바닥에
+        // 지금 화면에서 위를 향한 눈 (테스트·화면 읽기용)
+        const top = dice.map((d) => d.labels[topFace(d.mesh.quaternion)]).join(',');
+        if (el.dataset.top !== top) el.dataset.top = top;
         dice.forEach((d, i) => {
           const ty = heldNow[i] ? 0.85 : 0.5;
           const tz = heldNow[i] ? -0.9 : 0.35;
@@ -416,10 +493,14 @@ export default function DiceTray({ values, held, rollKey, blank, onToggle }: Tra
   // 값 바뀜 → 굴리기 또는 그냥 놓기
   useEffect(() => {
     if (!api.current) return;
-    if (rollKey !== lastKey.current && !blank) api.current.roll(values, held);
+    if (rollKey !== lastKey.current && !blank) api.current.roll(values, held, powerRef.current);
     else api.current.set(values, held, !!blank);
     lastKey.current = rollKey;
   }, [rollKey, values.join(), held.join(), blank]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  return <div ref={host} className="ya-tray3d" aria-label={`주사위 ${values.join(', ')}`} role="img" />;
+  useEffect(() => {
+    api.current?.shake(shaking, held);
+  }, [shaking]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  return <div ref={host} className="ya-tray3d" data-held={held.map(Number).join('')} aria-label={`주사위 ${values.join(', ')}`} role="img" />;
 }

@@ -76,6 +76,26 @@ button.ya-die:hover {
 .ya-roll {
   font-size: 1.05rem;
   padding: 10px 22px;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+}
+/* 꾹 누르는 동안: 버튼도 같이 들썩 */
+.ya-roll.shaking {
+  animation: ya-btn-shake 0.11s linear infinite alternate;
+}
+@keyframes ya-btn-shake {
+  from { transform: translate(-1.5px, 0.5px) rotate(-1.2deg); }
+  to { transform: translate(1.5px, -0.5px) rotate(1.2deg); }
+}
+.ya-motion.on {
+  border-color: var(--accent, #c0612a);
+  color: var(--accent, #c0612a);
+}
+.ya-roll-hint:empty { display: none; }
+@media (prefers-reduced-motion: reduce) {
+  .ya-roll.shaking { animation: none; }
 }
 .ya-card-wrap {
   overflow-x: auto;

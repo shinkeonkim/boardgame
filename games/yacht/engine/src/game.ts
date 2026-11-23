@@ -3,8 +3,8 @@ import { Cat, GameConfig, UPPER, catsFor, validateConfig } from './config';
 
 export class MoveError extends RuleError {}
 
-/** roll: hold[i]가 true인 주사위는 두고 나머지를 굴림 · score: 이 족보 칸에 지금 주사위로 기록 */
-export type Move = { type: 'roll'; hold?: boolean[] } | { type: 'score'; cat: Cat };
+/** roll: hold[i]가 true인 주사위는 두고 나머지를 굴림 · hold: 굴리기 전에 남길 주사위를 고름 (다른 사람에게 바로 보임) · score: 이 족보 칸에 지금 주사위로 기록 */
+export type Move = { type: 'roll'; hold?: boolean[] } | { type: 'hold'; hold: boolean[] } | { type: 'score'; cat: Cat };
 
 export type LogEntry = { n: number; type: 'roll'; seat: number; dice: number[]; left: number } | { n: number; type: 'score'; seat: number; cat: Cat; points: number; yacht: boolean } | { n: number; type: 'end'; winners: number[] };
 
@@ -13,6 +13,8 @@ export type Card = Partial<Record<Cat, number>>;
 export interface Seat {
   dice: number[];
   held: boolean[];
+  /** 이번 굴림 뒤에 남길 주사위를 직접 골랐나 (hold 동작) */
+  picked?: boolean;
   /** 이번 차례에 굴린 횟수 (0이면 아직 안 굴림) */
   rolled: number;
   card: Card;
@@ -136,8 +138,16 @@ export function applyMove(m: MatchState, seat: number, move: Move) {
     if (s.rolled > 0 && hold.every(Boolean)) throw new MoveError('굴릴 주사위를 하나 이상 남겨 주세요');
     s.dice = s.dice.map((d, i) => (hold[i] ? d : 1 + Math.floor(nextRandom(m) * 6)));
     s.held = hold;
+    s.picked = false;
     s.rolled++;
     log(m, { type: 'roll', seat, dice: [...s.dice], left: m.config.rolls - s.rolled });
+    return;
+  }
+  if (move.type === 'hold') {
+    if (s.rolled === 0) throw new MoveError('먼저 주사위를 굴려 주세요');
+    if (s.rolled >= m.config.rolls) throw new MoveError('더 굴릴 수 없어요. 칸을 골라 적어요');
+    s.held = Array.from({ length: 5 }, (_, i) => !!move.hold?.[i]);
+    s.picked = true;
     return;
   }
   if (move.type !== 'score') throw new MoveError('굴리거나 칸에 적어 주세요');
@@ -152,6 +162,7 @@ export function applyMove(m: MatchState, seat: number, move: Move) {
   log(m, { type: 'score', seat, cat: move.cat, points, yacht });
   s.rolled = 0;
   s.held = [false, false, false, false, false];
+  s.picked = false;
   advance(m);
 }
 

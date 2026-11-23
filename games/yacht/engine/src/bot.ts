@@ -56,6 +56,8 @@ export const yachtBot: Bot<GameView, Move> = {
     const s = v.seats[v.me];
     if (s.rolled === 0) return { type: 'roll' };
     const left = v.config.rolls - s.rolled;
+    // 남길 주사위를 이미 골라 보여 줬으면 그대로 굴림
+    if (s.picked && left > 0 && !s.held.every(Boolean)) return { type: 'roll', hold: s.held };
     const scored: Scored<Move>[] = [];
     for (const cat of v.cats) {
       if (s.card[cat] !== undefined) continue;
@@ -83,6 +85,9 @@ export const yachtBot: Bot<GameView, Move> = {
         scored.push({ move: { type: 'roll', hold }, score: ev });
       }
     }
-    return pickByLevel(scored, ctx.level, ctx.rng);
+    const pick = pickByLevel(scored, ctx.level, ctx.rng);
+    // 다시 굴릴 때: 먼저 남길 주사위를 골라 보여 주고(hold), 다음 생각에서 그대로 굴림
+    if (pick.type === 'roll' && pick.hold?.some(Boolean)) return { type: 'hold', hold: pick.hold };
+    return pick;
   },
 };

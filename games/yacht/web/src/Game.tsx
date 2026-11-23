@@ -1,4 +1,5 @@
 import { Suspense, lazy, useEffect, useMemo, useState } from 'react';
+import { useShake } from './shake';
 
 const DiceTray = lazy(() => import('./dice3d'));
 /** WebGL을 쓸 수 있나 (3D 모듈을 불러오기 전에 가볍게 확인) */
@@ -49,18 +50,29 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
     if (!mine || mine.rolled === 0) setHold([false, false, false, false, false]);
   }, [mine?.rolled]); // eslint-disable-line react-hooks/exhaustive-deps
   const canHold = myTurn && !!mine && mine.rolled > 0 && left > 0 && focus === me;
+  /** 굴릴 수 있나 (안 되면 이유를 알려 주고 false) */
+  const canRoll = (quiet = false) => {
+    const why = !myTurn ? t.waitingMsg : left <= 0 ? '더 굴릴 수 없어요. 칸을 골라 적어요' : mine!.rolled > 0 && hold.every(Boolean) ? '굴릴 주사위를 하나 이상 남겨 주세요' : null;
+    if (why && !quiet) t.warn(why);
+    return !why;
+  };
   const roll = () => {
-    if (!myTurn) return t.warn(t.waitingMsg);
-    if (left <= 0) return t.warn('더 굴릴 수 없어요. 칸을 골라 적어요');
-    if (mine!.rolled > 0 && hold.every(Boolean)) return t.warn('굴릴 주사위를 하나 이상 남겨 주세요');
+    if (!canRoll()) return;
     act('move', { move: { type: 'roll', hold } });
   };
+  // 손맛: 굴리기 버튼을 꾹 누르면(또는 폰을 흔들면) 주사위가 손 안에서 달그락 → 떼면 던짐
+  const shake = useShake({ canStart: (q) => canRoll(q), ready: myTurn && left > 0, onThrow: roll });
   const score = (cat: Cat) => {
     if (!myTurn) return t.warn(t.waitingMsg);
     if (!mine || mine.rolled === 0) return t.warn('먼저 주사위를 굴려 주세요');
     act('move', { move: { type: 'score', cat } });
   };
-  const toggleHold = (i: number) => setHold((h) => h.map((x, k) => (k === i ? !x : x)));
+  // 남기기는 바로 서버에 알림 → 다른 사람 화면에도 금색 받침이 실시간으로 보임
+  const toggleHold = (i: number) => {
+    const next = hold.map((x, k) => (k === i ? !x : x));
+    setHold(next);
+    act('move', { move: { type: 'hold', hold: next } });
+  };
   /** 3D 주사위 판 (물리로 굴림) — WebGL이 없거나 불러오는 동안은 평면 주사위 */
   const use3d = useMemo(webglOk, []);
   const flatDice = () => (
@@ -97,6 +109,7 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
   const order = me >= 0 ? Array.from({ length: g.players }, (_, k) => (me + k) % g.players) : Array.from({ length: g.players }, (_, k) => k);
   // 굴릴 때마다 바뀌는 값: 기록은 최근 30개만 오므로 개수를 세면 몇 차례 뒤 멈춘다 → 마지막 굴림의 일련번호(n)
   const rollKey = [...g.log].reverse().find((e) => e.type === 'roll' && e.seat === focus)?.n ?? 0;
+  useEffect(() => shake.landed(), [rollKey]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const row = (cat: Cat) => (
     <tr key={cat} className={UPPER.includes(cat) ? 'upper' : ''}>
@@ -146,7 +159,9 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
                   held={fs.dice.map((_, i) => (focus === me ? hold[i] : fs.held[i]) && fs.rolled > 0)}
                   rollKey={`${focus}-${rollKey}`}
                   blank={fs.rolled === 0}
-                  onToggle={canHold ? toggleHold : undefined}
+                  onToggle={canHold && !shake.on ? toggleHold : undefined}
+                  shaking={shake.on && focus === me}
+                  power={shake.power}
                 />
                 {/* 키보드·화면 읽기용 남기기 버튼 (보이지 않음) */}
                 {canHold && (
@@ -164,10 +179,15 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
             )}
             {me >= 0 && g.status === 'playing' && (focus === me || !together) && (
               <div className="action-row">
-                <button className="btn primary ya-roll" disabled={!myTurn || left <= 0} onClick={roll}>
-                  <Icon name="dice" /> {mine!.rolled === 0 ? '주사위 굴리기' : `다시 굴리기 (${left}번 남음)`}
+                <button className={`btn primary ya-roll ${shake.on ? 'shaking' : ''}`} disabled={!myTurn || left <= 0} {...shake.buttonProps}>
+                  <Icon name="dice" /> {shake.on ? '흔드는 중… 떼면 던져요' : mine!.rolled === 0 ? '주사위 굴리기' : `다시 굴리기 (${left}번 남음)`}
                 </button>
-                {canHold && <span className="small muted">주사위를 누르면 남겨 둬요</span>}
+                {shake.motion.supported && myTurn && (
+                  <button type="button" className={`btn small ghost ya-motion ${shake.motion.on ? 'on' : ''}`} aria-pressed={shake.motion.on} onClick={shake.motion.toggle}>
+                    <Icon name="phone" /> 폰 흔들어 굴리기 {shake.motion.on ? '켜짐' : '꺼짐'}
+                  </button>
+                )}
+                <span className="small muted ya-roll-hint">{myTurn && left > 0 ? (canHold ? '주사위를 누르면 남겨 둬요 · 버튼을 꾹 누르면 흔들어요' : '버튼을 꾹 누르고 흔들다 떼면 던져요') : ''}</span>
               </div>
             )}
           </section>
