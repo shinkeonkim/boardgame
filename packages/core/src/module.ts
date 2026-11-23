@@ -54,6 +54,11 @@ export interface GameModule<Config extends object, Match, Move, View> {
    * 같은 사람이 연달아 두는 단계(포커의 다음 거리 등)나 둘 사람이 그대로인 단계 전환에 쓴다.
    */
   phaseKey?(match: Match): string | number;
+  /**
+   * 방금 바뀐 것을 화면이 보여 주는 데 걸리는 시간 (ms, 주사위 구르기·카드 놓기 재생 등).
+   * 봇은 이 시간이 지난 뒤에 생각을 시작한다 — 사람이 결과를 보기 전에 다음 수가 지나가지 않게. 없으면 1000ms.
+   */
+  animMs?(match: Match): number;
 
   newMatch(config: Config, players: number, rng: Rng): Match;
   /** 서버로 들어온 임의의 값이 이 게임의 수인지 (모양만 검사, 규칙 검사는 applyMove) */

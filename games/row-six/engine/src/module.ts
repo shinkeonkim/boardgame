@@ -37,7 +37,14 @@ export const game: GameModule<GameConfig, MatchState, Move, GameView> = {
   turnTimerSec: (c) => c.turnTimerSec,
   newMatch,
   isMove,
-  applyMove,
+  // 카드를 한 장씩 놓고 줄을 가져가는 재생(web/replay.ts: 놓기 ≈1.15초, 가져가기 +1.55초)이 끝난 뒤에 봇이 생각
+  applyMove(m, seat, move) {
+    const s0 = m.seq;
+    applyMove(m, seat, move);
+    const fresh = m.log.filter((e) => e.n > s0 && e.type === 'place');
+    (m as MatchState & { anim?: number }).anim = fresh.length * 1150 + fresh.filter((e) => e.type === 'place' && e.took.length).length * 1550;
+  },
+  animMs: (m) => Math.max(400, (m as MatchState & { anim?: number }).anim ?? 0),
   autoMove,
   viewFor,
   actors,

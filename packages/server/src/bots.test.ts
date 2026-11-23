@@ -181,3 +181,15 @@ describe('방 목록', () => {
     expect(rooms.listing()).toHaveLength(0);
   });
 });
+
+describe('봇 대기 시간 (사람이 따라올 수 있게)', () => {
+  const waitOf = (game: GameModule<never, never, never, never>, room: object, match: unknown) => (new Rooms(game as never, () => {}) as unknown as { botWait(r: object, m: unknown): number }).botWait(room, match);
+  it('생각 시간은 최소 1.1초, 방금 바뀐 화면 연출(animMs) + 0.6초가 지나기 전에는 두지 않음', () => {
+    const base = { ...expeditionLines } as unknown as GameModule<never, never, never, never>;
+    for (let i = 0; i < 50; i++) expect(waitOf(base, { changedAt: 0 }, {})).toBeGreaterThanOrEqual(1100);
+    const slow = { ...base, animMs: () => 2800 } as GameModule<never, never, never, never>;
+    for (let i = 0; i < 50; i++) expect(waitOf(slow, { changedAt: Date.now() }, {})).toBeGreaterThanOrEqual(3400);
+    // 차례가 막 넘어왔으면 0.5초 더
+    for (let i = 0; i < 50; i++) expect(waitOf(base, { changedAt: 0, newTurn: true }, {})).toBeGreaterThanOrEqual(1600);
+  });
+});

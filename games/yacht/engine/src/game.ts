@@ -40,6 +40,8 @@ export interface MatchState {
   log: LogEntry[];
   seq: number;
   rng: number;
+  /** 마지막 동작 (봇 대기 시간: 굴림 뒤엔 주사위가 멈출 때까지) */
+  lastAct?: Move['type'];
 }
 
 function nextRandom(m: { rng: number }): number {
@@ -134,6 +136,7 @@ export function applyMove(m: MatchState, seat: number, move: Move) {
   if (m.status !== 'playing') throw new MoveError('지금은 진행 중인 게임이 없어요');
   if (!actors(m).includes(seat)) throw new MoveError(m.config.mode === 'turns' ? '지금은 내 차례가 아니에요' : '이번 차례는 이미 적었어요. 다른 사람을 기다려요');
   const s = m.seats[seat];
+  m.lastAct = move.type;
   if (move.type === 'roll') {
     if (s.rolled >= m.config.rolls) throw new MoveError(`이번 차례에는 ${m.config.rolls}번까지 굴릴 수 있어요`);
     const hold = s.rolled === 0 ? [false, false, false, false, false] : Array.from({ length: 5 }, (_, i) => !!move.hold?.[i]);

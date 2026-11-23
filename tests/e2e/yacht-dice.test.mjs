@@ -152,18 +152,25 @@ it('봇이 빠르게 남기고 다시 굴려도, 보는 화면의 눈이 서버�
       botTurns++;
       continue;
     }
-    // 봇 차례: 눈이 바뀔 때마다, 다음 변화 전까지(또는 6초 안에) 화면 윗면이 서버 눈과 같아지는지
+    // 봇 차례: 굴림(눈 바뀜)을 기다렸다가, 다음 굴림 전까지(최대 6초) 화면 윗면이 서버 눈과 같아지는지
     const r = await p.evaluate(async () => {
-      const t = document.querySelector('.ya-tray3d');
-      const want = () => t.getAttribute('aria-label').replace('주사위 ', '').replace(/\s/g, '');
-      const start = want();
-      const end = Date.now() + 6000;
-      while (Date.now() < end) {
-        if (want() !== start || !document.querySelector('.ya-tray3d') || document.querySelector('.turn-banner.mine')) return { ok: true, skip: true };
-        if (t.dataset.top === start) return { ok: true };
-        await new Promise((r) => setTimeout(r, 100));
+      const t = () => document.querySelector('.ya-tray3d');
+      const want = () => t()?.getAttribute('aria-label').replace('주사위 ', '').replace(/\s/g, '');
+      const mineNow = () => !!document.querySelector('.turn-banner.mine');
+      const before = want();
+      let end = Date.now() + 8000;
+      while (want() === before) {
+        if (mineNow() || Date.now() > end) return { ok: true, skip: true };
+        await new Promise((r) => setTimeout(r, 50));
       }
-      return { ok: false, want: start, got: t.dataset.top, held: t.dataset.held };
+      const target = want();
+      end = Date.now() + 6000;
+      while (Date.now() < end) {
+        if (want() !== target) return { ok: true, skip: true };
+        if (t()?.dataset.top === target) return { ok: true };
+        await new Promise((r) => setTimeout(r, 50));
+      }
+      return { ok: false, want: target, got: t()?.dataset.top, held: t()?.dataset.held };
     });
     if (!r.skip) checks++;
     if (!r.ok) bad.push(r);

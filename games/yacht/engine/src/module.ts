@@ -35,6 +35,8 @@ export const game: GameModule<GameConfig, MatchState, Move, GameView> = {
     };
   },
   turnTimerSec: (c) => c.turnTimerSec,
+  // 주사위가 굴러 멈추고 줄 서기까지 (흔들기·남기기는 짧게)
+  animMs: (m) => (m.lastAct === 'roll' ? 2800 : m.lastAct === 'score' ? 900 : 250),
   newMatch,
   isMove,
   applyMove,

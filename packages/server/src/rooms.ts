@@ -52,6 +52,9 @@ export interface Room<Config = unknown, Match = unknown> {
   listed: boolean;
   /** 봇이 두기까지 기다리는 타이머 */
   botTimer?: NodeJS.Timeout | null;
+  /** 마지막으로 판이 바뀐 때 · 그때 둘 사람이 새로 생겼나 (봇 대기 시간 계산) */
+  changedAt?: number;
+  newTurn?: boolean;
   /** 만든 시각 (관리자 화면) */
   createdAt?: number;
   /** 방장이 다른 게임의 새 방으로 옮김 (모두에게 그 방 주소를 알림) */
@@ -309,14 +312,31 @@ export class Rooms {
     const match = room.match;
     if (!match || this.game.status(match) !== 'playing') return;
     if (!this.botActors(room, match).length) return;
-    const [lo, hi] = this.game.bot?.thinkMs ?? [700, 1600];
-    const wait = this.opts.botDelayMs ?? lo + rng() * (hi - lo);
+    const wait = this.opts.botDelayMs ?? this.botWait(room, match);
     room.botTimer = setTimeout(() => {
       room.botTimer = null;
       this.stepBots(room);
       this.onChange(room);
     }, wait);
     room.botTimer.unref?.();
+  }
+
+  /**
+   * 봇이 두기 전 기다릴 시간: 사람이 따라올 수 있게
+   *  1) 방금 바뀐 것의 화면 연출(animMs)이 끝날 때까지 + 결과를 볼 틈 0.6초
+   *  2) 생각하는 척: 게임별 thinkMs를 넉넉히(×1.5, 최소 1.1초) + 가끔(20%) 오래 고민
+   *  3) 차례가 막 봇에게 넘어왔으면 「봇 차례」를 읽을 틈 0.5초
+   */
+  private botWait(room: Room, match: unknown): number {
+    const [lo, hi] = this.game.bot?.thinkMs ?? [700, 1600];
+    const min = Math.max(1100, lo * 1.5);
+    const max = Math.max(min + 900, hi * 1.5);
+    let think = min + rng() * (max - min);
+    if (rng() < 0.2) think += 700 + rng() * 1500;
+    const anim = this.game.animMs?.(match) ?? 1000;
+    const since = Date.now() - (room.changedAt ?? 0);
+    const settle = Math.max(0, anim - since) + 600;
+    return Math.round(Math.max(think, settle + think * 0.4) + (room.newTurn ? 500 : 0));
   }
 
   /** 지금 둘 봇 좌석 (deferToHumans면 사람 좌석이 함께 있을 때 제외) */
@@ -525,6 +545,8 @@ export class Rooms {
     const match = room.match;
     if (!match) return;
     const now = this.snap(match);
+    room.changedAt = Date.now();
+    room.newTurn = now.actors.some((a) => !before.actors.includes(a));
     this.afterProgress(room, before.status);
     if (now.round !== before.round || now.status !== before.status || now.phase !== before.phase || now.actors.some((a) => !before.actors.includes(a))) this.resetTimer(room);
   }
