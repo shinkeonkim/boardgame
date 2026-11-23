@@ -14,4 +14,4 @@ labels:
 images:
 - name: ghcr.io/shinkeonkim/boardgame-tile-atelier
   newName: ghcr.io/shinkeonkim/boardgame-tile-atelier
-  newTag: sha-bd43c76
+  newTag: sha-f0a04ff
