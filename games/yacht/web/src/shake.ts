@@ -29,7 +29,7 @@ function readFlag(): boolean {
   }
 }
 
-export function useShake({ canStart, ready, onThrow }: { canStart: (quiet?: boolean) => boolean; ready: boolean; onThrow: () => void }) {
+export function useShake({ canStart, ready, onThrow, onShake }: { canStart: (quiet?: boolean) => boolean; ready: boolean; onThrow: () => void; /** 흔들기 시작·멈춤을 다른 사람에게 알림 */ onShake?: (on: boolean) => void }) {
   const [on, setOn] = useState(false);
   const [power, setPower] = useState(0.5);
   const [motionOn, setMotionOn] = useState(readFlag);
@@ -37,8 +37,8 @@ export function useShake({ canStart, ready, onThrow }: { canStart: (quiet?: bool
   const thrown = useRef(false);
   const rattle = useRef<number | undefined>(undefined);
   const fallback = useRef<number | undefined>(undefined);
-  const latest = useRef({ canStart, onThrow });
-  latest.current = { canStart, onThrow };
+  const latest = useRef({ canStart, onThrow, onShake });
+  latest.current = { canStart, onThrow, onShake };
 
   const stopRattle = () => {
     window.clearInterval(rattle.current);
@@ -48,6 +48,7 @@ export function useShake({ canStart, ready, onThrow }: { canStart: (quiet?: bool
     thrown.current = false;
     startAt.current = performance.now();
     setOn(true);
+    latest.current.onShake?.(true);
     stopRattle();
     sound.fx('rattle');
     rattle.current = window.setInterval(() => {
@@ -56,6 +57,8 @@ export function useShake({ canStart, ready, onThrow }: { canStart: (quiet?: bool
     }, 95);
   };
   const stop = () => {
+    // 던지지 않고 내려놓음 → 다른 사람 화면도 멈춤 (던졌으면 굴림이 알아서 끔)
+    if (!thrown.current && rattle.current !== undefined) latest.current.onShake?.(false);
     stopRattle();
     window.clearTimeout(fallback.current);
     setOn(false);
@@ -68,7 +71,10 @@ export function useShake({ canStart, ready, onThrow }: { canStart: (quiet?: bool
     latest.current.onThrow();
     // 결과가 안 오면(거절·끊김) 손을 내려놓음
     window.clearTimeout(fallback.current);
-    fallback.current = window.setTimeout(() => setOn(false), 1500);
+    fallback.current = window.setTimeout(() => {
+      setOn(false);
+      latest.current.onShake?.(false);
+    }, 1500);
   };
   useEffect(() => () => (stopRattle(), window.clearTimeout(fallback.current)), []);
   // 차례가 끝나면 흔들기도 끝

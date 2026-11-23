@@ -93,3 +93,16 @@ describe('남길 주사위 고르기 (hold)', () => {
     expect(m.seats[p].rolled).toBe(2);
   });
 });
+
+describe('흔들기 (shake)', () => {
+  it('흔드는 중이 모두에게 보이고, 굴리면 꺼짐 · 결과에는 영향 없음', () => {
+    const m = newMatch(CLASSIC, 2, () => 0);
+    const p = m.turn;
+    expect(() => applyMove(m, 1 - p, { type: 'shake', on: true })).toThrow();
+    applyMove(m, p, { type: 'shake', on: true });
+    expect(viewFor(m, 1 - p).seats[p].shaking).toBe(true);
+    applyMove(m, p, { type: 'roll' });
+    expect(m.seats[p].shaking).toBe(false);
+    expect(m.seats[p].rolled).toBe(1);
+  });
+});

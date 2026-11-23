@@ -54,10 +54,12 @@ export const yachtBot: Bot<GameView, Move> = {
   choose(ctx: BotContext<GameView>): Move {
     const v = ctx.view;
     const s = v.seats[v.me];
-    if (s.rolled === 0) return { type: 'roll' };
+    // 굴리기 전에 잠깐 흔들어 보여 줌 (사람처럼)
+    if (s.shaking) return { type: 'roll', hold: s.rolled > 0 && s.picked ? s.held : undefined };
+    if (s.rolled === 0) return { type: 'shake', on: true };
     const left = v.config.rolls - s.rolled;
     // 남길 주사위를 이미 골라 보여 줬으면 그대로 굴림
-    if (s.picked && left > 0 && !s.held.every(Boolean)) return { type: 'roll', hold: s.held };
+    if (s.picked && left > 0 && !s.held.every(Boolean)) return { type: 'shake', on: true };
     const scored: Scored<Move>[] = [];
     for (const cat of v.cats) {
       if (s.card[cat] !== undefined) continue;
@@ -88,6 +90,7 @@ export const yachtBot: Bot<GameView, Move> = {
     const pick = pickByLevel(scored, ctx.level, ctx.rng);
     // 다시 굴릴 때: 먼저 남길 주사위를 골라 보여 주고(hold), 다음 생각에서 그대로 굴림
     if (pick.type === 'roll' && pick.hold?.some(Boolean)) return { type: 'hold', hold: pick.hold };
+    if (pick.type === 'roll') return { type: 'shake', on: true };
     return pick;
   },
 };

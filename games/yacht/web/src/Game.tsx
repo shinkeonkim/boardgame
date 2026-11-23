@@ -14,7 +14,7 @@ function webglOk(): boolean {
 import type { RoomView } from '@bg/core';
 import { Cat, GameConfig, GameView, LogEntry, UPPER } from '@bg/yacht-engine';
 import { SeatDot, seatColor, Icon, iconize } from '@bg/ui';
-import { GameScreenProps, ResultSheet, SeatList, SideNote, TableBanner, TableEmotes, TableLayout, TableTopBar, Ticker, rankOf, useLogSounds, usePeek, useTable } from '@bg/web';
+import { sound, GameScreenProps, ResultSheet, SeatList, SideNote, TableBanner, TableEmotes, TableLayout, TableTopBar, Ticker, rankOf, useLogSounds, usePeek, useTable } from '@bg/web';
 import { CAT_INFO, Die } from './theme';
 
 type View = RoomView<GameView, GameConfig>;
@@ -61,7 +61,14 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
     act('move', { move: { type: 'roll', hold } });
   };
   // 손맛: 굴리기 버튼을 꾹 누르면(또는 폰을 흔들면) 주사위가 손 안에서 달그락 → 떼면 던짐
-  const shake = useShake({ canStart: (q) => canRoll(q), ready: myTurn && left > 0, onThrow: roll });
+  const shake = useShake({ canStart: (q) => canRoll(q), ready: myTurn && left > 0, onThrow: roll, onShake: (on) => act('move', { move: { type: 'shake', on } }) });
+  // 다른 사람이 흔드는 중: 그 사람 주사위가 손 안에서 달그락 (소리는 조금 작게·드물게)
+  const othersShaking = focus !== me && !!fs.shaking && g.status === 'playing';
+  useEffect(() => {
+    if (!othersShaking) return;
+    const id = window.setInterval(() => sound.fx('rattle'), 160);
+    return () => window.clearInterval(id);
+  }, [othersShaking]);
   const score = (cat: Cat) => {
     if (!myTurn) return t.warn(t.waitingMsg);
     if (!mine || mine.rolled === 0) return t.warn('먼저 주사위를 굴려 주세요');
@@ -151,6 +158,7 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
             <div className="ya-tray-who small">
               <SeatDot seat={focus} size={12} /> {focus === me ? '내 주사위' : `${names[focus]} 님의 주사위`}
               {fs.rolled > 0 && <span className="muted"> · {fs.rolled}/{c.rolls}번 굴림</span>}
+              {othersShaking && <span className="ya-shaking-tag"> · 흔드는 중…</span>}
             </div>
             {use3d ? (
               <Suspense fallback={flatDice()}>
@@ -160,7 +168,7 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
                   rollKey={`${focus}-${rollKey}`}
                   blank={fs.rolled === 0}
                   onToggle={canHold && !shake.on ? toggleHold : undefined}
-                  shaking={shake.on && focus === me}
+                  shaking={focus === me ? shake.on : othersShaking}
                   power={shake.power}
                 />
                 {/* 키보드·화면 읽기용 남기기 버튼 (보이지 않음) */}

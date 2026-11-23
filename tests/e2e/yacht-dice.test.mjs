@@ -1,5 +1,5 @@
 // Yacht 주사위 E2E — 두 사람이 같은 방에서:
-//  1) 꾹 눌러 흔들다 떼면 굴러가고, 멈춘 3D 주사위의 윗면이 서버 눈과 같다 (굴리는 사람·보는 사람 모두)
+//  1) 꾹 눌러 흔들면 보는 사람 화면에도 흔들리고, 떼면 굴러가고, 멈춘 3D 주사위의 윗면이 서버 눈과 같다 (굴리는 사람·보는 사람 모두)
 //  2) 남기기를 누르면 보는 사람 화면에도 바로 남김 표시가 뜬다
 //  3) 굴러가는 도중에 남기고 다시 굴려도, 남긴 주사위의 눈이 바뀌어 보이지 않는다 (예전 버그)
 //   npm run build && npm run test:e2e   (E2E_ORIGIN=http://localhost:8099 로 이미 띄운 서버 사용 가능)
@@ -98,8 +98,11 @@ it('흔들어 굴리기 · 남기기 실시간 · 남긴 주사위 눈 유지', 
   await me.mouse.down();
   await me.waitForTimeout(500);
   assert.ok(await btn.evaluate((el) => el.classList.contains('shaking')), '누르는 동안 흔들려야 해요');
+  // 보는 사람 화면에도 「흔드는 중」
+  await other.waitForSelector('.ya-shaking-tag', { timeout: 5000 });
   await me.mouse.up();
   await me.waitForFunction(() => !document.querySelector('.ya-roll')?.classList.contains('shaking'), null, { timeout: 5000 });
+  await other.waitForSelector('.ya-shaking-tag', { state: 'detached', timeout: 5000 });
   await settled(me, '굴린 사람');
   await settled(other, '보는 사람');
 

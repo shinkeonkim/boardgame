@@ -94,6 +94,14 @@ button.ya-die:hover {
   color: var(--accent, #c0612a);
 }
 .ya-roll-hint:empty { display: none; }
+.ya-shaking-tag {
+  font-weight: 700;
+  animation: ya-tag-pulse 0.5s ease-in-out infinite alternate;
+}
+@keyframes ya-tag-pulse {
+  from { opacity: 0.55; }
+  to { opacity: 1; }
+}
 @media (prefers-reduced-motion: reduce) {
   .ya-roll.shaking { animation: none; }
 }

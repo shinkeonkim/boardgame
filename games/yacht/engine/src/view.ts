@@ -6,6 +6,8 @@ export interface SeatView {
   held: boolean[];
   /** 남길 주사위를 이번 굴림 뒤에 골랐나 */
   picked: boolean;
+  /** 손에 쥐고 흔드는 중 */
+  shaking: boolean;
   rolled: number;
   card: Card;
   yachtBonus: number;
@@ -47,7 +49,7 @@ export function viewFor(m: MatchState, me: number): GameView {
     turn: m.turn,
     step: m.step,
     cats,
-    seats: m.seats.map((s) => ({ dice: s.dice, held: s.held, picked: !!s.picked, rolled: s.rolled, card: s.card, yachtBonus: s.yachtBonus, upper: upperSum(s.card), total: cardTotal(m.config, s) })),
+    seats: m.seats.map((s) => ({ dice: s.dice, held: s.held, picked: !!s.picked, shaking: !!s.shaking, rolled: s.rolled, card: s.card, yachtBonus: s.yachtBonus, upper: upperSum(s.card), total: cardTotal(m.config, s) })),
     preview,
     winners: m.winners,
     roundScores: m.roundScores,
