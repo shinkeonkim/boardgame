@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { CARDS, NOBLES } from './cards';
 import { CLASSIC } from './config';
+import { viewFor } from './view';
 import { MatchState, applyMove, autoMove, newMatch, payment, pointsOf } from './game';
 
 describe('카드', () => {
@@ -79,5 +80,27 @@ describe('행동', () => {
     const m = newMatch(CLASSIC, 4, () => 0.6);
     for (let i = 0; i < 3000 && m.status === 'playing'; i++) applyMove(m, m.turn, autoMove(m, m.turn));
     expect(m.status).toBe('match-over');
+  });
+});
+
+describe('예약 카드 공개', () => {
+  it('시장에서 예약 = 모두에게 앞면, 더미에서 몰래 = 남에게는 뒷면(단계만), 나에게는 앞면', () => {
+    const m = newMatch(CLASSIC, 2, () => 0.3);
+    const p = m.turn;
+    const open = m.market[0][0];
+    applyMove(m, p, { type: 'reserve', cardId: open.id });
+    let q = m.turn;
+    if (q === p) q = 1 - p;
+    // 상대 차례 하나 넘기기 (보석 가져오기)
+    applyMove(m, m.turn, { type: 'take', gems: [0, 1, 2] });
+    applyMove(m, p, { type: 'reserve', tier: 2 });
+    const other = viewFor(m, 1 - p).seats[p];
+    expect(other.reserved).toBeNull();
+    expect(other.reservedSeen[0]).toMatchObject({ card: { id: open.id }, secret: false });
+    expect(other.reservedSeen[1]).toEqual({ card: null, secret: true, tier: 2 });
+    const self = viewFor(m, p).seats[p];
+    expect(self.reservedSeen[1].card).not.toBeNull();
+    expect(self.reservedSeen[1].secret).toBe(true);
+    expect(other.tokenTotal).toBe(2);
   });
 });

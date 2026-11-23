@@ -2,14 +2,20 @@ import { DevCard, Noble } from './cards';
 import { GameConfig } from './config';
 import { LogEntry, MatchState, PlayerState, actors, bonuses, eligibleNobles, matchTotals, payment, pointsOf, tokenCount } from './game';
 
+export type ReservedSeen = { card: DevCard; secret: boolean; tier: 1 | 2 | 3 } | { card: null; secret: true; tier: 1 | 2 | 3 };
+
 export interface SeenPlayer {
   tokens: number[];
   bonuses: number[];
   points: number;
   cardCount: number;
-  /** 남의 예약 카드는 개수만 (내 것은 카드까지) */
+  /** 내 예약 카드 (남의 것은 null — reservedSeen을 봄) */
   reserved: DevCard[] | null;
   reservedCount: number;
+  /** 모두에게 보이는 예약 카드: 시장에서 예약 = 앞면, 더미에서 몰래 예약 = 뒷면(단계만). 내 것은 몰래 예약도 앞면 + secret */
+  reservedSeen: ReservedSeen[];
+  /** 가진 보석 합 (황금 포함) */
+  tokenTotal: number;
   nobles: Noble[];
 }
 
@@ -45,6 +51,11 @@ const see = (p: PlayerState, mine: boolean): SeenPlayer => ({
   cardCount: p.cards.length,
   reserved: mine ? p.reserved : null,
   reservedCount: p.reserved.length,
+  reservedSeen: p.reserved.map((c) => {
+    const secret = !!p.blind?.includes(c.id);
+    return secret && !mine ? { card: null, secret: true, tier: c.tier } : { card: c, secret, tier: c.tier };
+  }),
+  tokenTotal: tokenCount(p),
   nobles: p.nobles,
 });
 

@@ -16,6 +16,8 @@ export interface PlayerState {
   tokens: number[];
   cards: DevCard[];
   reserved: DevCard[];
+  /** 더미에서 몰래 예약한 카드 id (남에게는 뒷면만) — 시장에서 예약한 카드는 모두에게 앞면 */
+  blind?: string[];
   nobles: Noble[];
 }
 
@@ -193,6 +195,7 @@ export function applyMove(m: MatchState, seat: number, move: Move) {
         if (!card) throw new MoveError('그 단계 더미가 비었어요');
       } else throw new MoveError('예약할 카드를 골라 주세요');
       p.reserved.push(card);
+      if (!move.cardId) (p.blind ??= []).push(card.id);
       const gold = m.bank[GOLD] > 0;
       if (gold) {
         m.bank[GOLD]--;
@@ -213,7 +216,10 @@ export function applyMove(m: MatchState, seat: number, move: Move) {
       if (f.from === 'market') {
         m.market[f.tier!] = m.market[f.tier!].filter((x) => x !== f.card);
         refill(m, f.tier!);
-      } else p.reserved = p.reserved.filter((x) => x !== f.card);
+      } else {
+        p.reserved = p.reserved.filter((x) => x !== f.card);
+        p.blind = p.blind?.filter((id) => id !== f.card.id);
+      }
       p.cards.push(f.card);
       log(m, { type: 'buy', seat, card: f.card });
       return afterAction(m, seat);

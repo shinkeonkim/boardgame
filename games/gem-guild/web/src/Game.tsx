@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
 import type { RoomView } from '@bg/core';
 import { DevCard, GameConfig, GameView, LogEntry } from '@bg/gem-guild-engine';
-import { AlertBanner, SeatDot, seatColor, Icon, iconize } from '@bg/ui';
-import { GameScreenProps, ResultSheet, SeatList, TableBanner, TableEmotes, TableLayout, TableTopBar, Ticker, rankOf, usePeek, useTable, useLogSounds } from '@bg/web';
-import { DevCardView, GEM_INFO, GemToken, NobleView } from './theme';
+import { AlertBanner, SeatDot, seatColor, Icon } from '@bg/ui';
+import { useNarrow, GameScreenProps, ResultSheet, SeatList, TableBanner, TableEmotes, TableLayout, TableTopBar, Ticker, rankOf, usePeek, useTable, useLogSounds } from '@bg/web';
+import { DevCardView, GEM_INFO, GemToken, NobleView, ReservedBack } from './theme';
+import type { SeenPlayer } from '@bg/gem-guild-engine';
 
 type View = RoomView<GameView, GameConfig>;
 
@@ -28,6 +29,7 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
   }, [g.turn, g.phase]);
 
   const mine = me >= 0 ? g.seats[me] : null;
+  const narrow = useNarrow();
   const describe = (e: LogEntry | undefined): string => {
     if (!e) return '보석을 모아 카드를 사고, 카드 보너스로 더 싸게 사요';
     switch (e.type) {
@@ -95,6 +97,21 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
       }
       main={
         <>
+          {/* 폰: 오른쪽 목록이 판 아래로 내려가므로, 상대 상단을 판 위에 작게 */}
+          {narrow && g.players > 1 && (
+            <section className="gg-opps" aria-label="상대 상단">
+              {g.seats.map((s, seat) =>
+                seat === me ? null : (
+                  <div key={seat} className={`gg-opp ${g.turn === seat && g.status === 'playing' ? 'active' : ''}`} style={{ ['--seat' as string]: seatColor(seat) }}>
+                    <div className="gg-opp-head">
+                      <SeatDot seat={seat} size={10} /> <b className="gg-opp-name">{names[seat]}</b> <b className="gg-opp-pts">{s.points}점</b>
+                    </div>
+                    <Holdings s={s} limit={c.tokenLimit} maxReserve={c.maxReserve} compact />
+                  </div>
+                ),
+              )}
+            </section>
+          )}
           {g.nobles.length > 0 && (
             <section className="gg-nobles" aria-label="귀족">
               {g.nobles.map((n) => (
@@ -186,12 +203,10 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
                   ))}
                 </div>
               )}
-              {(mine.reserved?.length ?? 0) > 0 && (
+              {mine.reservedSeen.length > 0 && (
                 <div className="gg-reserved">
-                  <span className="small muted">예약 {mine.reserved!.length}/{c.maxReserve}</span>
-                  {mine.reserved!.map((cd) => (
-                    <DevCardView key={cd.id} card={cd} size="sm" selected={card?.id === cd.id} affordable={myTurn && g.affordable.includes(cd.id)} onClick={() => clickCard(cd)} />
-                  ))}
+                  <span className="small muted">예약 {mine.reservedCount}/{c.maxReserve}</span>
+                  {mine.reservedSeen.map((r) => r.card && <DevCardView key={r.card.id} card={r.card} size="sm" secret={r.secret} selected={card?.id === r.card.id} affordable={myTurn && g.affordable.includes(r.card.id)} onClick={() => clickCard(r.card!)} />)}
                 </div>
               )}
             </section>
@@ -210,25 +225,7 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
               seat,
               accent: seatColor(seat),
               score: `${s.points}점`,
-              children: (
-                <span className="gg-seat">
-                  {[0, 1, 2, 3, 4].map((gem) => (
-                    <span key={gem} className="gg-seat-gem" style={{ borderColor: GEM_INFO[gem].stroke }}>
-                      <i style={{ background: GEM_INFO[gem].fill }} />
-                      {s.tokens[gem]}
-                      <small>+{s.bonuses[gem]}</small>
-                    </span>
-                  ))}
-                  <span className="gg-seat-gem gold">
-                    <i style={{ background: GEM_INFO[5].fill }} />
-                    {s.tokens[5]}
-                  </span>
-                  <span className="muted">
-                    예약 {s.reservedCount}
-                    {s.nobles.length ? iconize(` · 🎩${s.nobles.length}`) : ''}
-                  </span>
-                </span>
-              ),
+              children: <Holdings s={s} limit={c.tokenLimit} maxReserve={c.maxReserve} />,
             }))}
           />
         </>
@@ -258,3 +255,61 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
     />
   );
 }
+
+/**
+ * 한 사람의 상단 (오른쪽 목록): 색마다 「카드(영구 할인) 몇 장 · 보석 몇 개」를 같은 칸에,
+ * 아래에 합계와 예약 카드 — 시장에서 예약한 건 앞면, 더미에서 몰래 예약한 건 뒷면.
+ */
+function Holdings({ s, limit, maxReserve, compact }: { s: SeenPlayer; limit: number; maxReserve: number; /** 폰 위쪽 띠: 작게, 예약은 개수·뒷면 수만 */ compact?: boolean }) {
+  const cards = s.bonuses.reduce((a, b) => a + b, 0);
+  return (
+    <span className={`gg-hold ${compact ? 'compact' : ''}`}>
+      <span className="gg-hold-grid" role="table" aria-label="색별 카드와 보석">
+        <span className="gg-hold-label" role="rowheader">
+          카드
+        </span>
+        {[0, 1, 2, 3, 4].map((gem) => (
+          <span key={gem} role="cell" className={`gg-hold-card ${s.bonuses[gem] ? '' : 'zero'}`} style={{ background: GEM_INFO[gem].fill, color: GEM_INFO[gem].ink, borderColor: GEM_INFO[gem].stroke }} title={`${GEM_INFO[gem].name} 카드 ${s.bonuses[gem]}장 (영구 할인)`}>
+            {s.bonuses[gem]}
+          </span>
+        ))}
+        <span role="cell" />
+        <span className="gg-hold-label" role="rowheader">
+          보석
+        </span>
+        {[0, 1, 2, 3, 4, 5].map((gem) => (
+          <span key={gem} role="cell" className={`gg-hold-chip ${s.tokens[gem] ? '' : 'zero'}`} style={{ background: GEM_INFO[gem].fill, color: GEM_INFO[gem].ink, borderColor: GEM_INFO[gem].stroke }} title={`${GEM_INFO[gem].name} ${s.tokens[gem]}개`}>
+            {s.tokens[gem]}
+          </span>
+        ))}
+      </span>
+      <span className="gg-hold-sum small">
+        <span className={s.tokenTotal >= limit ? 'warn' : ''}>
+          보석 <b>{s.tokenTotal}</b>/{limit}
+        </span>
+        <span>
+          카드 <b>{cards}</b>장
+        </span>
+        {compact && s.reservedCount > 0 && (
+          <span>
+            예약 <b>{s.reservedCount}</b>
+          </span>
+        )}
+        {s.nobles.length > 0 && (
+          <span>
+            <Icon name="hat" /> 귀족 <b>{s.nobles.length}</b>
+          </span>
+        )}
+      </span>
+      {!compact && s.reservedSeen.length > 0 && (
+        <span className="gg-hold-res">
+          <span className="small muted">
+            예약 {s.reservedCount}/{maxReserve}
+          </span>
+          {s.reservedSeen.map((r, i) => (r.card ? <DevCardView key={r.card.id} card={r.card} size="xs" secret={r.secret} flip={false} /> : <ReservedBack key={`b${i}`} tier={r.tier} />))}
+        </span>
+      )}
+    </span>
+  );
+}
+

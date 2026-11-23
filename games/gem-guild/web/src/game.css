@@ -392,3 +392,196 @@ button.noble {
   gap: 2px 3px;
   align-content: end;
 }
+
+/* ── 사람별 상단 (오른쪽 목록): 색마다 카드 수·보석 수를 같은 세로줄에 ── */
+.gg-hold {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+}
+.gg-hold-grid {
+  display: grid;
+  grid-template-columns: auto repeat(6, minmax(22px, 1fr));
+  gap: 4px;
+  align-items: center;
+  max-width: 280px;
+}
+.gg-hold-label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--muted);
+  padding-right: 2px;
+}
+.gg-hold-card,
+.gg-hold-chip {
+  display: grid;
+  place-items: center;
+  height: 24px;
+  font-weight: 900;
+  font-size: 0.85rem;
+  font-variant-numeric: tabular-nums;
+  border: 1.5px solid;
+}
+/* 카드 = 네모(세로로 긴), 보석 = 동그라미 */
+.gg-hold-card {
+  border-radius: 4px;
+  height: 28px;
+  box-shadow: inset 0 -3px 0 rgb(0 0 0 / 0.15);
+}
+.gg-hold-chip {
+  border-radius: 999px;
+  aspect-ratio: 1;
+  height: auto;
+  width: 24px;
+  justify-self: center;
+  box-shadow: inset 0 0 0 2px rgb(255 255 255 / 0.35);
+}
+.gg-hold-card.zero,
+.gg-hold-chip.zero {
+  opacity: 0.28;
+}
+.gg-hold-sum {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 10px;
+  color: var(--muted);
+}
+.gg-hold-sum b {
+  color: var(--ink);
+}
+.gg-hold-sum .warn b {
+  color: var(--danger, #c0392b);
+}
+.gg-hold-sum .ic {
+  width: 1em;
+  height: 1em;
+  vertical-align: -0.15em;
+}
+.gg-hold-res {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  align-items: center;
+}
+.devcard.xs {
+  --cw: 46px;
+  padding: 3px;
+  border-width: 1.5px;
+  border-radius: 7px;
+}
+.devcard.xs .devcard-pts {
+  font-size: 0.85rem;
+}
+/* 몰래 예약한 카드: 뒷면 + 단계 + 자물쇠 */
+.devcard-back {
+  width: 46px;
+  aspect-ratio: 4 / 5;
+  border-radius: 7px;
+  border: 2px solid var(--line);
+  background: var(--card-back);
+  color: #fff;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 1px;
+  text-shadow: 0 1px 2px rgb(0 0 0 / 0.6);
+  position: relative;
+}
+.devcard-back.sm {
+  width: 58px;
+}
+.devcard-back b {
+  font-size: 1.05rem;
+  line-height: 1;
+}
+.devcard-back .ic {
+  width: 13px;
+  height: 13px;
+  opacity: 0.85;
+}
+.devcard-back.t1 { border-color: #2f9e6a; }
+.devcard-back.t2 { border-color: #d79a1e; }
+.devcard-back.t3 { border-color: #3a7bd5; }
+.devcard-secret {
+  position: absolute;
+  left: 3px;
+  bottom: 3px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: rgb(0 0 0 / 0.65);
+  color: #fff;
+  z-index: 5;
+}
+.devcard-secret .ic {
+  width: 10px;
+  height: 10px;
+}
+
+/* 폰: 판 위 상대 상단 띠 (가로로 밀기) */
+.gg-opps {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  margin: 0 -4px;
+  padding: 0 4px 2px;
+  flex: none;
+}
+.gg-opp {
+  flex: 1 0 150px;
+  max-width: 200px;
+  border: 1.5px solid var(--line);
+  border-left: 4px solid var(--seat);
+  border-radius: 10px;
+  background: var(--card-bg, var(--surface));
+  padding: 4px 6px;
+}
+.gg-opp.active {
+  border-color: var(--accent);
+  border-left-color: var(--seat);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 30%, transparent);
+}
+.gg-opp-head {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.78rem;
+  margin-bottom: 3px;
+}
+.gg-opp-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+}
+.gg-opp-pts {
+  margin-left: auto;
+}
+.gg-hold.compact {
+  gap: 3px;
+}
+.gg-hold.compact .gg-hold-grid {
+  grid-template-columns: auto repeat(6, 1fr);
+  gap: 2px;
+}
+.gg-hold.compact .gg-hold-label {
+  font-size: 0.6rem;
+}
+.gg-hold.compact .gg-hold-card {
+  height: 18px;
+  font-size: 0.7rem;
+  border-width: 1px;
+}
+.gg-hold.compact .gg-hold-chip {
+  width: 17px;
+  font-size: 0.66rem;
+  border-width: 1px;
+}
+.gg-hold.compact .gg-hold-sum {
+  font-size: 0.68rem;
+  gap: 0 6px;
+}

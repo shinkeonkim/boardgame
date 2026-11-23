@@ -113,19 +113,34 @@ function GemScene({ gem, tier }: { gem: number; tier: number }) {
   );
 }
 
-export function DevCardView({ card, onClick, selected, affordable, size = 'md' }: { card: DevCard; onClick?: () => void; selected?: boolean; affordable?: boolean; size?: 'sm' | 'md' }) {
+export function DevCardView({ card, onClick, selected, affordable, size = 'md', secret, flip = true }: { card: DevCard; onClick?: () => void; selected?: boolean; affordable?: boolean; size?: 'xs' | 'sm' | 'md'; /** 몰래 예약 (나만 앞면을 봄) */ secret?: boolean; /** 움직임(FLIP) 추적 — 같은 카드가 두 곳에 보이면 한 곳만 */ flip?: boolean }) {
   const g = GEM_INFO[card.bonus];
   const Tag = onClick ? 'button' : 'div';
   return (
-    <Tag data-flip={`g${card.id}`} className={`devcard pc light t${card.tier} ${size} ${selected ? 'selected' : ''} ${affordable ? 'affordable' : ''}`} style={{ ['--bonus' as string]: g.fill, ['--bonus-ink' as string]: g.ink }} onClick={onClick} aria-label={`${card.tier}단계 ${g.name} 카드, ${card.points}점`}>
+    <Tag data-flip={flip ? `g${card.id}` : undefined} className={`devcard pc light t${card.tier} ${size} ${selected ? 'selected' : ''} ${affordable ? 'affordable' : ''}`} style={{ ['--bonus' as string]: g.fill, ['--bonus-ink' as string]: g.ink }} onClick={onClick} aria-label={`${card.tier}단계 ${g.name} 카드, ${card.points}점`}>
       <GemScene gem={card.bonus} tier={card.tier} />
       <div className="devcard-top">
         <b className="devcard-pts">{card.points || ''}</b>
-        <GemToken gem={card.bonus} size={size === 'sm' ? 16 : 22} />
+        <GemToken gem={card.bonus} size={size === 'md' ? 22 : size === 'sm' ? 16 : 12} />
       </div>
       <CostDots cost={card.cost} />
-      {affordable && <span className="devcard-ok">살 수 있어요</span>}
+      {affordable && size !== 'xs' && <span className="devcard-ok">살 수 있어요</span>}
+      {secret && (
+        <span className="devcard-secret" title="몰래 예약 — 다른 사람에게는 뒷면만 보여요">
+          <Icon name="lock" />
+        </span>
+      )}
     </Tag>
+  );
+}
+
+/** 몰래 예약한 카드의 뒷면 (단계만 보임) */
+export function ReservedBack({ tier, size = 'xs' }: { tier: 1 | 2 | 3; size?: 'xs' | 'sm' }) {
+  return (
+    <div className={`devcard-back pc back t${tier} ${size}`} aria-label={`몰래 예약한 ${tier}단계 카드 (뒷면)`} title="더미에서 몰래 예약 — 무슨 카드인지 몰라요">
+      <b>{tier}</b>
+      <Icon name="lock" />
+    </div>
   );
 }
 
