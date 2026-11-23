@@ -1,5 +1,5 @@
 // 휴대폰에서 중요한 정보가 스크롤 없이 보이는지 (게임마다 플레이어로 앉아 내 차례 화면을 잰다)
-//   node scripts/qa/mobile-fit.mjs [게임id …]      (로컬 서버 필요: PORT=8099 npm run local)
+//   node scripts/qa/mobile-fit.mjs [게임id …]      (로컬 서버 필요: PORT=8099 npm run local) · QA_SHOTS=<폴더> 면 화면도 저장
 // 보는 것: 내 손패(·조각 줄)가 화면 안에 다 보이나 · 차례 띠가 보이나 · 판 영역이 넘쳐 스크롤해야 하나
 import { chromium } from 'playwright';
 import { findChromium } from '../media/lib.mjs';
@@ -71,9 +71,10 @@ for (const id of ids) {
         await page.waitForTimeout(80);
       }
       await page.click('button:has-text("게임 시작하기")');
-      await page.waitForSelector('.turn-banner.mine', { timeout: 45_000 });
+      await page.waitForSelector('.turn-banner.mine', { timeout: 120_000 });
       await page.waitForTimeout(2500);
       issues = await page.evaluate(measure, HAND);
+      if (process.env.QA_SHOTS) await page.screenshot({ path: `${process.env.QA_SHOTS}/fit-${id}-${label.replace(/\s/g, '')}.png` });
     } catch (e) {
       issues = [`확인 못 함: ${e.message.split('\n')[0]}`];
     }

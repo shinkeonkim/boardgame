@@ -59,6 +59,11 @@ export interface GameModule<Config extends object, Match, Move, View> {
    * 봇은 이 시간이 지난 뒤에 생각을 시작한다 — 사람이 결과를 보기 전에 다음 수가 지나가지 않게. 없으면 1000ms.
    */
   animMs?(match: Match): number;
+  /**
+   * 이번 봇 수의 생각 시간 [최소, 최대] ms를 직접 정함 (가벼운 단계용 — 예: 주사위 흔들기·남기기는 짧게).
+   * 없거나 undefined면 bot.thinkMs를 넉넉히 늘린 기본 생각 시간.
+   */
+  botPaceMs?(match: Match): [number, number] | undefined;
 
   newMatch(config: Config, players: number, rng: Rng): Match;
   /** 서버로 들어온 임의의 값이 이 게임의 수인지 (모양만 검사, 규칙 검사는 applyMove) */

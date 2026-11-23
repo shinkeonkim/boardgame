@@ -36,6 +36,8 @@ export const game: GameModule<GameConfig, MatchState, Move, GameView> = {
   },
   turnTimerSec: (c) => c.turnTimerSec,
   // 주사위가 굴러 멈추고 줄 서기까지 (흔들기·남기기는 짧게)
+  // 봇: 남기기 → 곧 흔들기, 흔들기 → 잠깐 흔들다 던지기 (나머지는 기본 생각 시간)
+  botPaceMs: (m) => (m.lastAct === 'hold' ? [350, 700] : m.lastAct === 'shake' ? [700, 1300] : undefined),
   animMs: (m) => (m.lastAct === 'roll' ? 2800 : m.lastAct === 'score' ? 900 : 250),
   newMatch,
   isMove,

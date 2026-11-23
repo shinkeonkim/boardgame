@@ -585,3 +585,44 @@ button.noble {
   font-size: 0.68rem;
   gap: 0 6px;
 }
+
+/* 열 묶음: 보통은 없는 셈(contents), 폰 가로에서만 왼쪽(귀족·시장) | 오른쪽(상대·은행·내 상단) */
+.gg-col-a,
+.gg-col-b {
+  display: contents;
+}
+@media (max-height: 520px) and (min-aspect-ratio: 1/1) {
+  .gg-table .table-main-in {
+    flex-direction: row;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 10px;
+  }
+  .gg-col-a,
+  .gg-col-b {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 0;
+  }
+  .gg-col-a {
+    flex: none;
+  }
+  .gg-col-b {
+    flex: 1 1 0;
+    max-width: 460px;
+  }
+  /* 시장 카드: 화면 높이 안에 3단계가 다 들어가게 */
+  .gg-table .gg-market .devcard {
+    --cw: clamp(52px, calc((100dvh / var(--z, 1) - 175px) / 3.9), 96px);
+  }
+  .gg-table .gg-nobles .noble {
+    transform: scale(0.85);
+  }
+  .gg-col-b .gg-opps {
+    margin: 0;
+  }
+  .gg-col-b .gg-opp {
+    flex: 1 0 140px;
+  }
+}

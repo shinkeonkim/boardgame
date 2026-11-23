@@ -274,3 +274,22 @@ button.troop:hover {
 .troop.pc.sm .troop-num {
   margin-bottom: 0;
 }
+
+/* 폰 가로(낮은 화면): 깃발 줄이 한 열에 카드 3+3장이라 높이가 모자람 → 카드 크기를 화면 높이에 맞춤
+   (위·아래 3장씩 + 깃발 + 손패 ≈ 화면 높이) */
+@media (max-height: 520px) and (min-aspect-ratio: 1/1) {
+  .troop.sm {
+    --w: clamp(24px, min(8.6cqw, calc((100dvh / var(--z, 1) - 250px) / 6 * 1.4)), 66px);
+  }
+  .fl-stack {
+    min-height: 0;
+    gap: 2px;
+  }
+  .fl-col {
+    gap: 2px;
+    padding: 2px;
+  }
+  .fl-board {
+    padding: 4px;
+  }
+}

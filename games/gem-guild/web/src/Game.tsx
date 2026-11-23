@@ -1,4 +1,18 @@
 import { useEffect, useState } from 'react';
+
+const SHORT_LAND = '(max-height: 520px) and (min-aspect-ratio: 1/1)';
+function useMedia(q: string): boolean {
+  const [on, setOn] = useState(() => typeof window !== 'undefined' && !!window.matchMedia?.(q).matches);
+  useEffect(() => {
+    const mq = window.matchMedia?.(q);
+    if (!mq) return;
+    const f = () => setOn(mq.matches);
+    f();
+    mq.addEventListener('change', f);
+    return () => mq.removeEventListener('change', f);
+  }, [q]);
+  return on;
+}
 import type { RoomView } from '@bg/core';
 import { DevCard, GameConfig, GameView, LogEntry } from '@bg/gem-guild-engine';
 import { AlertBanner, SeatDot, seatColor, Icon } from '@bg/ui';
@@ -30,6 +44,8 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
 
   const mine = me >= 0 ? g.seats[me] : null;
   const narrow = useNarrow();
+  // 폰 가로(낮은 화면): 정보 패널이 접히므로 상대 띠를 오른쪽 열에
+  const shortLand = useMedia(SHORT_LAND);
   const describe = (e: LogEntry | undefined): string => {
     if (!e) return '보석을 모아 카드를 사고, 카드 보너스로 더 싸게 사요';
     switch (e.type) {
@@ -85,6 +101,7 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
 
   return (
     <TableLayout
+      className="gg-table"
       mine={myTurn}
       splash={t.splash}
       top={
@@ -97,21 +114,7 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
       }
       main={
         <>
-          {/* 폰: 오른쪽 목록이 판 아래로 내려가므로, 상대 상단을 판 위에 작게 */}
-          {narrow && g.players > 1 && (
-            <section className="gg-opps" aria-label="상대 상단">
-              {g.seats.map((s, seat) =>
-                seat === me ? null : (
-                  <div key={seat} className={`gg-opp ${g.turn === seat && g.status === 'playing' ? 'active' : ''}`} style={{ ['--seat' as string]: seatColor(seat) }}>
-                    <div className="gg-opp-head">
-                      <SeatDot seat={seat} size={10} /> <b className="gg-opp-name">{names[seat]}</b> <b className="gg-opp-pts">{s.points}점</b>
-                    </div>
-                    <Holdings s={s} limit={c.tokenLimit} maxReserve={c.maxReserve} compact />
-                  </div>
-                ),
-              )}
-            </section>
-          )}
+          <div className="gg-col-a">
           {g.nobles.length > 0 && (
             <section className="gg-nobles" aria-label="귀족">
               {g.nobles.map((n) => (
@@ -146,6 +149,23 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
                 취소
               </button>
             </div>
+          )}
+          </div>
+          <div className="gg-col-b">
+          {/* 폰: 오른쪽 목록이 판 아래로 내려가므로, 상대 상단을 판 위에 작게 */}
+          {(narrow || shortLand) && g.players > 1 && (
+            <section className="gg-opps" aria-label="상대 상단">
+              {g.seats.map((s, seat) =>
+                seat === me ? null : (
+                  <div key={seat} className={`gg-opp ${g.turn === seat && g.status === 'playing' ? 'active' : ''}`} style={{ ['--seat' as string]: seatColor(seat) }}>
+                    <div className="gg-opp-head">
+                      <SeatDot seat={seat} size={10} /> <b className="gg-opp-name">{names[seat]}</b> <b className="gg-opp-pts">{s.points}점</b>
+                    </div>
+                    <Holdings s={s} limit={c.tokenLimit} maxReserve={c.maxReserve} compact />
+                  </div>
+                ),
+              )}
+            </section>
           )}
           <section className="hand-panel gg-bank" aria-label="보석 은행">
             <div className="hand-panel-head small">
@@ -212,6 +232,7 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
             </section>
           )}
           <Ticker text={describe(g.log[g.log.length - 1])} />
+          </div>
         </>
       }
       side={

@@ -231,8 +231,8 @@
   display: none;
 }
 
-/* 위 막대: 좁은 화면에서는 방장 버튼·테마·꾸미기를 「⋯」 안으로 */
-.table-game .tb-inline {
+/* 위 막대(TableTopBar — 탁자 화면이 아닌 게임도 씀): 좁은 화면에서는 방장 버튼·테마·꾸미기를 「⋯」 안으로 */
+.tb-inline {
   display: contents;
 }
 .tb-more {
@@ -265,10 +265,10 @@
   gap: 6px;
 }
 @media (max-width: 560px) {
-  .table-game .tb-inline {
+  .tb-inline {
     display: none;
   }
-  .table-game .tb-more {
+  .tb-more {
     display: block;
   }
 }

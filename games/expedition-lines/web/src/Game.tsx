@@ -1,8 +1,8 @@
 import { forwardRef, useEffect, useMemo, useRef, useState } from 'react';
 import type { EmoteEvent, RoomView } from '@bg/core';
 import { Card, GameConfig, GameView, LogEntry, canPlayOnExpedition, playBlockReason, scoreColumn, scorePlayer, teamOf } from '@bg/expedition-lines-engine';
-import { AlertBanner, EmoteBubble, EmoteButton, EmoteFeed, ThemeToggle, TurnBanner as BannerFrame, TurnSplash, TurnSteps, TurnTimer, useCountdown, iconize } from '@bg/ui';
-import { CloseRoomButton, GameScreenProps, GuideButton, StopGameButton, sound, useFitZoom, useLogSounds, useDealFx } from '@bg/web';
+import { AlertBanner, EmoteBubble, EmoteButton, EmoteFeed, TurnBanner as BannerFrame, TurnSplash, TurnSteps, TurnTimer, useCountdown, Icon } from '@bg/ui';
+import { GameScreenProps, TableTopBar, sound, useFitZoom, useLogSounds, useDealFx } from '@bg/web';
 import { Glyph, SUITS, cardLabel, suitVars } from './theme';
 import { CardBack, CardFace } from './cards';
 import { hasOrigin, setOrigin } from './flip';
@@ -141,13 +141,6 @@ export function Game({
     return () => clearTimeout(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [turnKey]);
-  const [muted, setMuted] = useState(sound.muted);
-  useEffect(() => {
-    const off = sound.subscribe(setMuted);
-    return () => {
-      off();
-    };
-  }, []);
   const emoteBySeat = new Map<number, EmoteEvent>();
   for (const e of emotes) if (e.seat !== null) emoteBySeat.set(e.seat, e);
   const seatless = emotes.filter((e) => e.seat === null);
@@ -281,26 +274,11 @@ export function Game({
 
   return (
     <main className={`page game ${myTurn ? 'my-turn' : ''}`} style={{ ['--cols' as string]: c.colors, ['--z' as string]: zoom }}>
-      <header className="topbar compact">
-        <div className="small">
-          <b>
-            {g.round + 1}/{c.rounds}판
-          </b>
-          <span className="muted"> · {view.code}</span>
-        </div>
-        <div className="small right">
-          <button className="btn ghost tiny" aria-label={muted ? '소리 켜기' : '소리 끄기'} onClick={() => sound.setMuted(!muted)}>
-            {muted ? iconize('🔕') : iconize('🔔')}
+      <TableTopBar view={view} act={act} round={g.round} rounds={c.rounds} over={g.status === 'match-over'}>
+          <button className="btn ghost tiny" aria-label="기록" onClick={() => setShowLog((v) => !v)}>
+            <Icon name="note" /> <span className="tb-lbl">기록</span>
           </button>
-          {view.hostId === view.you && g.status !== 'match-over' && <StopGameButton act={act} small />}
-          {view.hostId === view.you && <CloseRoomButton act={act} small />}
-          <ThemeToggle variant="icon" />
-          <GuideButton className="btn ghost tiny" label="게임 방법" />
-          <button className="btn ghost tiny" onClick={() => setShowLog((v) => !v)}>
-            기록
-          </button>
-        </div>
-      </header>
+      </TableTopBar>
 
       {g.status === 'playing' && (
         <TurnBanner

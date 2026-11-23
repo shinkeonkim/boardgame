@@ -917,3 +917,29 @@ button.card:focus-visible {
     grid-area: mine;
   }
 }
+
+/* 폰 가로: 탁자를 납작하게 (덱 옆에 감정 표현, 여백 줄임) */
+@media (max-height: 520px) and (min-aspect-ratio: 1/1) and (max-width: 1099px) {
+  .game-scroll > .table {
+    margin: 2px 0 0;
+    padding: 4px 8px;
+    gap: 8px;
+  }
+  .game-scroll .deck-col {
+    flex-direction: row;
+    gap: 6px;
+  }
+  .game-scroll > .ticker {
+    margin: 4px 0 0;
+  }
+}
+
+/* 작은 폰: 위쪽 버튼을 아이콘만 (줄바꿈되어 판이 밀리지 않게) */
+@media (max-width: 400px) {
+  .game .topbar .tb-lbl {
+    display: none;
+  }
+  .game .topbar .right {
+    gap: 4px;
+  }
+}

@@ -328,11 +328,16 @@ export class Rooms {
    *  3) 차례가 막 봇에게 넘어왔으면 「봇 차례」를 읽을 틈 0.5초
    */
   private botWait(room: Room, match: unknown): number {
-    const [lo, hi] = this.game.bot?.thinkMs ?? [700, 1600];
-    const min = Math.max(1100, lo * 1.5);
-    const max = Math.max(min + 900, hi * 1.5);
-    let think = min + rng() * (max - min);
-    if (rng() < 0.2) think += 700 + rng() * 1500;
+    const pace = this.game.botPaceMs?.(match);
+    let think: number;
+    if (pace) think = pace[0] + rng() * (pace[1] - pace[0]);
+    else {
+      const [lo, hi] = this.game.bot?.thinkMs ?? [700, 1600];
+      const min = Math.max(1100, lo * 1.5);
+      const max = Math.max(min + 900, hi * 1.5);
+      think = min + rng() * (max - min);
+      if (rng() < 0.2) think += 700 + rng() * 1500;
+    }
     const anim = this.game.animMs?.(match) ?? 1000;
     const since = Date.now() - (room.changedAt ?? 0);
     const settle = Math.max(0, anim - since) + 600;

@@ -863,3 +863,23 @@ button.move-card {
     order: -1;
   }
 }
+
+/* 작은 폰: 위쪽 버튼을 아이콘만 (줄바꿈되어 판이 밀리지 않게) */
+@media (max-width: 400px) {
+  .game .topbar .tb-lbl {
+    display: none;
+  }
+  .game .topbar .right {
+    gap: 4px;
+  }
+}
+
+/* 작은 폰: 손패 5장이 한 줄에 */
+@media (max-width: 380px) {
+  .hand {
+    gap: 5px;
+  }
+  .move-card {
+    --w: min(54px, calc((100vw - 92px) / 5));
+  }
+}
