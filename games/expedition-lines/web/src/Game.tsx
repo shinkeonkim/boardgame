@@ -1,7 +1,7 @@
 import { forwardRef, useEffect, useMemo, useRef, useState } from 'react';
 import type { EmoteEvent, RoomView } from '@bg/core';
 import { Card, GameConfig, GameView, LogEntry, canPlayOnExpedition, playBlockReason, scoreColumn, scorePlayer, teamOf } from '@bg/expedition-lines-engine';
-import { AlertBanner, EmoteBubble, EmoteButton, EmoteFeed, TurnBanner as BannerFrame, TurnSplash, TurnSteps, TurnTimer, useCountdown, Icon } from '@bg/ui';
+import { AlertBanner, EmoteBubble, EmoteButton, EmoteFeed, TurnBanner as BannerFrame, TurnSplash, TurnSteps, TurnTimer, useCountdown, Icon, iconize } from '@bg/ui';
 import { GameScreenProps, TableTopBar, sound, useFitZoom, useLogSounds, useDealFx } from '@bg/web';
 import { Glyph, SUITS, cardLabel, suitVars } from './theme';
 import { CardBack, CardFace } from './cards';
@@ -274,7 +274,7 @@ export function Game({
 
   return (
     <main className={`page game ${myTurn ? 'my-turn' : ''}`} style={{ ['--cols' as string]: c.colors, ['--z' as string]: zoom }}>
-      <TableTopBar view={view} act={act} round={g.round} rounds={c.rounds} over={g.status === 'match-over'}>
+      <TableTopBar view={view} act={act} round={g.round + 1} rounds={c.rounds} over={g.status === 'match-over'}>
           <button className="btn ghost tiny" aria-label="기록" onClick={() => setShowLog((v) => !v)}>
             <Icon name="note" /> <span className="tb-lbl">기록</span>
           </button>
@@ -297,7 +297,7 @@ export function Game({
 
       {showLog && (
         <div className="log panel">
-          {g.log.length === 0 ? <span className="muted small">아직 기록이 없어요</span> : g.log.map((e) => <div key={e.n} className="small">{describe(e, names)}</div>)}
+          {g.log.length === 0 ? <span className="muted small">아직 기록이 없어요</span> : g.log.map((e) => <div key={e.n} className="small">{iconize(describe(e, names))}</div>)}
         </div>
       )}
 

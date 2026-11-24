@@ -161,7 +161,7 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
               <span className="ci-claim-who" style={{ ['--seat' as string]: seatColor(pend.actor) }}>
                 <SeatDot seat={pend.actor} size={12} /> <b>{names[pend.actor]}</b>
               </span>
-              {ACTION_DEFS[pend.action].role && <span className="ci-claim-role">{ROLE_DEFS[ACTION_DEFS[pend.action].role!].icon} {rn(ACTION_DEFS[pend.action].role!)} 주장</span>}
+              {ACTION_DEFS[pend.action].role && <span className="ci-claim-role">{iconize(ROLE_DEFS[ACTION_DEFS[pend.action].role!].icon)} {rn(ACTION_DEFS[pend.action].role!)} 주장</span>}
               <span className="ci-claim-act">{ACTION_DEFS[pend.action].name}</span>
               {pend.target !== null && (
                 <>
@@ -173,7 +173,7 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
               )}
               {pend.blocker !== null && pend.blockRole && (
                 <span className="ci-claim-block">
-                  <Icon name="ban" /> {names[pend.blocker]} · {ROLE_DEFS[pend.blockRole].icon} {rn(pend.blockRole)}로 막기
+                  <Icon name="ban" /> {names[pend.blocker]} · {iconize(ROLE_DEFS[pend.blockRole].icon)} {rn(pend.blockRole)}로 막기
                 </span>
               )}
               {reaction && <span className="small muted ci-claim-wait">통과 {g.passed.length}명</span>}
@@ -219,7 +219,7 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
                           title={d.text}
                         >
                           <b>{d.name}</b>
-                          <small>{d.role ? `${ROLE_DEFS[d.role].icon} ${rn(d.role)}${bluff ? ' (허풍)' : ''}` : a === 'coup' ? `금화 ${c.coupCost}` : a === 'income' ? '+1' : '+2'}</small>
+                          <small>{d.role ? iconize(`${ROLE_DEFS[d.role].icon} ${rn(d.role)}${bluff ? ' (허풍)' : ''}`) : a === 'coup' ? `금화 ${c.coupCost}` : a === 'income' ? '+1' : '+2'}</small>
                         </button>
                       );
                     })}
@@ -273,7 +273,7 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
             {ROLES.map((r) => (
               <div key={r} className="ci-ref-row">
                 <span>
-                  {ROLE_DEFS[r].icon} <b>{rn(r)}</b>
+                  {iconize(ROLE_DEFS[r].icon)} <b>{rn(r)}</b>
                 </span>
                 <span className="muted">
                   {ROLE_DEFS[r].action !== '—' ? ROLE_DEFS[r].action : ''}

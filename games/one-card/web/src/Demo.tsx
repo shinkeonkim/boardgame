@@ -1,3 +1,4 @@
+import { iconize } from '@bg/ui';
 import { useEffect, useState } from 'react';
 import { PlayingCard } from './theme';
 
@@ -20,7 +21,7 @@ export function Demo() {
       <div className="oc-demo-row">
         <PlayingCard key={step} card={FLOW[step].top} size="lg" className="oc-top" />
       </div>
-      <b>{FLOW[step].say}</b>
+      <b>{iconize(FLOW[step].say)}</b>
     </div>
   );
 }

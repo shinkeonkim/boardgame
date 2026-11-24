@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import type { RoomView } from '@bg/core';
 import { GameConfig, GameView, LogEntry } from '@bg/number-vault-engine';
-import { AlertBanner, EmoteBubble, SeatDot, Icon } from '@bg/ui';
+import { AlertBanner, EmoteBubble, SeatDot, Icon, iconize } from '@bg/ui';
 import { GameScreenProps, ResultSheet, TableBanner, TableEmotes, TableLayout, TableTopBar, Ticker, emotesBySeat, rankOf, usePeek, useTable, useLogSounds } from '@bg/web';
 import { TileView } from './theme';
 
@@ -199,10 +199,10 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
                     {c.chooseColor ? (
                       <>
                         <button className="btn" disabled={!g.poolCount[0]} onClick={() => act('move', { move: { type: 'draw', color: 0 } })}>
-                          ⬛ 검은 타일 ({g.poolCount[0]})
+                          {iconize('⬛')} 검은 타일 ({g.poolCount[0]})
                         </button>
                         <button className="btn" disabled={!g.poolCount[1]} onClick={() => act('move', { move: { type: 'draw', color: 1 } })}>
-                          ⬜ 하얀 타일 ({g.poolCount[1]})
+                          {iconize('⬜')} 하얀 타일 ({g.poolCount[1]})
                         </button>
                       </>
                     ) : (
@@ -227,7 +227,7 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
         <>
           {me >= 0 && myHidden === 1 && g.status === 'playing' && <AlertBanner icon={<Icon name="lock" />} title="마지막 타일 하나" critical sub="이게 열리면 탈락이에요" />}
           <section className="panel tokens small">
-            남은 타일 ⬛ {g.poolCount[0]} · ⬜ {g.poolCount[1]}
+            남은 타일 {iconize('⬛')} {g.poolCount[0]} · {iconize('⬜')} {g.poolCount[1]}
             {g.poolCount[0] + g.poolCount[1] === 0 && <div className="muted">더미가 비었어요 — 틀리면 내 타일을 직접 공개해요</div>}
           </section>
           {g.log.length > 0 && (

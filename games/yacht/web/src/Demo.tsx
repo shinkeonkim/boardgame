@@ -1,3 +1,4 @@
+import { iconize } from '@bg/ui';
 import { useEffect, useState } from 'react';
 import { Die } from './theme';
 
@@ -23,7 +24,7 @@ export function Demo() {
           <Die key={`${step}-${i}`} face={d} size={46} held={s.hold[i]} className={s.hold[i] ? '' : 'rolled'} style={{ animationDelay: `${i * 50}ms` }} />
         ))}
       </div>
-      <div className="ya-demo-say">{s.say}</div>
+      <div className="ya-demo-say">{iconize(s.say)}</div>
     </div>
   );
 }

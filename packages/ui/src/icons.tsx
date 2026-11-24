@@ -6,6 +6,11 @@
 import { Fragment, ReactNode, isValidElement, cloneElement, type CSSProperties, type ReactElement } from 'react';
 
 const P: Record<string, ReactNode> = {
+  thumbUp: <path d="M7 11v9H4v-9zM7 11l4-7c1.4 0 2.3 1 2 2.4L12.4 10H19a2 2 0 0 1 2 2.3l-1.2 6A2 2 0 0 1 17.8 20H7" />,
+  thumbDown: <path d="M7 13V4H4v9zM7 13l4 7c1.4 0 2.3-1 2-2.4L12.4 14H19a2 2 0 0 0 2-2.3l-1.2-6A2 2 0 0 0 17.8 4H7" />,
+  scroll: <path d="M6 4h11a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H8M6 4a2 2 0 0 0-2 2v2h4V6a2 2 0 0 0-2-2zM8 8v10a2 2 0 0 1-2 2M11 9h5M11 13h5" />,
+  square: <rect x="5" y="5" width="14" height="14" rx="2.5" />,
+  squareFill: <rect x="5" y="5" width="14" height="14" rx="2.5" fill="currentColor" />,
   sun: (
     <>
       <circle cx="12" cy="12" r="4" />
@@ -291,6 +296,7 @@ const EMOJI: Record<string, IconName | [IconName, string]> = {
   '🗡': 'dagger', '✉': 'mail', '📨': 'mail', '🗳': 'ballot', '🔮': 'orb', '🧱': 'bricks', '⛵': 'boat', '🎉': 'party', '🥳': 'party', '🎆': 'firework', '🎇': 'firework',
   '💀': 'skull', '⚠': 'warning', '🚫': 'ban', '💔': 'heartBreak', '❤': 'heart', '🛡': 'shield', '🎯': 'target', '😊': 'smile', '🙂': 'smile', '🍵': 'cup', '☕': 'cup',
   '↔': 'swap', '🔄': 'swap', 'ℹ': 'info', '✨': 'sparkle', '🃏': 'cards', '🎴': 'cards', '🔴': ['dot', '#d0453a'], '🔵': ['dot', '#2f6fb0'], '🟢': ['dot', '#2e8b57'], '🟡': ['dot', '#d4a017'],
+  '👍': 'thumbUp', '👎': 'thumbDown', '📜': 'scroll', '🏴': 'flag', '⬛': 'squareFill', '⬜': 'square', '😱': 'zap',
   '➡': 'arrowRight', '🚪': 'door', '➕': 'plus', '🥢': 'chopsticks', '🔓': 'unlock', '📌': 'pin', '📍': 'pin',
 };
 

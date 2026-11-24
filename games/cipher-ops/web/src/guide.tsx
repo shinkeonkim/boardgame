@@ -1,5 +1,5 @@
 import { CLASSIC, layout } from '@bg/cipher-ops-engine';
-import { Icon } from '@bg/ui';
+import { Icon, iconize } from '@bg/ui';
 import { Clip, type GuideDef } from '@bg/web/guide-kit';
 import { Logo, TEAMS } from './theme';
 
@@ -21,7 +21,7 @@ export const guide: GuideDef = {
       content: (
         <>
           <p>
-            {TEAMS[0].icon} 빨강 팀과 {TEAMS[1].icon} 파랑 팀이 겨뤄요. 보드의 단어 {l.total}개 중 <b>우리 팀 단어를 먼저 모두 찾으면</b> 이겨요.
+            {iconize(TEAMS[0].icon)} 빨강 팀과 {iconize(TEAMS[1].icon)} 파랑 팀이 겨뤄요. 보드의 단어 {l.total}개 중 <b>우리 팀 단어를 먼저 모두 찾으면</b> 이겨요.
           </p>
           <p>
             어느 단어가 우리 팀 것인지는 <b>팀장만</b> 알아요. 팀장은 한 단어 힌트로 알려 주고, 요원들이 맞혀요.

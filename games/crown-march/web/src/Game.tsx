@@ -286,7 +286,7 @@ export function Game({
 
       {showLog && (
         <div className="log panel">
-          {g.log.length === 0 ? <span className="muted small">아직 기록이 없어요</span> : [...g.log].reverse().map((e) => <div key={e.n} className="small">{describe(e, names)}</div>)}
+          {g.log.length === 0 ? <span className="muted small">아직 기록이 없어요</span> : [...g.log].reverse().map((e) => <div key={e.n} className="small">{iconize(describe(e, names))}</div>)}
         </div>
       )}
 
@@ -667,7 +667,7 @@ function TurnBanner({
       shakeKey={g.turn}
       title={
         <>
-          <SeatStone seat={g.turn} size={18} /> {title}
+          <SeatStone seat={g.turn} size={18} /> {iconize(title)}
         </>
       }
       hint={

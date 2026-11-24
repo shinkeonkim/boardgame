@@ -1,3 +1,4 @@
+import { iconize } from '@bg/ui';
 import { BASE_EMOTES } from '@bg/core';
 import { EXTRA_EMOTES, GameConfig, GameView } from '@bg/flag-line-engine';
 import type { GameClient } from '@bg/web';
@@ -27,7 +28,7 @@ export const client: GameClient<GameView, GameConfig> = {
   emotes: [...BASE_EMOTES, ...EXTRA_EMOTES],
   ConfigPanel,
   Game: Game as GameClient<GameView, GameConfig>['Game'],
-  seatBadge: (i) => <span className={`fl-seat side${i % 2}`}>{i % 2 ? '🔵' : '🔴'}</span>,
+  seatBadge: (i) => <span className={`fl-seat side${i % 2}`}>{iconize(i % 2 ? '🔵' : '🔴')}</span>,
   seatLabel: (i) => (i % 2 ? '파랑 편' : '빨강 편'),
   guide,
   accent: meta.accent,

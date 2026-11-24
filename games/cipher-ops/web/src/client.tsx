@@ -1,3 +1,4 @@
+import { iconize } from '@bg/ui';
 import { BASE_EMOTES } from '@bg/core';
 import { EXTRA_EMOTES, GameConfig, GameView } from '@bg/cipher-ops-engine';
 import type { GameClient } from '@bg/web';
@@ -27,7 +28,7 @@ export const client: GameClient<GameView, GameConfig> = {
   emotes: [...BASE_EMOTES, ...EXTRA_EMOTES],
   ConfigPanel,
   Game: Game as GameClient<GameView, GameConfig>['Game'],
-  seatBadge: (i) => <span className={`co-seat ${i % 2 ? 'blue' : 'red'}`}>{TEAMS[i % 2].icon}</span>,
+  seatBadge: (i) => <span className={`co-seat ${i % 2 ? 'blue' : 'red'}`}>{iconize(TEAMS[i % 2].icon)}</span>,
   seatLabel: (i) => `${TEAMS[i % 2].short}${i < 2 ? ' · 첫 판 팀장' : ' · 요원'}`,
   teamsEnabled: () => false,
   guide,

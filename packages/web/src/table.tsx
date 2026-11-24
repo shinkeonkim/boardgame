@@ -297,7 +297,7 @@ export function SeatList({ t, view, rows, emotes, onSeat, className = '' }: { t:
               </span>
               {r.score !== undefined && (
                 <span className="seat-score" title={r.scoreLabel}>
-                  {r.score}
+                  {iconize(r.score)}
                 </span>
               )}
             </div>
@@ -384,7 +384,7 @@ export function ResultSheet({
                       <span className="rank">{r.rank}</span> {names[r.seat]}
                     </th>
                     {r.cells.map((c, i) => (
-                      <td key={i}>{c}</td>
+                      <td key={i}>{iconize(c)}</td>
                     ))}
                     <td>
                       <b>{r.total}</b>

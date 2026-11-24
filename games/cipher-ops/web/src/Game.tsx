@@ -96,7 +96,7 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
     hint = canGuess
       ? `단어를 한 번 누르면 팀원에게 표시, 한 번 더 누르면 공개해요 · ${g.guessesLeft >= 99 ? '틀릴 때까지' : `${g.guessesLeft}번 더`} 고를 수 있어요`
       : g.spymaster && myTeam === g.team
-        ? '팀원들이 고르는 중이에요. 표정으로만 응원해요 🤐'
+        ? '팀원들이 고르는 중이에요. 말없이 표정으로만 응원해요'
         : `${teamName} 요원들이 고르는 중이에요`;
   }
 

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { GameConfig, LIMITS, PACKS, PRESETS, layout, parseCustom, wordPool } from '@bg/cipher-ops-engine';
-import { PresetChips, configFields } from '@bg/ui';
+import { PresetChips, configFields, iconize } from '@bg/ui';
 import type { ConfigPanelProps } from '@bg/web';
 import { TEAMS } from './theme';
 
@@ -17,10 +17,10 @@ export function ConfigPanel({ view, config: c, isHost, set }: ConfigPanelProps<G
       <PresetChips presets={PRESETS} config={c} isHost={isHost} onPick={(p) => set({ ...p, customWords: c.customWords })} />
       <div className="co-preview small" aria-hidden>
         <span className="red">
-          {TEAMS[0].icon} {red}명
+          {iconize(TEAMS[0].icon)} {red}명
         </span>
         <span className="blue">
-          {TEAMS[1].icon} {blue}명
+          {iconize(TEAMS[1].icon)} {blue}명
         </span>
         <span className="muted">· 각 팀 첫 번째 사람이 팀장 {c.rotateSpymaster ? '(판마다 돌아가요)' : ''}</span>
       </div>

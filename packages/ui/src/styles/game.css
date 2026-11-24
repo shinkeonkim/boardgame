@@ -78,6 +78,12 @@
   flex: 1;
   min-width: 0;
 }
+.tb-title,
+.tb-hint {
+  /* 한국어: 두 줄이 될 때 낱말 중간(「고르세/요」)에서 끊지 않음 */
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}
 .tb-title {
   font-weight: 800;
   font-size: 1.05rem;
@@ -543,7 +549,8 @@
   inset: 0;
   pointer-events: none;
   z-index: 5;
-  border-radius: inherit;
+  /* 띠와 같은 둥근 모서리 (게임마다 띠 안쪽 구조가 달라 inherit이 안 먹는 경우가 있음) */
+  border-radius: 14px;
   overflow: hidden;
 }
 .tb-notice .in-banner {
@@ -595,10 +602,20 @@
 }
 .tb-notice .toast {
   position: absolute;
+  /* 띠 전체를 덮음 (bottom: auto면 글자 높이만큼 위쪽 검은 줄로만 보였음) */
   inset: 0;
+  top: 0;
+  bottom: 0;
   left: 0;
-  bottom: auto;
+  right: 0;
+  height: auto;
+  min-height: 0;
   transform: none;
+  text-align: center;
+  line-height: 1.35;
+  /* 검정 대신 짙은 먹색 + 위쪽 빛 (띠 위에 「잠깐!」처럼 얹힘) */
+  background: linear-gradient(180deg, color-mix(in srgb, var(--ink) 82%, #6b4a2a), var(--ink));
+  font-size: 1rem;
   max-width: none;
   border-radius: inherit;
   display: flex;

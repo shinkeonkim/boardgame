@@ -1,3 +1,4 @@
+import { iconize } from '@bg/ui';
 import { useEffect, useState } from 'react';
 import { Coins, RoleCard } from './theme';
 
@@ -16,7 +17,7 @@ export function Demo() {
         <RoleCard role={step >= 3 ? 'raider' : null} size="sm" lost={step >= 3} />
         <RoleCard role={null} size="sm" />
       </div>
-      <div className="ci-demo-say">{['「세금! 나는 재무관이야」 💰', '도윤: 「거짓말이야!」 ⚡', '카드를 보여 줘야 해요…', '재무관이 아니었어요! 💔', '도전 성공 — 민지 영향력 하나 잃음'][step]}</div>
+      <div className="ci-demo-say">{iconize(['「세금! 나는 재무관이야」 💰', '도윤: 「거짓말이야!」 ⚡', '카드를 보여 줘야 해요…', '재무관이 아니었어요! 💔', '도전 성공 — 민지 영향력 하나 잃음'][step])}</div>
     </div>
   );
 }

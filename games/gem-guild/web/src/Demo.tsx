@@ -1,3 +1,4 @@
+import { iconize } from '@bg/ui';
 import { useEffect, useState } from 'react';
 import { CARDS } from '@bg/gem-guild-engine';
 import { DevCardView, GemToken } from './theme';
@@ -19,7 +20,7 @@ export function Demo() {
         ))}
       </div>
       <DevCardView card={card} affordable={step >= 2} selected={step >= 3} />
-      <div className="gg-demo-say">{['보석을 모아…', '서로 다른 색 3개!', '이제 살 수 있어요', '샀어요! 이 색은 앞으로 1개씩 할인 💎', '보너스가 쌓이면 귀족이 찾아와요 🎩'][step]}</div>
+      <div className="gg-demo-say">{iconize(['보석을 모아…', '서로 다른 색 3개!', '이제 살 수 있어요', '샀어요! 이 색은 앞으로 1개씩 할인 💎', '보너스가 쌓이면 귀족이 찾아와요 🎩'][step])}</div>
     </div>
   );
 }

@@ -1,5 +1,5 @@
 import type { Role } from '@bg/secret-mission-engine';
-import { ArtDefs, Bust, PortraitBg, SKIN } from '@bg/ui';
+import { ArtDefs, Bust, PortraitBg, SKIN, iconize } from '@bg/ui';
 
 export const ROLE_INFO: Record<Role, { name: string; side: 'agent' | 'spy'; tone: string; know: string; goal: string }> = {
   agent: { name: '요원', side: 'agent', tone: '#2f6fb0', know: '아무것도 몰라요. 투표와 원정 결과로 첩자를 찾아요.', goal: '원정 3번 성공' },
@@ -111,7 +111,7 @@ export function TokenCard({ kind, onClick, disabled, selected }: { kind: 'yes' |
   return (
     <Tag className={`sm-token pc ${kind} ${selected ? 'selected' : ''}`} onClick={onClick} disabled={onClick ? disabled : undefined} aria-label={label}>
       <span className="sm-token-icon" aria-hidden>
-        {icon}
+        {iconize(icon)}
       </span>
       <b>{label}</b>
     </Tag>
