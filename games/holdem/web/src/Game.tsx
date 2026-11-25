@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import type { RoomView } from '@bg/core';
 import { GameConfig, GameView, LogEntry } from '@bg/holdem-engine';
 import { CardBack, CountBadge, EmoteBubble, PlayingCard, SeatDot, seatColor, iconize } from '@bg/ui';
-import { GameScreenProps, useNarrow, ResultSheet, SideNote, TableBanner, TableEmotes, TableLayout, TableTopBar, Ticker, emotesBySeat, rankOf, useLogSounds, usePeek, useTable, useDealFx } from '@bg/web';
+import { flyClone, GameScreenProps, useNarrow, ResultSheet, SideNote, TableBanner, TableEmotes, TableLayout, TableTopBar, Ticker, emotesBySeat, rankOf, useLogSounds, usePeek, useTable, useDealFx } from '@bg/web';
 import { ChipStack } from './theme';
 
 type View = RoomView<GameView, GameConfig>;
@@ -16,6 +16,16 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
   const t = useTable(view, notify, { title: "Hold'em", turn: g.turn, playing: g.status === 'playing', simultaneous: showdown, quiet: showdown, stepKey: `${g.handNo}-${g.street}-${g.log.length ? g.log[g.log.length - 1].n : 0}`, mySub: g.toCall ? `${g.toCall} 콜?` : '체크 또는 베팅' });
   // 소리: 콜·레이즈는 칩, 올인은 칩 여러 개, 접기는 카드, 새 카드는 카드 깔기, 이기면 칩 쓸어 담기
   useLogSounds(g.log, (e) => (e.type === 'act' ? (e.act === 'allin' ? 'chips' : e.act === 'fold' ? 'card' : e.act === 'check' ? 'tick' : 'chip') : e.type === 'street' ? 'deal' : e.type === 'hand' ? 'shuffle' : e.type === 'win' ? ['sweep', 'coins'] : e.type === 'end' ? 'win' : e.type === 'bust' ? 'thud' : null));
+  // 팟을 가져가면 칩이 이긴 사람 자리로 쓸려 감
+  const winLog = [...g.log].reverse().find((e) => e.type === 'win');
+  const winN = winLog?.n ?? 0;
+  useEffect(() => {
+    if (!winLog || winLog.type !== 'win') return;
+    const pot = document.querySelector('.hd-pot');
+    winLog.pots.forEach((p, k) =>
+      p.winners.forEach((w) => flyClone(pot, document.querySelector(`[data-hd-seat="${w}"] .hd-chips`), { count: Math.min(5, 2 + Math.floor(p.amount / 200)), delay: 250 + k * 200, duration: 700, like: pot?.querySelector('.hd-stack') ?? null })),
+    );
+  }, [winN]); // eslint-disable-line react-hooks/exhaustive-deps
   // 새 판마다 카드를 섞고 나눠 주는 연출 (@bg/web deal-fx)
   useDealFx(`${g.round}-${g.handNo}`, { per: 2, seats: '.hd-seat:not(.busted)', hand: null, origin: '.hd-center', initial: g.log.length <= 4 });
   const names = t.names;
@@ -60,7 +70,7 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
           const hole = g.hole[s];
           const m = view.members.find((x) => x.seat === s);
           return (
-            <div key={s} className={`hd-seat ${g.turn === s && !showdown ? 'acting' : ''} ${g.folded[s] ? 'folded' : ''} ${g.busted[s] ? 'busted' : ''} ${winners.has(s) ? 'winner' : ''} ${s === me ? 'me' : ''}`} style={{ ...pos, ['--seat' as string]: seatColor(s) }}>
+            <div key={s} data-hd-seat={s} className={`hd-seat ${g.turn === s && !showdown ? 'acting' : ''} ${g.folded[s] ? 'folded' : ''} ${g.busted[s] ? 'busted' : ''} ${winners.has(s) ? 'winner' : ''} ${s === me ? 'me' : ''}`} style={{ ...pos, ['--seat' as string]: seatColor(s) }}>
               <EmoteBubble e={bySeat.get(s)} />
               <div className="hd-cards">
                 {hole === null ? (
@@ -69,7 +79,7 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
                     <CardBack size="sm" />
                   </>
                 ) : (
-                  hole.map((cd) => <PlayingCard key={cd.id} card={cd} size={s === me ? 'md' : 'sm'} />)
+                  hole.map((cd) => <PlayingCard key={cd.id} card={cd} size={s === me ? 'md' : 'sm'} className={s === me ? '' : 'flip-reveal'} />)
                 )}
               </div>
               <div className="hd-name">

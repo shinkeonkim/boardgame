@@ -136,9 +136,15 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
                       <span className="small">
                         <SeatDot seat={seat} size={12} /> {names[seat]}
                       </span>
-                      {ds.map((d, i) => (
-                        <Die key={i} face={d} seat={seat} size={28} hit={matches(d)} wild={r!.wild && d === 1} className="reveal-die" style={{ animationDelay: `${(seat * 5 + i) * 45}ms` }} />
-                      ))}
+                      <span className="bd-reveal-dice">
+                        {ds.map((d, i) => (
+                          <Die key={i} face={d} seat={seat} size={28} hit={matches(d)} wild={r!.wild && d === 1} className="reveal-die" style={{ animationDelay: `${(seat * 5 + i) * 45 + 260}ms` }} />
+                        ))}
+                        {/* 컵을 들어 올리며 공개 (실제 컵 놀이처럼) */}
+                        <span className="bd-lift" style={{ animationDelay: `${seat * 140}ms` }} aria-hidden>
+                          <Cup seat={seat} count={ds.length} size={34} />
+                        </span>
+                      </span>
                     </div>
                   ) : null,
                 )}

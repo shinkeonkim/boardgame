@@ -38,3 +38,29 @@ export function useColorAssist(): [boolean, (on: boolean) => void] {
   }, []);
   return [on, setColorAssist];
 }
+
+/** 진동(햅틱): 내 차례·경고·승리 때 짧게. 기본 켬, 지원하는 기기만 (localStorage 'bg:haptic' = '0' 이면 끔) */
+const HKEY = 'bg:haptic';
+export function getHaptics(): boolean {
+  try {
+    return localStorage.getItem(HKEY) !== '0';
+  } catch {
+    return true;
+  }
+}
+export function setHaptics(on: boolean) {
+  try {
+    if (on) localStorage.removeItem(HKEY);
+    else localStorage.setItem(HKEY, '0');
+  } catch {
+    /* ignore */
+  }
+}
+export function haptic(pattern: number | number[]) {
+  if (typeof navigator === 'undefined' || !navigator.vibrate || !getHaptics()) return;
+  try {
+    navigator.vibrate(pattern);
+  } catch {
+    /* ignore */
+  }
+}

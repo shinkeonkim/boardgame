@@ -1,4 +1,4 @@
-import { useColorAssist } from './a11y';
+import { getHaptics, haptic, setHaptics, useColorAssist } from './a11y';
 import { Icon } from './icons';
 import { CSSProperties, useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
@@ -74,6 +74,7 @@ export function SkinPicker({ onClose }: { onClose: () => void }) {
       <Choices list={CHIP_TEXTURES} value={c.chip} onPick={(chip) => pick({ chip })} kind="chip" />
       <h4>보기 도움</h4>
       <ColorAssistToggle />
+      <HapticsToggle />
     </Modal>
   );
 }
@@ -101,6 +102,29 @@ function ColorAssistToggle() {
       <span>
         <b>색 구분 도움</b>
         <small className="muted">색으로만 나뉘는 보석·카드·타일에 색 이름 첫 글자(빨·파·초…)를 함께 보여요</small>
+      </span>
+    </label>
+  );
+}
+
+/** 진동 켜고 끄기 (지원하는 폰만) */
+function HapticsToggle() {
+  const [on, setOn] = useState(getHaptics);
+  if (typeof navigator === 'undefined' || !navigator.vibrate) return null;
+  return (
+    <label className="skin-assist">
+      <input
+        type="checkbox"
+        checked={on}
+        onChange={(e) => {
+          setHaptics(e.target.checked);
+          setOn(e.target.checked);
+          if (e.target.checked) haptic(20);
+        }}
+      />
+      <span>
+        <b>진동</b>
+        <small className="muted">내 차례·경고·승리 때 짧게 떨려요</small>
       </span>
     </label>
   );

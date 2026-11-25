@@ -271,3 +271,21 @@
     animation: none;
   }
 }
+
+/* 버린 카드 더미: 맨 위 카드 아래로 몇 장이 삐뚤게 깔려 보임 */
+.oc-discard {
+  position: relative;
+  display: inline-grid;
+}
+.oc-discard > * {
+  grid-area: 1 / 1;
+}
+.oc-under {
+  width: 100%;
+  height: 100%;
+  border-radius: 10px;
+  background: var(--card-tex, #fffaf1), #fffaf1;
+  background-color: #fffaf1;
+  border: 1px solid rgb(0 0 0 / 0.18);
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.15);
+}

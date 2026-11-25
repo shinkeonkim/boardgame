@@ -379,3 +379,39 @@
   display: flex;
   gap: 6px;
 }
+
+/* 원정 결과: 낸 카드를 섞어 한 장씩 뒤집기 */
+.sm-reveal {
+  display: grid;
+  justify-items: center;
+  gap: 6px;
+  margin: 6px 0;
+}
+.sm-reveal-cards {
+  display: flex;
+  gap: 6px;
+}
+.sm-reveal-card .sm-token {
+  width: 44px;
+}
+.sm-reveal-result {
+  font-size: 0.95rem;
+  animation: sm-result-in 0.4s ease-out both;
+}
+.sm-reveal.win .sm-reveal-result {
+  color: #2f9e6a;
+}
+.sm-reveal.lose .sm-reveal-result {
+  color: #d0453a;
+}
+@keyframes sm-result-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sm-reveal-result {
+    animation: none;
+  }
+}

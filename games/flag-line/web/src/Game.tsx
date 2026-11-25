@@ -102,7 +102,10 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
               <div key={i} className={`fl-col ${f.owner === mySide ? 'won' : f.owner === opp ? 'lost' : ''} ${sel && myTurn && playable(i) ? 'target' : ''}`} onClick={() => onFlag(i)}>
                 <Stack f={i} side={opp} />
                 <div className="fl-flag">
-                  <FlagIcon owner={f.owner} />
+                  {/* 깃발 주인이 정해지면 깃발이 휙 넘어가며 그쪽 색으로 */}
+                  <span key={f.owner ?? 'none'} className={f.owner !== null ? 'flip-reveal fl-flag-icon' : 'fl-flag-icon'}>
+                    <FlagIcon owner={f.owner} />
+                  </span>
                   <span className="small">{i + 1}</span>
                   {g.claimable.includes(i) && (
                     <button

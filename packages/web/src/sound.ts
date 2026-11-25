@@ -1,4 +1,8 @@
+import { haptic } from '@bg/ui';
 import { Fx, playFx } from './fx';
+
+/** 소리와 함께 오는 진동 (중요한 순간만 — 카드 한 장마다 떨리면 피곤함) */
+const HAPTIC: Partial<Record<Fx, number | number[]>> = { myTurn: [18, 60, 18], alert: 40, fail: [30, 40, 30], win: [20, 40, 20, 40, 60] };
 
 // 짧은 알림음 (WebAudio로 합성 — 음원 파일 없음). 음소거 설정은 기기에만 저장.
 let ctx: AudioContext | null = null;
@@ -45,6 +49,8 @@ export const sound = {
   },
   /** 효과음 (fx.ts): 카드·칩·주사위·타일… 게임 도구에 맞는 소리 */
   fx(name: Fx, delay = 0) {
+    const h = HAPTIC[name];
+    if (h) setTimeout(() => haptic(h), delay * 1000);
     if (muted) return;
     try {
       ctx ??= new AudioContext();

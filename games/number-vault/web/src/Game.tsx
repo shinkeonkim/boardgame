@@ -116,7 +116,7 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
                   <div className="nv-tiles">
                     {g.rows[seat].map((tile) => (
                       <div key={tile.id} className="nv-slot" data-flip={`t${tile.id}`}>
-                        <TileView t={tile} selected={sel?.tileId === tile.id} onClick={!tile.revealed ? () => pickTile(seat, tile.id, tile.revealed) : undefined} />
+                        <TileView key={tile.revealed ? 'open' : 'closed'} t={tile} className={tile.revealed ? 'flip-reveal' : ''} selected={sel?.tileId === tile.id} onClick={!tile.revealed ? () => pickTile(seat, tile.id, tile.revealed) : undefined} />
                         {!tile.revealed && missesFor(tile.id).size > 0 && (
                           <span className="nv-miss" title="틀린 추측">
                             {[...missesFor(tile.id)].map((x) => (

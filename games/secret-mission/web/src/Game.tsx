@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { RoomView } from '@bg/core';
 import { GameConfig, GameView, LogEntry, ROLES_ORDER, TEAM_SIZES, failsNeeded, isSpy } from '@bg/secret-mission-engine';
 import { EmoteBubble, SeatDot, seatColor, Icon, iconize } from '@bg/ui';
@@ -105,6 +105,7 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
                   </span>
                 ))}
               </div>
+              <MissionReveal log={g.log} sizes={sizes} />
               <div className="sm-rejects" title="연속 부결">
                 {Array.from({ length: c.rejectLimit }, (_, i) => (
                   <i key={i} className={i < g.rejects ? 'on' : ''} />
@@ -259,3 +260,47 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
     />
   );
 }
+
+/**
+ * 원정이 끝나면 낸 카드를 섞어 한 장씩 뒤집어 보여 줌 (누가 냈는지는 모르게 — 실제로 카드를 섞어 공개하듯).
+ * 몇 초 뒤 사라짐. 결과(성공·실패)는 원정 기록 칸에 남는다.
+ */
+function MissionReveal({ log, sizes }: { log: LogEntry[]; sizes: number[] }) {
+  const e = [...log].reverse().find((x) => x.type === 'mission') as Extract<LogEntry, { type: 'mission' }> | undefined;
+  const [shown, setShown] = useState<number | null>(null);
+  const n = e?.n ?? 0;
+  const seen = useRef(n);
+  useEffect(() => {
+    if (!e || n === seen.current) return;
+    seen.current = n;
+    setShown(n);
+    const size = sizes[e.mission] ?? 3;
+    const t = setTimeout(() => setShown(null), size * 450 + 2600);
+    return () => clearTimeout(t);
+  }, [n]); // eslint-disable-line react-hooks/exhaustive-deps
+  if (!e || shown !== e.n) return null;
+  const size = sizes[e.mission] ?? 3;
+  // 섞기: 기록 번호로 정해지는 순서 (모두의 화면이 같게)
+  const cards = Array.from({ length: size }, (_, i) => i < e.fails);
+  let seed = e.n * 9301 + 49297;
+  for (let i = cards.length - 1; i > 0; i--) {
+    seed = (seed * 9301 + 49297) % 233280;
+    const j = Math.floor((seed / 233280) * (i + 1));
+    [cards[i], cards[j]] = [cards[j], cards[i]];
+  }
+  return (
+    <div className={`sm-reveal ${e.success ? 'win' : 'lose'}`} role="status" aria-label={`원정 ${e.mission + 1} ${e.success ? '성공' : '실패'}, 실패 카드 ${e.fails}장`}>
+      <div className="sm-reveal-cards">
+        {cards.map((fail, i) => (
+          <span key={i} className="sm-reveal-card flip-reveal" style={{ animationDelay: `${300 + i * 450}ms` }}>
+            <TokenCard kind={fail ? 'fail' : 'success'} />
+          </span>
+        ))}
+      </div>
+      <b className="sm-reveal-result" style={{ animationDelay: `${300 + size * 450}ms` }}>
+        {e.success ? '원정 성공' : `원정 실패 · 실패 카드 ${e.fails}장`}
+      </b>
+    </div>
+  );
+}
+

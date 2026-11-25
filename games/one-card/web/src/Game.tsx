@@ -124,7 +124,13 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
               <span className="small">더미</span>
             </div>
             <div className="oc-pile">
-              <PlayingCard key={g.top.id + g.discardCount} card={g.top} size="lg" className="oc-top" />
+              <span className="oc-discard">
+                {/* 아래 깔린 카드들: 많이 쌓일수록 삐뚤빼뚤 두툼하게 */}
+                {Array.from({ length: Math.min(5, Math.max(0, g.discardCount - 1)) }, (_, i) => (
+                  <span key={i} className="oc-under" style={{ transform: `rotate(${((i * 53) % 17) - 8}deg) translate(${((i * 29) % 7) - 3}px, ${i}px)` }} aria-hidden />
+                ))}
+                <PlayingCard key={g.top.id + g.discardCount} card={g.top} size="lg" className="oc-top" />
+              </span>
               <span className="small">버린 카드</span>
             </div>
             <div className="oc-state">
