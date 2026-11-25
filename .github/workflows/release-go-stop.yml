@@ -1,0 +1,21 @@
+name: release go-stop
+on:
+  push:
+    branches: [main]
+    paths:
+      - "games/go-stop/**"
+      - "!games/go-stop/deploy/**"
+      - "packages/**"
+      - "Dockerfile"
+      - "package-lock.json"
+      - "scripts/bundle.mjs"
+  workflow_dispatch:
+permissions:
+  contents: write
+  packages: write
+jobs:
+  release:
+    uses: ./.github/workflows/_release.yml
+    with:
+      target: go-stop
+      deploy-dir: games/go-stop/deploy
