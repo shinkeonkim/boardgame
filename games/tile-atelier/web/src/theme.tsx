@@ -20,7 +20,7 @@ export function TileView({ color, size = 28, selected, onClick, ghost, first, st
     );
   const t = TILE[color];
   return (
-    <Tag className={`tile ${selected ? 'selected' : ''} ${ghost ? 'ghost' : ''}`} style={{ width: size, height: size, ['--tile' as string]: t.fill, ...style }} onClick={onClick} aria-label={`${t.name} 타일`}>
+    <Tag className={`tile ${selected ? 'selected' : ''} ${ghost ? 'ghost' : ''}`} data-color={color} style={{ width: size, height: size, ['--tile' as string]: t.fill, ...style }} onClick={onClick} aria-label={`${t.name} 타일`}>
       <i aria-hidden>{t.mark}</i>
     </Tag>
   );

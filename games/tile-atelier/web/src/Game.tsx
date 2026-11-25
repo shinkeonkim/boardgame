@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useMemo, useState } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import type { RoomView } from '@bg/core';
 import { FIRST, GameConfig, GameView, LogEntry, lineProblem } from '@bg/tile-atelier-engine';
 import { AlertBanner, SeatDot, seatColor, Icon } from '@bg/ui';
@@ -22,15 +22,34 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
   // 누가 공장에서 타일을 가져가면: 공장(가운데) → 그 사람의 줄(바닥)로 날아감
   const lastTake = [...g.log].reverse().find((e) => e.type === 'take' || e.type === 'round');
   const takeKey = lastTake?.type === 'take' ? lastTake.n : null;
+  // 바로 앞 화면의 공장 (가져간 뒤 남은 타일이 무엇이었는지 알려고)
+  const prevFactories = useRef(g.factories);
   useLayoutEffect(() => {
+    const before = prevFactories.current;
     if (!lastTake || lastTake.type !== 'take') return;
     const from = document.querySelector(`[data-factory="${lastTake.source}"]`);
+    // 공장에서 가져가면 남은 타일은 가운데로 미끄러짐
+    if (lastTake.source >= 0 && before[lastTake.source]) {
+      const left = before[lastTake.source].filter((col) => col !== lastTake.color);
+      const centerTiles = [...document.querySelectorAll('.ta-center .tile')] as HTMLElement[];
+      const used = new Set<HTMLElement>();
+      left.forEach((col, j) => {
+        const el = [...centerTiles].reverse().find((x) => x.dataset.color === String(col) && !used.has(x));
+        if (!el) return;
+        used.add(el);
+        flyClone(from, el, { delay: 120 + j * 60, duration: 420 });
+      });
+    }
     const board = document.querySelector(`[data-board="${lastTake.seat}"]`);
     const row = board?.querySelector(lastTake.line >= 0 ? `[data-line="${lastTake.line}"]` : '[data-floor]');
     const tiles = row ? [...row.querySelectorAll('.tile')] : [];
     tiles.slice(-lastTake.count).forEach((el, j) => flyClone(from, el, { delay: j * 70 }));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [takeKey]);
+  // 위 효과가 읽은 뒤에 갱신 (효과는 적힌 순서대로 돎)
+  useLayoutEffect(() => {
+    prevFactories.current = g.factories;
+  }, [g.factories]);
   // 소리: 공장에서 가져오면 타일 여러 개, 벽에 붙이면 타일 하나, 보너스는 축하
   useLogSounds(g.log, (e) => (e.type === 'take' ? 'tiles' : e.type === 'tile' ? 'tile' : e.type === 'bonus' ? 'success' : e.type === 'round' ? 'shuffle' : null));
   const names = t.names;
@@ -112,13 +131,13 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
         <>
           <section className="ta-factories" aria-label="공장">
             {g.factories.map((f, i) => (
-              <div key={i} data-factory={i} className={`ta-factory ${f.length ? '' : 'empty'}`}>
+              <div key={i} data-factory={i} className={`ta-factory ${f.length ? '' : 'empty'} ${sel?.source === i ? 'picking' : ''}`}>
                 {f.map((col, k) => (
                   <TileView key={k} color={col} size={32} selected={sel?.source === i && sel.color === col} onClick={() => pickTile(i, col)} />
                 ))}
               </div>
             ))}
-            <div className="ta-center" data-factory={-1} aria-label="가운데">
+            <div className={`ta-center ${sel?.source === -1 ? 'picking' : ''}`} data-factory={-1} aria-label="가운데">
               {g.center.length === 0 && <span className="muted small">가운데</span>}
               {[...g.center]
                 .sort((a, b) => a - b)
