@@ -14,4 +14,4 @@ labels:
 images:
 - name: ghcr.io/shinkeonkim/boardgame-number-runs
   newName: ghcr.io/shinkeonkim/boardgame-number-runs
-  newTag: sha-a527697
+  newTag: sha-bc8cbcc
