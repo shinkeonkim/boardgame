@@ -6,6 +6,7 @@ import { ThemeToggle, Icon, iconize } from '@bg/ui';
 import { useGameClient } from './App';
 import { GuideButton } from './Guide';
 import { BASE, call, store } from './runtime';
+import { readRulesParam } from './rules-link';
 
 export function Brand({ small }: { small?: boolean }) {
   const client = useGameClient();
@@ -84,13 +85,15 @@ export function Home({ onEnter, flash }: { onEnter: (code: string) => void; flas
   const [joinCode, setJoinCode] = useState('');
   const [error, setError] = useState<string | null>(flash);
   const [busy, setBusy] = useState(false);
+  // 친구가 보낸 하우스룰 링크(?rules=)로 들어왔으면 그 규칙으로 방을 만듦
+  const [rules, setRules] = useState(() => readRulesParam());
 
   const create = async () => {
     if (!name.trim()) return setError('닉네임을 입력해 주세요');
     setBusy(true);
     store.setName(name.trim());
     const pw = usePw ? password : '';
-    const r = await call<{ code: string; token: string }>('create', { name, password: pw || undefined });
+    const r = await call<{ code: string; token: string }>('create', { name, password: pw || undefined, ...(rules ? { config: rules } : {}) });
     setBusy(false);
     if (!r.ok) return setError(r.error);
     store.setToken(r.code, r.token);
@@ -109,6 +112,17 @@ export function Home({ onEnter, flash }: { onEnter: (code: string) => void; flas
     <HomeShell>
       <h2 className="home-card-title">게임 시작하기</h2>
       {error && <div className="alert">{error}</div>}
+      {rules && (
+        <div className="notice rules-shared" role="status">
+          <Icon name="link" />
+          <span>
+            <b>공유받은 하우스룰</b>로 방을 만들어요. 대기실에서 더 바꿀 수 있어요.
+          </span>
+          <button type="button" className="btn tiny ghost" onClick={() => setRules(null)}>
+            기본 규칙으로
+          </button>
+        </div>
+      )}
       <label className="field">
         <span>닉네임</span>
         <input value={name} maxLength={16} onChange={(e) => setName(e.target.value)} placeholder="예: 민지" />

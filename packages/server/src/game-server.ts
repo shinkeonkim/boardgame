@@ -222,8 +222,16 @@ export function createGameServer(opts: GameServerOptions) {
 
     socket.on(
       'create',
-      handler<{ name: string; password?: string }>(socket, ({ name, password }) => {
+      handler<{ name: string; password?: string; config?: object }>(socket, ({ name, password, config }) => {
         const { room, member } = rooms.create(name, typeof password === 'string' ? password : undefined);
+        // 공유받은 하우스룰 링크(?rules=)로 만들면 그 규칙으로 시작 (sanitizeConfig 가 걸러냄)
+        if (config && typeof config === 'object' && !Array.isArray(config)) {
+          try {
+            rooms.setConfig(room, member, config);
+          } catch {
+            /* 이상한 규칙이면 기본 규칙 그대로 */
+          }
+        }
         attach(socket, room, member);
         broadcast(room);
         return { code: room.code, token: member.token };

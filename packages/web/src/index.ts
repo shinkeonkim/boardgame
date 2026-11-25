@@ -16,3 +16,4 @@ export * from './narrow';
 export * from './deal-fx';
 export * from './site-notice';
 export * from './pwa';
+export * from './rules-link';

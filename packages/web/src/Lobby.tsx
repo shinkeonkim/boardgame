@@ -7,6 +7,7 @@ import type { Act } from './client';
 import { SwitchGame } from './switch-game';
 import { GuideButton } from './Guide';
 import { BASE, store } from './runtime';
+import { rulesLink } from './rules-link';
 
 /** QR·공유 링크의 바깥 주소: 서버 PUBLIC_URL(운영) → 로컬 개발이면 LAN 주소 → 지금 주소 */
 function useShareBase() {
@@ -152,7 +153,10 @@ export function Lobby({ view, act, onLeave, emotes, onEmote }: { view: RoomView;
         </section>
 
         <section className="panel config">
-          <h2>규칙 {!isHost && <span className="muted small">방장만 바꿀 수 있어요</span>}</h2>
+          <div className="config-head">
+            <h2>규칙 {!isHost && <span className="muted small">방장만 바꿀 수 있어요</span>}</h2>
+            <ShareRulesButton config={(view.config ?? {}) as object} />
+          </div>
           <ConfigPanel view={view} config={view.config} isHost={isHost} set={(patch) => isHost && act('config', { config: patch })} />
         </section>
       </div>
@@ -336,3 +340,25 @@ function ShareBox({ view, isHost, act }: { view: RoomView; isHost: boolean; act:
     </section>
   );
 }
+
+/** 지금 규칙을 링크로: 받은 사람이 그 링크에서 방을 만들면 같은 규칙으로 시작 */
+function ShareRulesButton({ config }: { config: object }) {
+  const [done, setDone] = useState(false);
+  const share = async () => {
+    const url = rulesLink(BASE, config);
+    try {
+      if (navigator.share && matchMedia('(pointer: coarse)').matches) await navigator.share({ title: '우리 하우스룰', url });
+      else await navigator.clipboard.writeText(url);
+      setDone(true);
+      setTimeout(() => setDone(false), 1800);
+    } catch {
+      /* 사용자가 취소 */
+    }
+  };
+  return (
+    <button type="button" className="btn tiny ghost" onClick={share} title="이 규칙으로 방을 만드는 링크">
+      <Icon name={done ? 'check' : 'link'} /> {done ? '복사했어요' : '규칙 링크'}
+    </button>
+  );
+}
+

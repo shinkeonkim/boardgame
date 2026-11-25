@@ -80,3 +80,17 @@ it('Yacht → One Card: 방장·손님·봇이 함께 옮김', { timeout: 120_00
   assert.equal(await guest.locator('button:has-text("게임 시작하기")').count(), 0);
   assert.deepEqual(errors, []);
 });
+
+it('하우스룰 링크(?rules=)로 만든 방은 그 규칙으로 시작', { timeout: 60_000 }, async () => {
+  const p = await (await browser.newContext()).newPage();
+  const rules = Buffer.from(JSON.stringify({ rolls: 4, bonusAt: 70 })).toString('base64url');
+  await p.goto(`${ORIGIN}/yacht/?rules=${rules}`);
+  await p.waitForSelector('text=공유받은 하우스룰');
+  await p.fill('input[placeholder="예: 민지"]', '규칙');
+  await p.click('button:has-text("방 만들기")');
+  await p.waitForSelector('text=방 코드');
+  await p.waitForSelector('text=4번 굴리기');
+  assert.match(await p.innerText('.start-bar'), /4번 굴리기 · 위쪽 70점/);
+  // 규칙 링크 버튼이 있음
+  assert.equal(await p.locator('button:has-text("규칙 링크")').count(), 1);
+});
