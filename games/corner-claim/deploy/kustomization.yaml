@@ -14,4 +14,4 @@ labels:
 images:
 - name: ghcr.io/shinkeonkim/boardgame-corner-claim
   newName: ghcr.io/shinkeonkim/boardgame-corner-claim
-  newTag: sha-a8f22f8
+  newTag: sha-8deddc3
