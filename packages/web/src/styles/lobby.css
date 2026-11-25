@@ -272,3 +272,31 @@
 .rules-shared span {
   flex: 1;
 }
+
+/* 이 방 리그 */
+.league h2 {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.league-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-variant-numeric: tabular-nums;
+}
+.league-table th,
+.league-table td {
+  padding: 5px 8px;
+  text-align: center;
+  border-bottom: 1px solid var(--line);
+}
+.league-table th:nth-child(2),
+.league-table td:nth-child(2) {
+  text-align: left;
+}
+.league-table tr.lead td {
+  font-weight: 800;
+}
+.league-table tr.lead td:first-child {
+  color: #d4a017;
+}

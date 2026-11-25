@@ -193,3 +193,45 @@ describe('봇 대기 시간 (사람이 따라올 수 있게)', () => {
     for (let i = 0; i < 50; i++) expect(waitOf(base, { changedAt: 0, newTurn: true }, {})).toBeGreaterThanOrEqual(1600);
   });
 });
+
+describe('방 리그 · 관전자 따라 보기', () => {
+  it('끝난 매치마다 이름별로 판 수·승·이긴 상대 수가 쌓임', () => {
+    const rooms = new Rooms(simul as never);
+    const { room, member: host } = rooms.create('호스트');
+    rooms.connect(room, host);
+    const { member: p1 } = rooms.join(room.code, { name: 'p1' });
+    rooms.connect(room, p1);
+    rooms.start(room, host);
+    rooms.move(room, host, { pick: 9 });
+    rooms.move(room, p1, { pick: 3 });
+    const v = rooms.view(room, host);
+    expect(v.outcome).toMatchObject({ status: 'match-over', totals: [9, 3], lowerWins: false });
+    expect(v.league).toEqual([
+      { name: '호스트', played: 1, wins: 1, beaten: 1, bot: false },
+      { name: 'p1', played: 1, wins: 0, beaten: 0, bot: false },
+    ]);
+  });
+
+  it('관전자는 방장이 허락해야 한 사람 시점(숨긴 정보 포함)으로 봄', () => {
+    const rooms = new Rooms(simul as never);
+    const { room, member: host } = rooms.create('호스트');
+    rooms.connect(room, host);
+    const { member: p1 } = rooms.join(room.code, { name: 'p1' });
+    rooms.connect(room, p1);
+    rooms.start(room, host);
+    const { member: spec } = rooms.join(room.code, { name: '관전', spectator: true });
+    rooms.connect(room, spec);
+    rooms.move(room, host, { pick: 5 });
+    expect(() => rooms.follow(room, spec, 0)).toThrow('방장이');
+    expect(() => rooms.setPeek(room, p1, true)).toThrow('방장만');
+    rooms.setPeek(room, host, true);
+    expect(() => rooms.follow(room, p1, 0)).toThrow('관전 중일 때만');
+    rooms.follow(room, spec, 0);
+    const v = rooms.view(room, spec);
+    expect(v.following).toBe(0);
+    expect((v.game as { picks: unknown[] }).picks[0]).toBe(5);
+    // 끄면 다시 공개 화면
+    rooms.setPeek(room, host, false);
+    expect((rooms.view(room, spec).game as { picks: unknown[] }).picks[0]).toBe(true);
+  });
+});

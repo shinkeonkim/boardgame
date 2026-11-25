@@ -72,6 +72,21 @@ export interface RoomView<GameView = unknown, Config = unknown> {
   nudgeInMs: number | null;
   /** 게임 공통 결과 요약 (기기 전적·다시 보기용). 게임이 없으면 null */
   outcome: MatchOutcome | null;
+  /** 이 방에서 끝낸 매치들의 누적 (방 리그). 판 수 많은 순이 아니라 순위 순 */
+  league: LeagueRow[];
+  /** 방장이 허락하면 관전자가 한 사람을 골라 그 사람 시점(손패 포함)으로 봄 */
+  peek: boolean;
+  /** 내가 관전자로서 따라 보고 있는 좌석 (아니면 null) */
+  following: number | null;
+}
+
+export interface LeagueRow {
+  name: string;
+  played: number;
+  wins: number;
+  /** 이긴 상대 수의 합 (4명 중 2등이면 2) — 동률 가르기 */
+  beaten: number;
+  bot: boolean;
 }
 
 /** 게임마다 다른 화면과 별개로, 모든 게임이 같은 모양으로 내는 결과 요약 */

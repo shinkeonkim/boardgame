@@ -241,10 +241,15 @@ function RoomPage({ code, onExit }: { code: string; onExit: (msg?: string) => vo
       </div>
     );
   }
+  const meMember = view.members.find((m) => m.id === view.you);
+  const spectating = !!view.game && meMember?.role === 'spectator';
   return (
     <ReplayContext.Provider value={rec.count > 3 && view.outcome?.status !== 'playing' ? { frames: rec.count, open: replay.start } : null}>
       {view.game ? (
-        <Game view={view} act={act} onLeave={leave} notify={setToast} emotes={emotes} onEmote={(id) => act('emote', { id })} />
+        // 다른 사람 시점으로 보는 관전자는 판을 눌러도 아무 일 없게 (그 사람인 척 둘 수 없음)
+        <div className={spectating && view.following !== null ? 'following' : undefined} style={{ display: 'contents' }}>
+          <Game view={view} act={act} onLeave={leave} notify={setToast} emotes={emotes} onEmote={(id) => act('emote', { id })} />
+        </div>
       ) : (
         <Lobby view={view} act={act} onLeave={leave} emotes={emotes} onEmote={(id) => act('emote', { id })} />
       )}
@@ -256,6 +261,7 @@ function RoomPage({ code, onExit }: { code: string; onExit: (msg?: string) => vo
           </div>
         </NoticeSlot>
       )}
+      {spectating && view.peek && <FollowBar view={view} act={act} />}
       {!connected && <div className="offline">연결이 끊겼어요. 다시 연결하는 중이에요…</div>}
       <SiteNotice text={view.notice} maintenance={view.maintenance} />
       {relocating && (
@@ -346,3 +352,24 @@ export function CoverFan({ children, spread = 8 }: { children: ReactNode[]; spre
     </div>
   );
 }
+
+/** 관전자: 누구 시점으로 볼지 (방장이 「관전자에게 패 보여 주기」를 켰을 때만) */
+function FollowBar({ view, act }: { view: RoomView; act: (e: string, p?: object) => Promise<boolean> }) {
+  const seats = view.members.filter((m) => m.seat !== null).sort((a, b) => a.seat! - b.seat!);
+  return (
+    <div className={`follow-bar ${view.following !== null ? 'on' : ''}`} role="toolbar" aria-label="관전 시점">
+      <span className="small">
+        <Icon name="eye" /> 관전 시점
+      </span>
+      <button type="button" className={`btn tiny ${view.following === null ? 'primary' : 'ghost'}`} onClick={() => act('follow', { seat: null })}>
+        공개 화면
+      </button>
+      {seats.map((m) => (
+        <button key={m.id} type="button" className={`btn tiny ${view.following === m.seat ? 'primary' : 'ghost'}`} onClick={() => act('follow', { seat: m.seat })}>
+          {m.name}
+        </button>
+      ))}
+    </div>
+  );
+}
+

@@ -172,6 +172,8 @@ export function Lobby({ view, act, onLeave, emotes, onEmote }: { view: RoomView;
         </section>
       </div>
 
+      {view.league.length > 0 && <LeagueTable rows={view.league} />}
+
       <div className="start-bar">
         <div className="small">
           {view.lobby.summary}
@@ -335,6 +337,14 @@ function ShareBox({ view, isHost, act }: { view: RoomView; isHost: boolean; act:
           onChange={(v) => act('listed', { listed: v })}
         />
       )}
+      {isHost && (
+        <Toggle
+          label="관전자에게 패 보여 주기"
+          hint={view.peek ? '관전자가 한 사람을 골라 그 사람 손패까지 볼 수 있어요 (훈수 주의)' : '관전자는 모두에게 공개된 것만 봐요'}
+          checked={view.peek}
+          onChange={(v) => act('peek', { on: v })}
+        />
+      )}
       {isHost &&
         (editingPw ? (
           <div className="row">
@@ -370,6 +380,44 @@ function ShareRulesButton({ config }: { config: object }) {
     <button type="button" className="btn tiny ghost" onClick={share} title="이 규칙으로 방을 만드는 링크">
       <Icon name={done ? 'check' : 'link'} /> {done ? '복사했어요' : '규칙 링크'}
     </button>
+  );
+}
+
+/** 이 방에서 끝낸 매치들의 누적 순위 (방이 살아 있는 동안 — 같은 이름이면 다시 들어와도 이어짐) */
+function LeagueTable({ rows }: { rows: RoomView['league'] }) {
+  return (
+    <section className="panel league" aria-labelledby="league-title">
+      <h2 id="league-title">
+        <Icon name="trophy" /> 이 방 리그 <span className="muted small">{rows.reduce((a, r) => Math.max(a, r.played), 0)}판째</span>
+      </h2>
+      <table className="league-table">
+        <thead>
+          <tr>
+            <th>순위</th>
+            <th>이름</th>
+            <th>판</th>
+            <th>승</th>
+            <th title="이긴 상대 수의 합">이긴 상대</th>
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((r, i) => (
+            <tr key={r.name} className={i === 0 ? 'lead' : ''}>
+              <td>{i + 1}</td>
+              <td>
+                {r.name}
+                {r.bot && <Icon name="bot" />}
+              </td>
+              <td>{r.played}</td>
+              <td>
+                <b>{r.wins}</b>
+              </td>
+              <td>{r.beaten}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </section>
   );
 }
 

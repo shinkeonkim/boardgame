@@ -153,3 +153,28 @@ it('판 다시 보기: 끝난 매치를 장면별로 재생 · 기기 전적에 
   assert.equal(stats[0]?.game, 'yacht');
   assert.equal(stats[0]?.won, true);
 });
+
+it('관전자 따라 보기: 방장이 허락하면 한 사람 시점(손패)으로', { timeout: 90_000 }, async () => {
+  const host = await (await browser.newContext()).newPage();
+  const spec = await (await browser.newContext()).newPage();
+  await host.goto(`${ORIGIN}/one-card/`);
+  await host.fill('input[placeholder="예: 민지"]', '방장');
+  await host.click('button:has-text("방 만들기")');
+  await host.waitForURL(/\/r\/[A-Z0-9]+/);
+  await host.click('button.bot-btn:has-text("보통")');
+  await spec.goto(host.url());
+  await spec.waitForSelector('text=초대받았어요');
+  await spec.fill('input >> nth=0', '구경');
+  await spec.click('button:has-text("관전하기")');
+  await host.waitForSelector('text=관전 중: 구경');
+  await host.click('text=관전자에게 패 보여 주기');
+  await host.click('button:has-text("게임 시작하기")');
+  await spec.waitForSelector('.follow-bar');
+  const before = await spec.locator('.oc-hand-panel .oc-card').count();
+  await spec.click('.follow-bar button:has-text("방장")');
+  await spec.waitForSelector('.follow-bar.on');
+  await spec.waitForFunction(() => document.querySelectorAll('.oc-hand-panel .oc-card').length > 0, null, { timeout: 10_000 });
+  assert.equal(before, 0, '공개 화면에서는 남의 손패가 안 보임');
+  await spec.click('.follow-bar button:has-text("공개 화면")');
+  await spec.waitForSelector('.follow-bar:not(.on)');
+});

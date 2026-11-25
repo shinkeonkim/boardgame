@@ -1,5 +1,5 @@
 import { randomBytes, randomInt, scryptSync, timingSafeEqual } from 'node:crypto';
-import { AnyGameModule, BASE_EMOTES, BotLevel, EmoteDef, EmoteEvent, AdminRoom, PausedInfo, RoomListing, RoomView, isRuleError } from '@bg/core';
+import { AnyGameModule, BASE_EMOTES, BotLevel, EmoteDef, EmoteEvent, AdminRoom, LeagueRow, PausedInfo, RoomListing, RoomView, isRuleError } from '@bg/core';
 import { Metrics, noMetrics } from './metrics';
 
 const CODE_ALPHABET = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
@@ -28,6 +28,8 @@ export interface Member {
   emoteTimes: number[];
   /** 봇이면 난이도 (봇은 소켓이 없고 늘 접속한 것으로 본다) */
   bot?: BotLevel | null;
+  /** 관전자가 따라 보는 좌석 (방장이 허락했을 때만 쓰임) */
+  follow?: number | null;
 }
 
 /** 봇 이름 (순서대로) */
@@ -42,6 +44,10 @@ export interface Room<Config = unknown, Match = unknown> {
   match: Match | null;
   /** 시작할 때마다 하나씩 (기기 전적이 같은 매치를 두 번 세지 않게) */
   matchNo?: number;
+  /** 방 리그: 이름 → 누적 (매치가 끝날 때마다) */
+  league?: Record<string, LeagueRow>;
+  /** 관전자 따라 보기 허락 (방장) */
+  peek?: boolean;
   /** 방장이 중지한 매치와 그때의 좌석(멤버 id) — 로비에서 설정을 바꾼 뒤 이어서 할 수 있다 */
   paused: { match: Match; seatIds: string[] } | null;
   turnDeadline: number | null;
@@ -72,6 +78,8 @@ interface Snap {
 
 /** 무중단 배포 때 이전 파드 → 새 파드로 넘기는 방 하나 (JSON) */
 export interface RoomSnapshot {
+  league?: Room['league'];
+  peek?: boolean;
   code: string;
   password: { salt: string; hash: string } | null;
   hostId: string;
@@ -568,6 +576,7 @@ export class Rooms {
     if (status === 'round-over' || status === 'match-over') this.c.rounds();
     if (status === 'round-over') this.botChatter(room, 'round');
     if (status === 'match-over') {
+      this.addToLeague(room, match);
       const players = room.members.filter((m) => m.seat !== null).length;
       this.c.finished({ players });
       if (room.startedAt) this.duration((Date.now() - room.startedAt) / 1000);
@@ -834,6 +843,40 @@ export class Rooms {
     }
   }
 
+  /** 끝난 매치를 방 리그에 더함 (이름 기준 — 같은 사람이 다시 들어와도 이어짐) */
+  private addToLeague(room: Room, match: unknown) {
+    const totals = this.game.totals(match);
+    const low = !!this.game.lowerWins;
+    room.league ??= {};
+    totals.forEach((v, seat) => {
+      const m = room.members.find((x) => x.seat === seat);
+      if (!m) return;
+      const beaten = totals.filter((o) => (low ? o > v : o < v)).length;
+      const won = totals.every((o) => (low ? o >= v : o <= v));
+      const row = (room.league![m.name] ??= { name: m.name, played: 0, wins: 0, beaten: 0, bot: !!m.bot });
+      row.played++;
+      row.beaten += beaten;
+      if (won) row.wins++;
+    });
+  }
+
+  /** 관전자 따라 보기 허락 (방장만) */
+  setPeek(room: Room, by: Member, on: boolean) {
+    this.requireHost(room, by);
+    room.peek = on;
+    if (!on) for (const m of room.members) m.follow = null;
+    this.touch(room);
+  }
+
+  /** 관전자가 따라 볼 좌석 (null 이면 모두의 공개 화면) */
+  follow(room: Room, by: Member, seat: number | null) {
+    if (by.role !== 'spectator') throw new RoomError('관전 중일 때만 다른 사람 시점으로 볼 수 있어요');
+    if (seat !== null && !room.peek) throw new RoomError('방장이 관전자에게 패 보여 주기를 켜야 볼 수 있어요');
+    if (seat !== null && !room.members.some((m) => m.seat === seat)) throw new RoomError('그 자리에 아무도 없어요');
+    by.follow = seat;
+    this.touch(room);
+  }
+
   // ---------- 무중단 배포: 방 상태 넘겨주기/받기 ----------
 
   exportAll(now = Date.now()): RoomSnapshot[] {
@@ -846,6 +889,8 @@ export class Rooms {
       match: r.match,
       paused: r.paused,
       listed: r.listed,
+      league: r.league,
+      peek: r.peek,
       turnRemainingMs: r.turnDeadline ? Math.max(0, r.turnDeadline - now) : null,
       idleMs: now - r.lastActive,
     }));
@@ -875,6 +920,8 @@ export class Rooms {
         failedPasswords: [],
         listed: s.listed ?? true,
         botTimer: null,
+        league: s.league,
+        peek: s.peek,
       };
       this.rooms.set(room.code, room);
       if (s.turnRemainingMs !== null && s.turnRemainingMs !== undefined) this.resetTimer(room, s.turnRemainingMs);
@@ -973,11 +1020,14 @@ export class Rooms {
         relocate: room.relocate ?? null,
       },
       // 매치가 끝난 뒤 로비로 돌아온 사람에게는 게임 대신 대기 로비를 보여준다
-      game: showGame ? this.game.viewFor(room.match, member.seat ?? -1) : null,
+      game: showGame ? this.game.viewFor(room.match, member.seat ?? (room.peek && member.role === 'spectator' && member.follow != null ? member.follow : -1)) : null,
       seats,
       actors: room.match && this.game.status(room.match) === 'playing' ? this.actors(room.match) : [],
       turnRemainingMs: room.turnDeadline ? Math.max(0, room.turnDeadline - Date.now()) : null,
       nudgeInMs: this.nudgeInMs(room),
+      league: Object.values(room.league ?? {}).sort((a, b) => b.wins - a.wins || b.beaten - a.beaten || a.played - b.played),
+      peek: !!room.peek,
+      following: room.peek && member.role === 'spectator' ? (member.follow ?? null) : null,
       outcome: room.match
         ? {
             id: room.matchNo ?? 0,

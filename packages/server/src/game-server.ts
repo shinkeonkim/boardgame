@@ -297,6 +297,8 @@ export function createGameServer(opts: GameServerOptions) {
 
     act<{ config: object }>('config', (r, m, p) => rooms.setConfig(r, m, p.config && typeof p.config === 'object' ? p.config : {}));
     act<{ password: string | null }>('password', (r, m, p) => rooms.setPassword(r, m, typeof p.password === 'string' && p.password ? p.password : null));
+    act<{ on: boolean }>('peek', (r, m, p) => rooms.setPeek(r, m, p.on === true));
+    act<{ seat: number | null }>('follow', (r, m, p) => rooms.follow(r, m, typeof p.seat === 'number' && Number.isInteger(p.seat) ? p.seat : null));
     act<{ role: 'player' | 'spectator' }>('role', (r, m, p) => rooms.setRole(r, m, p.role === 'spectator' ? 'spectator' : 'player'));
     act<{ id: string; dir: -1 | 1 }>('reorder', (r, m, p) => rooms.moveMember(r, m, String(p.id), p.dir === -1 ? -1 : 1));
     act<{ id: string }>('kick', (r, m, p) => rooms.kick(r, m, String(p.id)));

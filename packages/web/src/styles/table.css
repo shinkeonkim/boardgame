@@ -405,3 +405,37 @@
     display: none;
   }
 }
+
+/* 관전 시점 고르기 (아래 가운데) */
+.follow-bar {
+  position: fixed;
+  left: 50%;
+  bottom: calc(10px + env(safe-area-inset-bottom));
+  transform: translateX(-50%);
+  z-index: 55;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  max-width: calc(100vw - 16px);
+  overflow-x: auto;
+  padding: 6px 8px;
+  border-radius: 999px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow);
+}
+.follow-bar > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+  padding: 0 4px;
+}
+.follow-bar.on {
+  border-color: var(--accent);
+}
+
+.following main .table-main *,
+.following main .hand-panel * {
+  pointer-events: none;
+}

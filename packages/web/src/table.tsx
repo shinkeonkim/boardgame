@@ -42,7 +42,8 @@ export interface TableOptions {
 
 export function useTable(view: RoomView, notify: (msg: string) => void, o: TableOptions) {
   const names = view.seats;
-  const me = view.members.find((m) => m.id === view.you)?.seat ?? -1;
+  // 관전자가 한 사람을 따라 보면(view.following) 그 사람 시점으로 그림 (조작은 App 이 막음)
+  const me = view.members.find((m) => m.id === view.you)?.seat ?? view.following ?? -1;
   const actors = view.actors;
   const myTurn = o.playing && me >= 0 && actors.includes(me);
   const turnName = names[o.turn] ?? '';
