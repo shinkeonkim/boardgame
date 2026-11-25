@@ -10,7 +10,8 @@
     "./vite": "./src/vite.js",
     "./styles.css": "./src/styles/index.css",
     "./guide-kit": "./src/guide-kit.tsx",
-    "./guide.css": "./src/styles/guide.css"
+    "./guide.css": "./src/styles/guide.css",
+    "./seo": "./src/seo.js"
   },
   "dependencies": {
     "@bg/core": "*",

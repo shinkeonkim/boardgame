@@ -1,3 +1,4 @@
+import TAG_LABEL_DATA from './tag-labels.json';
 /**
  * 포털(홈페이지)의 게임 목록·검색·상세 페이지에 쓰는 게임 소개 정보.
  * 게임마다 games/<id>/meta.ts 에 하나씩 두고, apps/portal 이 모아서 보여 준다.
@@ -50,39 +51,8 @@ export interface GameMeta {
   customizable: string[];
 }
 
-export const TAG_LABELS: Record<string, string> = {
-  card: '카드',
-  abstract: '추상 전략',
-  'area-control': '땅따먹기',
-  'set-collection': '세트 모으기',
-  'hand-management': '손패 관리',
-  'push-your-luck': '운과 배짱',
-  'grid-movement': '칸 이동',
-  'two-player': '둘이 하기 좋은',
-  teams: '팀전',
-  'open-info': '패를 모두 공개',
-  'hidden-info': '내 패는 비밀',
-  quick: '빠른 게임',
-  party: '파티',
-  simultaneous: '동시에 진행',
-  luck: '운',
-  'big-group': '여럿이 하기 좋은',
-  cooperative: '협력',
-  deduction: '추리',
-  bluffing: '블러핑',
-  word: '단어',
-  dice: '주사위',
-  drafting: '카드 고르기',
-  'engine-building': '엔진 만들기',
-  'tile-placement': '타일 놓기',
-  pattern: '패턴 만들기',
-  spatial: '공간 퍼즐',
-  number: '숫자',
-  memory: '기억력',
-  drawing: '그림',
-  'player-elimination': '탈락',
-  'bot-friendly': '봇과 하기 좋은',
-};
+/** 태그 → 한국어 이름. JSON 으로 둔 까닭: Vite 설정(Node가 TS 없이 읽음)의 SEO 플러그인도 같은 표를 쓴다 */
+export const TAG_LABELS: Record<string, string> = TAG_LABEL_DATA;
 
 /** 봇 지원 문구 (어디서나 같은 말 — docs/ux-writing.md) */
 export const botsText = (g: { bots?: boolean; players?: { min: number } }) =>

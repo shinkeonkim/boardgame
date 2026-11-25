@@ -19,6 +19,8 @@ var MIME = {
   ".mp4": "video/mp4",
   ".ico": "image/x-icon",
   ".json": "application/json",
+  ".xml": "application/xml; charset=utf-8",
+  ".txt": "text/plain; charset=utf-8",
   ".webmanifest": "application/manifest+json",
   ".woff2": "font/woff2"
 };
@@ -36,6 +38,8 @@ function serveStatic(req, res, opts) {
     path = path.slice(base.length);
   }
   let file = (0, import_node_path.normalize)((0, import_node_path.join)(dir, path));
+  if (file.startsWith(dir) && (0, import_node_fs.existsSync)(file) && (0, import_node_fs.statSync)(file).isDirectory() && (0, import_node_fs.existsSync)((0, import_node_path.join)(file, "index.html"))) file = (0, import_node_path.join)(file, "index.html");
+  else if (file.startsWith(dir) && !(0, import_node_path.extname)(path) && (0, import_node_fs.existsSync)(`${file}.html`)) file = `${file}.html`;
   if (!file.startsWith(dir)) file = (0, import_node_path.join)(dir, "index.html");
   else if (!(0, import_node_fs.existsSync)(file) || (0, import_node_fs.statSync)(file).isDirectory()) {
     if ((0, import_node_path.extname)(path) && (0, import_node_path.extname)(path) !== ".html") {
@@ -53,6 +57,7 @@ function serveStatic(req, res, opts) {
   const size = (0, import_node_fs.statSync)(file).size;
   const type = MIME[(0, import_node_path.extname)(file)] ?? "application/octet-stream";
   const cache2 = isAsset ? "public, max-age=31536000, immutable" : (0, import_node_path.extname)(file) === ".mp4" ? "public, max-age=86400" : "no-cache";
+  const noindex = /^\/r\//.test(path) || /^\/admin(\/|$)/.test(path);
   if (range && /^bytes=\d*-\d*$/.test(range)) {
     const [a, b] = range.slice(6).split("-");
     const start = a ? Number(a) : 0;
@@ -61,7 +66,7 @@ function serveStatic(req, res, opts) {
     (0, import_node_fs.createReadStream)(file, { start, end }).pipe(res);
     return true;
   }
-  res.writeHead(200, { "content-type": type, "cache-control": cache2, "accept-ranges": "bytes", "content-length": size });
+  res.writeHead(200, { "content-type": type, "cache-control": cache2, "accept-ranges": "bytes", "content-length": size, ...noindex ? { "x-robots-tag": "noindex, nofollow" } : {} });
   (0, import_node_fs.createReadStream)(file).pipe(res);
   return true;
 }

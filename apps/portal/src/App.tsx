@@ -10,6 +10,32 @@ import { gameById } from './catalog';
 // 관리자 화면은 따로 불러옴 (일반 방문자 묶음에 넣지 않음)
 const AdminPage = lazy(() => import('./pages/Admin').then((m) => ({ default: m.AdminPage })));
 
+const ORIGIN = 'https://boardgame.shinkeonkim.com';
+function upsert(selector: string, make: () => HTMLElement, attr: string, value: string) {
+  let el = document.head.querySelector<HTMLElement>(selector);
+  if (!el) {
+    el = make();
+    document.head.appendChild(el);
+  }
+  el.setAttribute(attr, value);
+}
+function setHead(path: string, description: string | undefined, noindex: boolean) {
+  const url = ORIGIN + (path === '' ? '/' : path.replace(/\/$/, '') || '/');
+  upsert('link[rel="canonical"]', () => Object.assign(document.createElement('link'), { rel: 'canonical' }), 'href', url);
+  upsert(
+    'meta[property="og:url"]',
+    () => {
+      const m = document.createElement('meta');
+      m.setAttribute('property', 'og:url');
+      return m;
+    },
+    'content',
+    url,
+  );
+  upsert('meta[name="robots"]', () => Object.assign(document.createElement('meta'), { name: 'robots' }), 'content', noindex ? 'noindex, nofollow' : 'index, follow, max-image-preview:large');
+  if (description) upsert('meta[name="description"]', () => Object.assign(document.createElement('meta'), { name: 'description' }), 'content', description);
+}
+
 export function App() {
   const { path, search } = useRoute();
   const detail = path.match(/^\/games\/([a-z0-9-]+)\/?$/);
@@ -33,9 +59,13 @@ export function App() {
     );
     title = '관리자 · 보드게임 테이블';
   } else page = <NotFound />;
+  // 주소가 바뀌면 head 도 맞춤 (빌드 때 미리 그린 head 는 첫 화면용, 화면 안에서 이동하면 여기서)
+  const description = detail && gameById(detail[1]) ? gameById(detail[1])!.tagline : undefined;
+  const noindex = path.startsWith('/admin') || path.startsWith('/design');
   useEffect(() => {
     document.title = title;
-  }, [title]);
+    setHead(path, description, noindex);
+  }, [title, path, description, noindex]);
   return (
     <>
       <Header path={path} />
