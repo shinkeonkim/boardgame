@@ -1,0 +1,177 @@
+/* Silent Count (침묵의 숫자) */
+.sc-card {
+  --w: 64px;
+  position: relative;
+  width: var(--w);
+  aspect-ratio: 5 / 7;
+  border-radius: calc(var(--w) * 0.14);
+  background:
+    radial-gradient(circle at 30% 20%, rgb(255 255 255 / 0.6), transparent 45%),
+    linear-gradient(160deg, hsl(var(--h) 70% 92%), hsl(var(--h) 60% 80%));
+  border: 2px solid hsl(var(--h) 45% 55%);
+  display: grid;
+  place-items: center;
+  color: hsl(var(--h) 55% 25%);
+  box-shadow: 0 2px 0 rgb(0 0 0 / 0.2), 0 8px 16px rgb(0 0 0 / 0.18);
+  flex: none;
+}
+.sc-card.sm {
+  --w: 40px;
+}
+.sc-card.lg {
+  --w: 120px;
+}
+.sc-n {
+  font: 900 calc(var(--w) * 0.42) / 1 Georgia, 'Times New Roman', serif;
+}
+.sc-corner {
+  position: absolute;
+  left: 8%;
+  top: 5%;
+  font-weight: 800;
+  font-size: calc(var(--w) * 0.17);
+}
+.sc-card.sm .sc-corner {
+  display: none;
+}
+.sc-banner-res {
+  display: inline-flex;
+  gap: 10px;
+  align-items: center;
+}
+.sc-res {
+  display: inline-flex;
+  gap: 2px;
+  align-items: center;
+}
+.sc-opps {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+.sc-opp {
+  min-width: 130px;
+  padding: 6px 10px;
+  border-radius: 12px;
+  border: 1.5px solid var(--line);
+  border-top: 4px solid var(--seat);
+  background: var(--panel);
+  display: grid;
+  gap: 4px;
+}
+.sc-opp-head {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.85rem;
+}
+.sc-opp-cards {
+  display: flex;
+  align-items: center;
+  height: 32px;
+  overflow: hidden;
+  white-space: nowrap;
+}
+.sc-opp-cards > * {
+  width: 22px;
+  flex: none;
+}
+.sc-opp-cards > * + * {
+  margin-left: -12px;
+}
+.sc-opp-cards .pc {
+  --w: 22px;
+}
+.sc-felt {
+  border-radius: 20px;
+  padding: 18px;
+  min-height: 200px;
+  display: grid;
+  place-items: center;
+  gap: 8px;
+  background: radial-gradient(ellipse at 50% 40%, #3b2c6a, #1d1638 75%);
+  box-shadow: inset 0 0 0 2px #4a3a85, inset 0 3px 20px rgb(0 0 0 / 0.45);
+}
+.sc-felt.missed {
+  animation: sc-shake 0.5s;
+}
+@keyframes sc-shake {
+  20%,
+  60% {
+    transform: translateX(-6px);
+  }
+  40%,
+  80% {
+    transform: translateX(6px);
+  }
+}
+.sc-pile {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.sc-under {
+  opacity: 0.55;
+}
+.sc-empty {
+  color: rgb(255 255 255 / 0.7);
+}
+.sc-miss {
+  color: #ffd2cc;
+  font-size: 0.9rem;
+}
+.sc-hand {
+  display: flex;
+  gap: 6px;
+  justify-content: center;
+  flex-wrap: wrap;
+  padding: 6px 0;
+}
+.sc-low {
+  outline: 3px solid var(--gold, #f2b33d);
+  outline-offset: 2px;
+}
+.sc-rest {
+  opacity: 0.8;
+}
+.sc-play {
+  display: block;
+  margin: 6px auto 0;
+  font-size: 1.1rem;
+  padding: 12px 28px;
+}
+.sc-demo {
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+}
+.sc-demo-row {
+  display: flex;
+  gap: 6px;
+  min-height: 58px;
+}
+.sc-demo-say {
+  font-weight: 700;
+  font-size: 0.85rem;
+}
+.sc-cover .sc-card {
+  --w: 150px;
+}
+@media (max-width: 759px) {
+  .sc-opp {
+    min-width: 0;
+    flex: 1 1 90px;
+  }
+  .sc-felt {
+    min-height: 150px;
+  }
+  .sc-card.lg {
+    --w: 90px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sc-felt.missed {
+    animation: none;
+  }
+}

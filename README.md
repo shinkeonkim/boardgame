@@ -60,8 +60,9 @@
 | [One Card · 원카드](https://boardgame.shinkeonkim.com/games/one-card) | 원카드 | 2~8 | 10~25분 | ○ | 무늬나 숫자를 맞춰 먼저 다 내는 카드 게임 — 공격 쌓기와 「원카드!」 외치기 |
 | [Pass the Plate · 접시 돌리기](https://boardgame.shinkeonkim.com/games/pass-the-plate) | 스시 고! | 2~8 | 15~20분 | ○ | 한 접시 고르고 나머지는 옆으로 — 동시에 고르며 세트를 모으는 회전 요리 게임 |
 | [Row Six · 여섯째 줄](https://boardgame.shinkeonkim.com/games/row-six) | 젝스님트 | 2~10 | 15~30분 | ○ | 모두 동시에 숫자 카드를 내고, 6번째가 되면 줄을 몽땅 떠안는 눈치 게임 |
+| [Silent Count · 침묵의 숫자](https://boardgame.shinkeonkim.com/games/silent-count) | 더 마인드 | 2~6 | 10~25분 | ○ | 말없이, 차례도 없이 — 모두의 카드를 작은 순서대로 내는 실시간 협력 게임 |
 
-모두 26종. 규칙 메커니즘은 고전 보드게임에서 빌려 왔고, 이름·그림·화면은 직접 만들었다 (원작 이름은 팬 제작 표시로만 쓴다).
+모두 27종. 규칙 메커니즘은 고전 보드게임에서 빌려 왔고, 이름·그림·화면은 직접 만들었다 (원작 이름은 팬 제작 표시로만 쓴다).
 
 <!-- games:end -->
 
@@ -97,8 +98,9 @@
 | **One Word · 한 단어**<br><img src="docs/media/one-word/gif/play.gif" alt="One Word 플레이" width="420"> | **Orbit Tasks · 궤도 임무**<br><img src="docs/media/orbit-tasks/gif/play.gif" alt="Orbit Tasks 플레이" width="420"> |
 | **Pass the Plate · 접시 돌리기**<br><img src="docs/media/pass-the-plate/gif/play.gif" alt="Pass the Plate 플레이" width="420"> | **Row Six · 여섯째 줄**<br><img src="docs/media/row-six/gif/play.gif" alt="Row Six 플레이" width="420"> |
 | **Sealed Letter · 비밀 편지**<br><img src="docs/media/sealed-letter/gif/play.gif" alt="Sealed Letter 플레이" width="420"> | **Secret Mission · 비밀 원정대**<br><img src="docs/media/secret-mission/gif/play.gif" alt="Secret Mission 플레이" width="420"> |
-| **Sketch Quiz · 그림 퀴즈**<br><img src="docs/media/sketch-quiz/gif/play.gif" alt="Sketch Quiz 플레이" width="420"> | **Tile Atelier · 타일 공방**<br><img src="docs/media/tile-atelier/gif/play.gif" alt="Tile Atelier 플레이" width="420"> |
-| **Trio Hunt · 셋 찾기**<br><img src="docs/media/trio-hunt/gif/play.gif" alt="Trio Hunt 플레이" width="420"> | **Yacht Dice · 요트 다이스**<br><img src="docs/media/yacht/gif/play.gif" alt="Yacht Dice 플레이" width="420"> |
+| **Silent Count · 침묵의 숫자**<br><img src="docs/media/silent-count/gif/play.gif" alt="Silent Count 플레이" width="420"> | **Sketch Quiz · 그림 퀴즈**<br><img src="docs/media/sketch-quiz/gif/play.gif" alt="Sketch Quiz 플레이" width="420"> |
+| **Tile Atelier · 타일 공방**<br><img src="docs/media/tile-atelier/gif/play.gif" alt="Tile Atelier 플레이" width="420"> | **Trio Hunt · 셋 찾기**<br><img src="docs/media/trio-hunt/gif/play.gif" alt="Trio Hunt 플레이" width="420"> |
+| **Yacht Dice · 요트 다이스**<br><img src="docs/media/yacht/gif/play.gif" alt="Yacht Dice 플레이" width="420"> |  |
 
 <!-- gallery:end -->
 

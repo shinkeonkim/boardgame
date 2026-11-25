@@ -139,8 +139,8 @@ it('판 다시 보기: 끝난 매치를 장면별로 재생 · 기기 전적에 
     await p.locator('.ya-pick').first().click();
     await p.waitForFunction((n) => document.querySelectorAll('.ya-card tbody td.done').length >= n, i + 1);
   }
-  await p.waitForSelector('button:has-text("판 다시 보기")', { timeout: 15_000 });
-  await p.click('button:has-text("판 다시 보기")');
+  await p.waitForSelector('button:has-text("되감아 보기")', { timeout: 15_000 });
+  await p.click('button:has-text("되감아 보기")');
   await p.waitForSelector('.replay-bar');
   await p.click('.replay-bar [aria-label="멈춤"]');
   await p.locator('.replay-bar input[type=range]').fill('0');

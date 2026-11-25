@@ -25,7 +25,9 @@ export function useReplayRecorder(view: RoomView | null) {
       frames.current = [];
     }
     const last = frames.current[frames.current.length - 1];
-    if (last && JSON.stringify(last.game) === JSON.stringify(view.game)) return;
+    // 시간처럼 매번 바뀌는 값(sinceMs 등 ms 로 끝나는 키)은 빼고 비교 — 안 그러면 같은 장면이 수십 개
+    const key = (g: unknown) => JSON.stringify(g, (k, x) => (/Ms$/.test(k) ? undefined : x));
+    if (last && key(last.game) === key(view.game)) return;
     frames.current.push(view);
     if (frames.current.length > MAX_FRAMES) frames.current.shift();
     setCount(frames.current.length);

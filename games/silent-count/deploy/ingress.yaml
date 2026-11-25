@@ -1,0 +1,18 @@
+# 공개: Cloudflare Tunnel boardgame.shinkeonkim.com → Traefik → 경로로 나눔 (/silent-count → 이 게임, / → 포털)
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: silent-count
+spec:
+  ingressClassName: traefik
+  rules:
+    - host: boardgame.shinkeonkim.com
+      http:
+        paths:
+          - path: /silent-count
+            pathType: Prefix
+            backend:
+              service:
+                name: silent-count
+                port:
+                  name: http

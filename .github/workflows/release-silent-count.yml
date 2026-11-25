@@ -1,0 +1,21 @@
+name: release silent-count
+on:
+  push:
+    branches: [main]
+    paths:
+      - "games/silent-count/**"
+      - "!games/silent-count/deploy/**"
+      - "packages/**"
+      - "Dockerfile"
+      - "package-lock.json"
+      - "scripts/bundle.mjs"
+  workflow_dispatch:
+permissions:
+  contents: write
+  packages: write
+jobs:
+  release:
+    uses: ./.github/workflows/_release.yml
+    with:
+      target: silent-count
+      deploy-dir: games/silent-count/deploy

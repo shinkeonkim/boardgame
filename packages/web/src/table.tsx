@@ -569,13 +569,13 @@ export function useChangeSound(key: unknown, fx: Fx | null, when = true) {
   }, [key]);
 }
 
-/** 결과 화면의 「판 다시 보기」 (이 기기에서 장면을 모아 둔 경우만) */
+/** 결과 화면의 「처음부터 되감아 보기」 (이 기기에서 장면을 모아 둔 경우만 — 「판 다시 보기」(판 엿보기)와 다름) */
 function ReplayButton() {
   const r = useReplay();
   if (!r) return null;
   return (
     <button type="button" className="btn small replay-open" onClick={r.open}>
-      <Icon name="undo" /> 판 다시 보기 <span className="muted small">· {r.frames}장면</span>
+      <Icon name="undo" /> 처음부터 되감아 보기 <span className="muted small">· {r.frames}장면</span>
     </button>
   );
 }
