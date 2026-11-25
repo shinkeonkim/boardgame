@@ -14,4 +14,4 @@ labels:
 images:
 - name: ghcr.io/shinkeonkim/boardgame-yacht
   newName: ghcr.io/shinkeonkim/boardgame-yacht
-  newTag: sha-d24c99b
+  newTag: sha-2007add
