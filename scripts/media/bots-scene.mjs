@@ -33,6 +33,7 @@ const GAMES = {
   hearts: { bots: 4, secs: 18, cover: 12 },
   'orbit-tasks': { bots: 4, secs: 18, cover: 12 },
   'silent-count': { bots: 3, secs: 18, cover: 10 },
+  'domain-tiles': { bots: 3, secs: 20, cover: 16 },
   // 봇이 없는 게임: 방장이 그리고, 손님(guests)이 초대 링크로 들어와 맞힌다 (play: 녹화하는 동안 두는 수)
   'sketch-quiz': { bots: 0, guests: 2, secs: 20, cover: 13, play: drawHouse },
 };

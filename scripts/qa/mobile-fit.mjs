@@ -9,10 +9,10 @@ const PHONES = { 'iPhone 15': { width: 393, height: 852 }, '작은 폰': { width
 const BOTS = {
   'expedition-lines': 1, 'crown-march': 1, 'row-six': 3, 'flare-signals': 2, 'cipher-ops': 3, 'bluff-dice': 3, 'number-vault': 2,
   'sealed-letter': 3, 'court-intrigue': 3, 'pass-the-plate': 3, 'hidden-thorn': 3, 'flag-line': 1, 'gem-guild': 2, 'tile-atelier': 2,
-  'corner-claim': 3, 'number-runs': 2, yacht: 2, 'secret-mission': 5, 'one-card': 3, 'one-word': 3, 'trio-hunt': 3, holdem: 4, 'five-stones': 1, hearts: 3, 'orbit-tasks': 3, 'silent-count': 2,
+  'corner-claim': 3, 'number-runs': 2, yacht: 2, 'secret-mission': 5, 'one-card': 3, 'one-word': 3, 'trio-hunt': 3, holdem: 4, 'five-stones': 1, hearts: 3, 'orbit-tasks': 3, 'silent-count': 2, 'domain-tiles': 2,
 };
 /** 내 손패·조각 줄 (게임마다 이름이 달라서 차례로 찾음) */
-const HAND = ['.hand-panel', '.hand-area', '.cc-tray', '.th-seat.mine', '.ya-tray', '.hd-actions', '.oc-hand-panel'];
+const HAND = ['.dt-mine', '.hand-panel', '.hand-area', '.cc-tray', '.th-seat.mine', '.ya-tray', '.hd-actions', '.oc-hand-panel'];
 
 function measure(handSels) {
   const H = innerHeight;

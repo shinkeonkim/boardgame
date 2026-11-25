@@ -45,6 +45,7 @@
 |---|---|---|---|---|---|
 | [Corner Claim · 모서리 땅따먹기](https://boardgame.shinkeonkim.com/games/corner-claim) | 블로커스 | 2~4 | 20~30분 | ○ | 내 조각끼리는 모서리로만 — 21개 조각을 펼쳐 판을 차지하는 공간 퍼즐 |
 | [Crown March · 왕관 행진](https://boardgame.shinkeonkim.com/games/crown-march) | 장미전쟁 | 2~4 | 20~30분 | ○ | 모두 함께 쓰는 왕관을 옮기며 내 땅을 넓히는 전략 게임 |
+| [Domain Tiles · 영지 도미노](https://boardgame.shinkeonkim.com/games/domain-tiles) | 킹도미노 | 2~4 | 15~25분 | ○ | 땅 도미노를 골라 5×5 왕국을 짓는 가벼운 타일 게임 — 같은 땅 크기 × 왕관이 점수 |
 | [Gem Guild · 보석 상단](https://boardgame.shinkeonkim.com/games/gem-guild) | 스플렌더 | 2~6 | 30~45분 | ○ | 보석으로 카드를 사고, 카드 보너스로 더 비싼 카드를 사는 엔진 만들기 게임 |
 | [Number Runs · 숫자 잇기](https://boardgame.shinkeonkim.com/games/number-runs) | 루미큐브 | 2~6 | 30~60분 | ○ | 같은 색 연속·같은 숫자로 묶어 내고, 테이블을 다시 짜 손을 비우는 숫자 타일 게임 |
 | [Tile Atelier · 타일 공방](https://boardgame.shinkeonkim.com/games/tile-atelier) | 아줄 | 2~4 | 30~45분 | ○ | 공장에서 한 색을 통째로 가져와 벽을 꾸미는, 이어 붙일수록 점수가 커지는 타일 게임 |
@@ -62,7 +63,7 @@
 | [Row Six · 여섯째 줄](https://boardgame.shinkeonkim.com/games/row-six) | 젝스님트 | 2~10 | 15~30분 | ○ | 모두 동시에 숫자 카드를 내고, 6번째가 되면 줄을 몽땅 떠안는 눈치 게임 |
 | [Silent Count · 침묵의 숫자](https://boardgame.shinkeonkim.com/games/silent-count) | 더 마인드 | 2~6 | 10~25분 | ○ | 말없이, 차례도 없이 — 모두의 카드를 작은 순서대로 내는 실시간 협력 게임 |
 
-모두 27종. 규칙 메커니즘은 고전 보드게임에서 빌려 왔고, 이름·그림·화면은 직접 만들었다 (원작 이름은 팬 제작 표시로만 쓴다).
+모두 28종. 규칙 메커니즘은 고전 보드게임에서 빌려 왔고, 이름·그림·화면은 직접 만들었다 (원작 이름은 팬 제작 표시로만 쓴다).
 
 <!-- games:end -->
 
@@ -90,17 +91,17 @@
 |---|---|
 | **Bluff Dice · 허풍 주사위**<br><img src="docs/media/bluff-dice/gif/play.gif" alt="Bluff Dice 플레이" width="420"> | **Cipher Ops · 암호 작전**<br><img src="docs/media/cipher-ops/gif/play.gif" alt="Cipher Ops 플레이" width="420"> |
 | **Corner Claim · 모서리 땅따먹기**<br><img src="docs/media/corner-claim/gif/play.gif" alt="Corner Claim 플레이" width="420"> | **Court Intrigue · 궁정 음모**<br><img src="docs/media/court-intrigue/gif/play.gif" alt="Court Intrigue 플레이" width="420"> |
-| **Five Stones · 오목**<br><img src="docs/media/five-stones/gif/play.gif" alt="Five Stones 플레이" width="420"> | **Flag Line · 깃발 전선**<br><img src="docs/media/flag-line/gif/play.gif" alt="Flag Line 플레이" width="420"> |
-| **Flare Signals · 불꽃 신호**<br><img src="docs/media/flare-signals/gif/play.gif" alt="Flare Signals 플레이" width="420"> | **Gem Guild · 보석 상단**<br><img src="docs/media/gem-guild/gif/play.gif" alt="Gem Guild 플레이" width="420"> |
-| **Hearts · 하트**<br><img src="docs/media/hearts/gif/play.gif" alt="Hearts 플레이" width="420"> | **Hidden Thorn · 숨은 가시**<br><img src="docs/media/hidden-thorn/gif/play.gif" alt="Hidden Thorn 플레이" width="420"> |
-| **Hold'em · 홀덤**<br><img src="docs/media/holdem/gif/play.gif" alt="Hold'em 플레이" width="420"> | **Number Runs · 숫자 잇기**<br><img src="docs/media/number-runs/gif/play.gif" alt="Number Runs 플레이" width="420"> |
-| **Number Vault · 숫자 금고**<br><img src="docs/media/number-vault/gif/play.gif" alt="Number Vault 플레이" width="420"> | **One Card · 원카드**<br><img src="docs/media/one-card/gif/play.gif" alt="One Card 플레이" width="420"> |
-| **One Word · 한 단어**<br><img src="docs/media/one-word/gif/play.gif" alt="One Word 플레이" width="420"> | **Orbit Tasks · 궤도 임무**<br><img src="docs/media/orbit-tasks/gif/play.gif" alt="Orbit Tasks 플레이" width="420"> |
-| **Pass the Plate · 접시 돌리기**<br><img src="docs/media/pass-the-plate/gif/play.gif" alt="Pass the Plate 플레이" width="420"> | **Row Six · 여섯째 줄**<br><img src="docs/media/row-six/gif/play.gif" alt="Row Six 플레이" width="420"> |
-| **Sealed Letter · 비밀 편지**<br><img src="docs/media/sealed-letter/gif/play.gif" alt="Sealed Letter 플레이" width="420"> | **Secret Mission · 비밀 원정대**<br><img src="docs/media/secret-mission/gif/play.gif" alt="Secret Mission 플레이" width="420"> |
-| **Silent Count · 침묵의 숫자**<br><img src="docs/media/silent-count/gif/play.gif" alt="Silent Count 플레이" width="420"> | **Sketch Quiz · 그림 퀴즈**<br><img src="docs/media/sketch-quiz/gif/play.gif" alt="Sketch Quiz 플레이" width="420"> |
-| **Tile Atelier · 타일 공방**<br><img src="docs/media/tile-atelier/gif/play.gif" alt="Tile Atelier 플레이" width="420"> | **Trio Hunt · 셋 찾기**<br><img src="docs/media/trio-hunt/gif/play.gif" alt="Trio Hunt 플레이" width="420"> |
-| **Yacht Dice · 요트 다이스**<br><img src="docs/media/yacht/gif/play.gif" alt="Yacht Dice 플레이" width="420"> |  |
+| **Domain Tiles · 영지 도미노**<br><img src="docs/media/domain-tiles/gif/play.gif" alt="Domain Tiles 플레이" width="420"> | **Five Stones · 오목**<br><img src="docs/media/five-stones/gif/play.gif" alt="Five Stones 플레이" width="420"> |
+| **Flag Line · 깃발 전선**<br><img src="docs/media/flag-line/gif/play.gif" alt="Flag Line 플레이" width="420"> | **Flare Signals · 불꽃 신호**<br><img src="docs/media/flare-signals/gif/play.gif" alt="Flare Signals 플레이" width="420"> |
+| **Gem Guild · 보석 상단**<br><img src="docs/media/gem-guild/gif/play.gif" alt="Gem Guild 플레이" width="420"> | **Hearts · 하트**<br><img src="docs/media/hearts/gif/play.gif" alt="Hearts 플레이" width="420"> |
+| **Hidden Thorn · 숨은 가시**<br><img src="docs/media/hidden-thorn/gif/play.gif" alt="Hidden Thorn 플레이" width="420"> | **Hold'em · 홀덤**<br><img src="docs/media/holdem/gif/play.gif" alt="Hold'em 플레이" width="420"> |
+| **Number Runs · 숫자 잇기**<br><img src="docs/media/number-runs/gif/play.gif" alt="Number Runs 플레이" width="420"> | **Number Vault · 숫자 금고**<br><img src="docs/media/number-vault/gif/play.gif" alt="Number Vault 플레이" width="420"> |
+| **One Card · 원카드**<br><img src="docs/media/one-card/gif/play.gif" alt="One Card 플레이" width="420"> | **One Word · 한 단어**<br><img src="docs/media/one-word/gif/play.gif" alt="One Word 플레이" width="420"> |
+| **Orbit Tasks · 궤도 임무**<br><img src="docs/media/orbit-tasks/gif/play.gif" alt="Orbit Tasks 플레이" width="420"> | **Pass the Plate · 접시 돌리기**<br><img src="docs/media/pass-the-plate/gif/play.gif" alt="Pass the Plate 플레이" width="420"> |
+| **Row Six · 여섯째 줄**<br><img src="docs/media/row-six/gif/play.gif" alt="Row Six 플레이" width="420"> | **Sealed Letter · 비밀 편지**<br><img src="docs/media/sealed-letter/gif/play.gif" alt="Sealed Letter 플레이" width="420"> |
+| **Secret Mission · 비밀 원정대**<br><img src="docs/media/secret-mission/gif/play.gif" alt="Secret Mission 플레이" width="420"> | **Silent Count · 침묵의 숫자**<br><img src="docs/media/silent-count/gif/play.gif" alt="Silent Count 플레이" width="420"> |
+| **Sketch Quiz · 그림 퀴즈**<br><img src="docs/media/sketch-quiz/gif/play.gif" alt="Sketch Quiz 플레이" width="420"> | **Tile Atelier · 타일 공방**<br><img src="docs/media/tile-atelier/gif/play.gif" alt="Tile Atelier 플레이" width="420"> |
+| **Trio Hunt · 셋 찾기**<br><img src="docs/media/trio-hunt/gif/play.gif" alt="Trio Hunt 플레이" width="420"> | **Yacht Dice · 요트 다이스**<br><img src="docs/media/yacht/gif/play.gif" alt="Yacht Dice 플레이" width="420"> |
 
 <!-- gallery:end -->
 
