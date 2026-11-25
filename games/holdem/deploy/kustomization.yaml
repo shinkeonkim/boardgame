@@ -14,4 +14,4 @@ labels:
 images:
 - name: ghcr.io/shinkeonkim/boardgame-holdem
   newName: ghcr.io/shinkeonkim/boardgame-holdem
-  newTag: sha-2007add
+  newTag: sha-ddee70c
