@@ -14,4 +14,4 @@ labels:
 images:
 - name: ghcr.io/shinkeonkim/boardgame-secret-mission
   newName: ghcr.io/shinkeonkim/boardgame-secret-mission
-  newTag: sha-4913f5b
+  newTag: sha-354fd6f
