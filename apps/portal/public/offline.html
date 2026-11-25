@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cut" />
+    <meta name="theme-color" content="#f3ede3" />
+    <meta name="robots" content="noindex" />
+    <title>연결이 끊겼어요 · 보드게임 테이블</title>
+    <style>
+      :root { color-scheme: light dark; --bg: #f3ede3; --ink: #1b1a17; --muted: #6b6258; --accent: #c4612a; }
+      @media (prefers-color-scheme: dark) { :root { --bg: #17150f; --ink: #f3ede3; --muted: #b5aa9b; } }
+      body { margin: 0; min-height: 100dvh; display: grid; place-items: center; background: var(--bg); color: var(--ink); font-family: system-ui, -apple-system, 'Apple SD Gothic Neo', sans-serif; text-align: center; padding: 24px; box-sizing: border-box; }
+      h1 { font-size: 1.5rem; margin: 18px 0 8px; word-break: keep-all; }
+      p { color: var(--muted); line-height: 1.6; margin: 0 0 22px; word-break: keep-all; }
+      button { font: inherit; font-weight: 700; border: 0; border-radius: 999px; padding: 12px 22px; background: var(--accent); color: #fff; cursor: pointer; }
+      .dice { animation: wobble 2.4s ease-in-out infinite; }
+      @keyframes wobble { 50% { transform: rotate(-8deg) translateY(-4px); } }
+      @media (prefers-reduced-motion: reduce) { .dice { animation: none; } }
+    </style>
+  </head>
+  <body>
+    <main>
+      <svg class="dice" width="72" height="72" viewBox="0 0 64 64" aria-hidden="true"><rect x="6" y="6" width="52" height="52" rx="12" fill="#fffaf1" stroke="#1b1a17" stroke-width="3"/><circle cx="21" cy="21" r="5" fill="#1b1a17"/><circle cx="32" cy="32" r="5" fill="#c4612a"/><circle cx="43" cy="43" r="5" fill="#1b1a17"/></svg>
+      <h1>인터넷 연결이 끊겼어요</h1>
+      <p>보드게임은 친구들과 실시간으로 하기 때문에 연결이 필요해요.<br />연결되면 다시 시도해 주세요.</p>
+      <button type="button" onclick="location.reload()">다시 시도</button>
+    </main>
+    <script>addEventListener('online', () => location.reload());</script>
+  </body>
+</html>

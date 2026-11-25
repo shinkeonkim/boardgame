@@ -1,5 +1,6 @@
 import { Suspense, lazy, useEffect } from 'react';
 import { ThemeToggle, Icon } from '@bg/ui';
+import { useInstallPrompt } from '@bg/web';
 import { Link, useRoute } from './router';
 import { HomePage } from './pages/Home';
 import { SearchPage } from './pages/Search';
@@ -88,9 +89,21 @@ function Header({ path }: { path: string }) {
             게임 찾기
           </Link>
         </nav>
+        <InstallButton />
         <ThemeToggle className="ph-theme" />
       </div>
     </header>
+  );
+}
+
+/** 브라우저가 설치를 제안할 수 있을 때만 보이는 「앱으로 설치」 */
+function InstallButton() {
+  const pwa = useInstallPrompt();
+  if (!pwa.canInstall) return null;
+  return (
+    <button type="button" className="btn small ph-install" onClick={pwa.install}>
+      <Icon name="phone" /> 앱으로 설치
+    </button>
   );
 }
 

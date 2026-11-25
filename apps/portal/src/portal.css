@@ -869,3 +869,9 @@ a.chip {
     grid-template-columns: 1fr;
   }
 }
+
+/* 앱으로 설치 (브라우저가 제안할 수 있을 때만) */
+.ph-install {
+  margin-right: 6px;
+  white-space: nowrap;
+}

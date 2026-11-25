@@ -2,6 +2,7 @@ import { SiteNotice } from './site-notice';
 import { useRelocate } from './switch-game';
 import { createContext, useCallback, useContext, useEffect, useState, ReactNode } from 'react';
 import { createRoot } from 'react-dom/client';
+import { registerServiceWorker } from './pwa';
 import { DRAIN_MESSAGE, type EmoteEvent, type RoomView } from '@bg/core';
 import { EmotesContext, Icon, NoticeSlot, applySkin, applyTheme, getTheme } from '@bg/ui';
 import type { GameClient } from './client';
@@ -40,7 +41,9 @@ export function mountGame(client: GameClient<any, any>) {
   setGameId(client.id);
   applyTheme(getTheme());
   applySkin();
-  document.title = client.title;
+  // 빌드 때 넣은 검색용 제목(「요트 다이스 온라인 · …」)이 있으면 그대로 둠
+  if (!document.title) document.title = client.title;
+  registerServiceWorker();
   createRoot(document.getElementById('root')!).render(
     <ClientContext.Provider value={client}>
       <EmotesContext.Provider value={client.emotes}>
