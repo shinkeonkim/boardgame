@@ -123,3 +123,33 @@ it('포털 내 기록: 기록이 없으면 안내, 있으면 승률·게임별',
   assert.match(await p.innerText('.me-cards'), /50%/);
   assert.match(await p.innerText('.me-games'), /요트 다이스/);
 });
+
+it('판 다시 보기: 끝난 매치를 장면별로 재생 · 기기 전적에 기록', { timeout: 120_000 }, async () => {
+  const p = await (await browser.newContext({ viewport: { width: 1280, height: 860 } })).newPage();
+  await p.goto(`${ORIGIN}/yacht/`);
+  await p.fill('input[placeholder="예: 민지"]', '혼자');
+  await p.click('button:has-text("방 만들기")');
+  await p.waitForSelector('text=방 코드');
+  await p.click('button:has-text("게임 시작하기")');
+  for (let i = 0; i < 12; i++) {
+    await p.waitForSelector('.turn-banner.mine .tb-title');
+    await p.locator('.ya-roll').focus();
+    await p.keyboard.press('Enter');
+    await p.waitForSelector('.ya-pick');
+    await p.locator('.ya-pick').first().click();
+    await p.waitForFunction((n) => document.querySelectorAll('.ya-card tbody td.done').length >= n, i + 1);
+  }
+  await p.waitForSelector('button:has-text("판 다시 보기")', { timeout: 15_000 });
+  await p.click('button:has-text("판 다시 보기")');
+  await p.waitForSelector('.replay-bar');
+  await p.click('.replay-bar [aria-label="멈춤"]');
+  await p.locator('.replay-bar input[type=range]').fill('0');
+  assert.match(await p.innerText('.replay-count'), /^1\//);
+  await p.click('.replay-bar [aria-label="다음 장면"]');
+  assert.match(await p.innerText('.replay-count'), /^2\//);
+  await p.click('.replay-bar button:has-text("닫기")');
+  await p.waitForSelector('.replay-bar', { state: 'detached' });
+  const stats = await p.evaluate(() => JSON.parse(localStorage.getItem('bg:stats') ?? '[]'));
+  assert.equal(stats[0]?.game, 'yacht');
+  assert.equal(stats[0]?.won, true);
+});

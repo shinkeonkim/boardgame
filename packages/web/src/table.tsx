@@ -10,6 +10,7 @@
  *  - TableLayout: 기기 화면에 고정된 [가운데 테이블 | 오른쪽 정보] (좁으면 위아래)
  * 새 게임은 이것들로 틀을 만들고 가운데 테이블과 손패만 그린다.
  */
+import { useReplay } from './replay';
 import { CSSProperties, ReactNode, useEffect, useMemo, useRef, useState, useLayoutEffect } from 'react';
 import type { EmoteEvent, RoomView } from '@bg/core';
 import { EmoteBubble, EmoteButton, EmoteFeed, SkinButton, ThemeToggle, TurnBanner, TurnSplash, TurnTimer, useCountdown, Icon, iconize } from '@bg/ui';
@@ -363,6 +364,7 @@ export function ResultSheet({
       <div className="panel sheet">
         <h2>{iconize(headline)}</h2>
         {sub && <p className="muted small">{iconize(sub)}</p>}
+        <ReplayButton />
         {children}
         <div className="table-wrap">
           <table className="scores">
@@ -565,3 +567,15 @@ export function useChangeSound(key: unknown, fx: Fx | null, when = true) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [key]);
 }
+
+/** 결과 화면의 「판 다시 보기」 (이 기기에서 장면을 모아 둔 경우만) */
+function ReplayButton() {
+  const r = useReplay();
+  if (!r) return null;
+  return (
+    <button type="button" className="btn small replay-open" onClick={r.open}>
+      <Icon name="undo" /> 판 다시 보기 <span className="muted small">· {r.frames}장면</span>
+    </button>
+  );
+}
+

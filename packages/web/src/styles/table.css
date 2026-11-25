@@ -345,3 +345,63 @@
     position: relative;
   }
 }
+
+/* 판 다시 보기 */
+.replaying .table-game,
+.replaying main {
+  padding-bottom: 76px;
+}
+/* 다시 보기 중에는 판을 눌러도 아무 일 없게 (막대만 조작) */
+.replaying main * {
+  pointer-events: none;
+}
+.replaying .overlay {
+  display: none;
+}
+.replay-bar {
+  position: fixed;
+  left: 50%;
+  bottom: calc(12px + env(safe-area-inset-bottom));
+  transform: translateX(-50%);
+  z-index: 60;
+  width: min(760px, calc(100vw - 16px));
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 10px;
+  border-radius: 16px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow);
+}
+.replay-bar input[type='range'] {
+  flex: 1;
+  min-width: 60px;
+  accent-color: var(--accent);
+}
+.replay-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: 800;
+  font-size: 0.8rem;
+  white-space: nowrap;
+}
+.replay-count {
+  font-variant-numeric: tabular-nums;
+  min-width: 4.5em;
+  text-align: center;
+}
+.replay-speed {
+  font: inherit;
+  font-size: 0.8rem;
+}
+.replay-open {
+  margin: 4px 0 8px;
+}
+@media (max-width: 560px) {
+  .replay-tag,
+  .replay-speed {
+    display: none;
+  }
+}

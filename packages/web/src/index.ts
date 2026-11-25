@@ -18,3 +18,4 @@ export * from './site-notice';
 export * from './pwa';
 export * from './rules-link';
 export * from './stats';
+export { useReplay } from './replay';

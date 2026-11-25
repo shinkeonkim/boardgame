@@ -4,6 +4,7 @@ import { createContext, useCallback, useContext, useEffect, useState, ReactNode 
 import { createRoot } from 'react-dom/client';
 import { registerServiceWorker } from './pwa';
 import { recordOutcome } from './stats';
+import { ReplayBar, ReplayContext, useReplayPlayer, useReplayRecorder } from './replay';
 import { DRAIN_MESSAGE, type EmoteEvent, type RoomView } from '@bg/core';
 import { EmotesContext, Icon, NoticeSlot, applySkin, applyTheme, getTheme } from '@bg/ui';
 import type { GameClient } from './client';
@@ -223,13 +224,25 @@ function RoomPage({ code, onExit }: { code: string; onExit: (msg?: string) => vo
     onExit();
   };
 
+  const rec = useReplayRecorder(view);
+  const replay = useReplayPlayer(rec.frames.length);
   if (phase.kind === 'connecting') return <main className="page narrow center muted">들어가는 중…</main>;
   if (phase.kind === 'form') return <JoinForm code={code} phase={phase} defaultPw={hashPw} onSubmit={enter} onCancel={() => onExit()} />;
   if (!view) return <main className="page narrow center muted">불러오는 중…</main>;
 
   const Game = client.Game;
+  // 다시 보기 중이면 모아 둔 장면으로 같은 화면을 그림 (조작은 막음)
+  if (replay.open && rec.frames.length) {
+    const frame = rec.frames[Math.min(replay.index, rec.frames.length - 1)];
+    return (
+      <div className="replaying">
+        <Game view={frame} act={async () => false} onLeave={replay.close} notify={() => {}} emotes={[]} onEmote={() => {}} />
+        <ReplayBar index={replay.index} total={rec.frames.length} playing={replay.playing} speed={replay.speed} onSeek={replay.seek} onPlay={replay.setPlaying} onSpeed={replay.setSpeed} onClose={replay.close} />
+      </div>
+    );
+  }
   return (
-    <>
+    <ReplayContext.Provider value={rec.count > 3 && view.outcome?.status !== 'playing' ? { frames: rec.count, open: replay.start } : null}>
       {view.game ? (
         <Game view={view} act={act} onLeave={leave} notify={setToast} emotes={emotes} onEmote={(id) => act('emote', { id })} />
       ) : (
@@ -255,7 +268,7 @@ function RoomPage({ code, onExit }: { code: string; onExit: (msg?: string) => vo
           </div>
         </div>
       )}
-    </>
+    </ReplayContext.Provider>
   );
 }
 
