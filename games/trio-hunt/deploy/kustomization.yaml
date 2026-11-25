@@ -14,4 +14,4 @@ labels:
 images:
 - name: ghcr.io/shinkeonkim/boardgame-trio-hunt
   newName: ghcr.io/shinkeonkim/boardgame-trio-hunt
-  newTag: sha-bc8cbcc
+  newTag: sha-2954a3e
