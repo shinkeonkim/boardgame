@@ -14,4 +14,4 @@ labels:
 images:
 - name: ghcr.io/shinkeonkim/boardgame-court-intrigue
   newName: ghcr.io/shinkeonkim/boardgame-court-intrigue
-  newTag: sha-cdcae5c
+  newTag: sha-7a7e6a7
