@@ -35,6 +35,7 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
   const g = v.game!;
   const c = g.config;
   const pend = g.pending;
+  const revealed = g.hands.flat().filter((h) => h.lost && h.role);
   const reaction = g.phase === 'challenge' || g.phase === 'block' || g.phase === 'blockChallenge';
   const t = useTable(view, notify, {
     title: 'Court Intrigue',
@@ -154,6 +155,30 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
                 );
               })}
           </section>
+
+          {revealed.length > 0 && (
+            // 가운데 드러난 카드 더미: 잃은 영향력이 비뚤게 쌓이고, 역할마다 몇 장이 나왔는지 (추리용)
+            <section className="ci-graveyard" aria-label={`드러난 카드 ${revealed.length}장`}>
+              <span className="ci-grave-pile" aria-hidden>
+                {revealed.slice(-5).map((h, i) => (
+                  <span key={h.id} style={{ transform: `translate(${(i * 7) % 9 - 4}px, ${(i * 5) % 7 - 3}px) rotate(${((i * 37 + 11) % 17) - 8}deg)` }}>
+                    <RoleCard role={h.role} size="sm" />
+                  </span>
+                ))}
+              </span>
+              <div className="ci-grave-counts small">
+                <span className="muted">드러난 카드</span>
+                {ROLES.map((r) => {
+                  const n = revealed.filter((h) => h.role === r).length;
+                  return (
+                    <span key={r} className={`ci-grave-count ${n ? '' : 'none'} ${n >= c.copies ? 'all' : ''}`} style={{ ['--role' as string]: ROLE_DEFS[r].color }}>
+                      {ROLE_DEFS[r].name} <b>{n}</b>/{c.copies}
+                    </span>
+                  );
+                })}
+              </div>
+            </section>
+          )}
 
           {pend && g.status === 'playing' && (
             // 지금 걸린 선언: 누가 · 무슨 역할로 · 무엇을 · 누구에게 (+ 막기)

@@ -367,3 +367,38 @@ button.rcard:hover {
 .rcard.pc.sm:has(.rcard-art) .rcard-name {
   font-size: 0.58rem;
 }
+
+/* 가운데 드러난 카드 더미 */
+.ci-graveyard {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 10px 14px;
+  border-radius: 14px;
+  background: var(--table-tex, linear-gradient(transparent, transparent)), color-mix(in srgb, var(--court) 70%, #000 6%);
+  border: 1px dashed var(--line);
+}
+.ci-grave-pile {
+  display: grid;
+  flex: none;
+  min-width: 56px;
+}
+.ci-grave-pile > * {
+  grid-area: 1 / 1;
+}
+.ci-grave-counts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 10px;
+  align-items: center;
+}
+.ci-grave-count {
+  border-left: 3px solid var(--role);
+  padding-left: 5px;
+}
+.ci-grave-count.none {
+  opacity: 0.5;
+}
+.ci-grave-count.all {
+  text-decoration: line-through;
+}

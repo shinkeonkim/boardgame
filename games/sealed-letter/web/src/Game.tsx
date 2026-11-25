@@ -32,6 +32,9 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
   // 이번 판에서 가장 최근에 낸 카드 (가운데에 크게)
   const lastEvent = [...g.log].reverse().find((e) => e.type === 'play' || e.type === 'round');
   const lastPlay = lastEvent?.type === 'play' ? lastEvent : null;
+  // 가운데 버린 카드 더미: 이번 판에 낸 카드 중 방금 것 아래로 최근 4장을 비뚤게 겹쳐 쌓음
+  const discardIds = new Set(g.discards.flat().map((d) => d.id));
+  const pile = g.log.flatMap((e) => (e.type === 'play' && e !== lastPlay && discardIds.has(e.card.id) ? [e] : [])).slice(-4);
   // 소리: 편지(카드)를 내면 종이, 탈락은 쿵, 판이 끝나면 축하
   useLogSounds(g.log, (e) => (e.type === 'play' ? ['paper', 'card'] : e.type === 'out' ? 'thud' : e.type === 'round' ? 'success' : null));
   // 새 판마다 카드를 섞고 나눠 주는 연출 (@bg/web deal-fx)
@@ -120,7 +123,16 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
             )}
             {lastPlay && (
               <div className="sl-last" key={lastPlay.n} style={{ ['--seat' as string]: seatColor(lastPlay.seat) }}>
-                <LetterCard kind={lastPlay.card.kind} value={lastPlay.card.value} size="md" />
+                <span className="sl-pile" aria-label={`버린 카드 ${pile.length + 1}장`}>
+                  {pile.map((e) => (
+                    <span key={e.card.id} className="sl-pile-under" style={{ transform: `translate(${((e.n * 7) % 9) - 4}px, ${((e.n * 5) % 7) - 3}px) rotate(${((e.n * 37) % 15) - 7}deg)` }} aria-hidden>
+                      <LetterCard kind={e.card.kind} value={e.card.value} size="md" />
+                    </span>
+                  ))}
+                  <span className="sl-pile-top">
+                    <LetterCard kind={lastPlay.card.kind} value={lastPlay.card.value} size="md" />
+                  </span>
+                </span>
                 <div className="sl-last-text">
                   <span className="small muted">방금 낸 카드</span>
                   <b>

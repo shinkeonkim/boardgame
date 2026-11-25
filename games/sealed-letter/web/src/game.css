@@ -233,6 +233,20 @@ button.lcard:hover {
   border: 2px solid var(--seat);
   animation: sl-last-in 0.45s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
+.sl-pile {
+  display: grid;
+  flex: none;
+}
+.sl-pile > * {
+  grid-area: 1 / 1;
+}
+.sl-pile-under {
+  filter: brightness(0.94);
+}
+.sl-pile-under .lcard,
+.sl-pile-top .lcard {
+  box-shadow: 0 1px 3px rgb(0 0 0 / 0.25);
+}
 .sl-last-text {
   display: grid;
   gap: 2px;
