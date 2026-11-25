@@ -14,4 +14,4 @@ labels:
 images:
 - name: ghcr.io/shinkeonkim/boardgame-five-stones
   newName: ghcr.io/shinkeonkim/boardgame-five-stones
-  newTag: latest
+  newTag: sha-354fd6f
