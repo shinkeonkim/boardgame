@@ -228,6 +228,8 @@ export function Game({
   };
 
   // 다른 플레이어: 내 다음 순서부터
+  // 넓고 높은 창: 상대 탐험대도 내 것과 같은 크기의 카드 기둥으로 (상대가 둘 이하일 때 — 왼쪽 열에 들어감)
+  const roomy = useRoomy();
   const others: number[] = [];
   for (let i = 1; i <= g.players; i++) {
     const p = me >= 0 ? (me + i) % g.players : i - 1;
@@ -326,11 +328,11 @@ export function Game({
             seat={p}
             name={names[p]}
             active={g.turn === p}
-            compact
             emote={emoteBySeat.get(p)}
             away={awaySeats.has(p)}
             team={isTeam ? teamOf(p) : null}
             freshId={freshId}
+            compact={!(roomy && others.length <= 2)}
           />
         ))}
       </section>
@@ -685,6 +687,19 @@ const PlayerBoard = forwardRef<
     </div>
   );
 });
+
+function useRoomy(): boolean {
+  const q = '(min-width: 1100px) and (min-aspect-ratio: 5/4) and (min-height: 760px)';
+  const [on, setOn] = useState(() => typeof window !== 'undefined' && !!window.matchMedia?.(q).matches);
+  useEffect(() => {
+    const m = window.matchMedia?.(q);
+    if (!m) return;
+    const f = () => setOn(m.matches);
+    m.addEventListener('change', f);
+    return () => m.removeEventListener('change', f);
+  }, []);
+  return on;
+}
 
 function RoundOver({ view, act, onLeave, onPeek }: { view: View; act: Act; onLeave: () => void; onPeek: () => void }) {
   const g = view.game!;
