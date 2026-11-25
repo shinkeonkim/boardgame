@@ -34,6 +34,7 @@
 | [Hidden Thorn · 숨은 가시](https://boardgame.shinkeonkim.com/games/hidden-thorn) | 스컬 | 2~8 | 15~30분 | ○ | 장미 사이에 가시를 숨기고 「몇 장 뒤집을 수 있다」고 거는 순수 블러핑 게임 |
 | [Hold'em · 홀덤](https://boardgame.shinkeonkim.com/games/holdem) | 텍사스 홀덤 | 2~9 | 20~60분 | ○ | 손패 2장과 바닥 5장으로 겨루는 텍사스 홀덤 — 돈이 오가지 않는 칩 게임 |
 | [Number Vault · 숫자 금고](https://boardgame.shinkeonkim.com/games/number-vault) | 다빈치 코드 | 2~6 | 15~25분 | ○ | 오름차순으로 놓인 가려진 숫자 타일을 색과 위치로 추리해 맞히는 게임 |
+| [Orbit Tasks · 궤도 임무](https://boardgame.shinkeonkim.com/games/orbit-tasks) | 더 크루 | 3~5 | 10~40분 | ○ | 말없이 손발을 맞춰 과제 카드를 맡은 사람이 가져가게 하는 협력 트릭 게임 |
 | [Sealed Letter · 비밀 편지](https://boardgame.shinkeonkim.com/games/sealed-letter) | 러브레터 | 2~6 | 10~20분 | ○ | 손에 든 단 한 장을 지키며 추측·엿보기·결투로 상대를 떨어뜨리는 짧은 추리 게임 |
 | [Secret Mission · 비밀 원정대](https://boardgame.shinkeonkim.com/games/secret-mission) | 레지스탕스 | 5~10 | 20~40분 | ○ | 숨은 첩자를 찾아라 — 원정대 투표와 몰래 낸 카드로 추리하는 5~10인 파티 게임 |
 | [Trio Hunt · 셋 찾기](https://boardgame.shinkeonkim.com/games/trio-hunt) | 트리오 | 3~6 | 10~20분 | ○ | 가장 작은 카드? 가장 큰 카드? 같은 숫자 세 장을 뒤집어 모으는 기억력 게임 |
@@ -60,7 +61,7 @@
 | [Pass the Plate · 접시 돌리기](https://boardgame.shinkeonkim.com/games/pass-the-plate) | 스시 고! | 2~8 | 15~20분 | ○ | 한 접시 고르고 나머지는 옆으로 — 동시에 고르며 세트를 모으는 회전 요리 게임 |
 | [Row Six · 여섯째 줄](https://boardgame.shinkeonkim.com/games/row-six) | 젝스님트 | 2~10 | 15~30분 | ○ | 모두 동시에 숫자 카드를 내고, 6번째가 되면 줄을 몽땅 떠안는 눈치 게임 |
 
-모두 25종. 규칙 메커니즘은 고전 보드게임에서 빌려 왔고, 이름·그림·화면은 직접 만들었다 (원작 이름은 팬 제작 표시로만 쓴다).
+모두 26종. 규칙 메커니즘은 고전 보드게임에서 빌려 왔고, 이름·그림·화면은 직접 만들었다 (원작 이름은 팬 제작 표시로만 쓴다).
 
 <!-- games:end -->
 
@@ -93,11 +94,11 @@
 | **Hearts · 하트**<br><img src="docs/media/hearts/gif/play.gif" alt="Hearts 플레이" width="420"> | **Hidden Thorn · 숨은 가시**<br><img src="docs/media/hidden-thorn/gif/play.gif" alt="Hidden Thorn 플레이" width="420"> |
 | **Hold'em · 홀덤**<br><img src="docs/media/holdem/gif/play.gif" alt="Hold'em 플레이" width="420"> | **Number Runs · 숫자 잇기**<br><img src="docs/media/number-runs/gif/play.gif" alt="Number Runs 플레이" width="420"> |
 | **Number Vault · 숫자 금고**<br><img src="docs/media/number-vault/gif/play.gif" alt="Number Vault 플레이" width="420"> | **One Card · 원카드**<br><img src="docs/media/one-card/gif/play.gif" alt="One Card 플레이" width="420"> |
-| **One Word · 한 단어**<br><img src="docs/media/one-word/gif/play.gif" alt="One Word 플레이" width="420"> | **Pass the Plate · 접시 돌리기**<br><img src="docs/media/pass-the-plate/gif/play.gif" alt="Pass the Plate 플레이" width="420"> |
-| **Row Six · 여섯째 줄**<br><img src="docs/media/row-six/gif/play.gif" alt="Row Six 플레이" width="420"> | **Sealed Letter · 비밀 편지**<br><img src="docs/media/sealed-letter/gif/play.gif" alt="Sealed Letter 플레이" width="420"> |
-| **Secret Mission · 비밀 원정대**<br><img src="docs/media/secret-mission/gif/play.gif" alt="Secret Mission 플레이" width="420"> | **Sketch Quiz · 그림 퀴즈**<br><img src="docs/media/sketch-quiz/gif/play.gif" alt="Sketch Quiz 플레이" width="420"> |
-| **Tile Atelier · 타일 공방**<br><img src="docs/media/tile-atelier/gif/play.gif" alt="Tile Atelier 플레이" width="420"> | **Trio Hunt · 셋 찾기**<br><img src="docs/media/trio-hunt/gif/play.gif" alt="Trio Hunt 플레이" width="420"> |
-| **Yacht Dice · 요트 다이스**<br><img src="docs/media/yacht/gif/play.gif" alt="Yacht Dice 플레이" width="420"> |  |
+| **One Word · 한 단어**<br><img src="docs/media/one-word/gif/play.gif" alt="One Word 플레이" width="420"> | **Orbit Tasks · 궤도 임무**<br><img src="docs/media/orbit-tasks/gif/play.gif" alt="Orbit Tasks 플레이" width="420"> |
+| **Pass the Plate · 접시 돌리기**<br><img src="docs/media/pass-the-plate/gif/play.gif" alt="Pass the Plate 플레이" width="420"> | **Row Six · 여섯째 줄**<br><img src="docs/media/row-six/gif/play.gif" alt="Row Six 플레이" width="420"> |
+| **Sealed Letter · 비밀 편지**<br><img src="docs/media/sealed-letter/gif/play.gif" alt="Sealed Letter 플레이" width="420"> | **Secret Mission · 비밀 원정대**<br><img src="docs/media/secret-mission/gif/play.gif" alt="Secret Mission 플레이" width="420"> |
+| **Sketch Quiz · 그림 퀴즈**<br><img src="docs/media/sketch-quiz/gif/play.gif" alt="Sketch Quiz 플레이" width="420"> | **Tile Atelier · 타일 공방**<br><img src="docs/media/tile-atelier/gif/play.gif" alt="Tile Atelier 플레이" width="420"> |
+| **Trio Hunt · 셋 찾기**<br><img src="docs/media/trio-hunt/gif/play.gif" alt="Trio Hunt 플레이" width="420"> | **Yacht Dice · 요트 다이스**<br><img src="docs/media/yacht/gif/play.gif" alt="Yacht Dice 플레이" width="420"> |
 
 <!-- gallery:end -->
 

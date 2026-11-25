@@ -1,0 +1,18 @@
+# 공개: Cloudflare Tunnel boardgame.shinkeonkim.com → Traefik → 경로로 나눔 (/orbit-tasks → 이 게임, / → 포털)
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: orbit-tasks
+spec:
+  ingressClassName: traefik
+  rules:
+    - host: boardgame.shinkeonkim.com
+      http:
+        paths:
+          - path: /orbit-tasks
+            pathType: Prefix
+            backend:
+              service:
+                name: orbit-tasks
+                port:
+                  name: http

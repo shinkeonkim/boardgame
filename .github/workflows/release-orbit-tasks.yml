@@ -1,0 +1,21 @@
+name: release orbit-tasks
+on:
+  push:
+    branches: [main]
+    paths:
+      - "games/orbit-tasks/**"
+      - "!games/orbit-tasks/deploy/**"
+      - "packages/**"
+      - "Dockerfile"
+      - "package-lock.json"
+      - "scripts/bundle.mjs"
+  workflow_dispatch:
+permissions:
+  contents: write
+  packages: write
+jobs:
+  release:
+    uses: ./.github/workflows/_release.yml
+    with:
+      target: orbit-tasks
+      deploy-dir: games/orbit-tasks/deploy

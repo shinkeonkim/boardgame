@@ -1,0 +1,266 @@
+/* Orbit Tasks (궤도 임무) */
+.ot-card {
+  --w: 66px;
+  position: relative;
+  width: var(--w);
+  aspect-ratio: 5 / 7;
+  border-radius: calc(var(--w) * 0.14);
+  border: 2px solid color-mix(in srgb, var(--suit) 70%, #000);
+  background:
+    radial-gradient(circle at 70% 20%, rgb(255 255 255 / 0.25), transparent 40%),
+    radial-gradient(circle at 20% 90%, rgb(0 0 0 / 0.18), transparent 50%),
+    var(--suit);
+  color: var(--ink);
+  display: grid;
+  place-items: center;
+  padding: 0;
+  font: inherit;
+  box-shadow: 0 2px 0 rgb(0 0 0 / 0.25), 0 6px 12px rgb(0 0 0 / 0.2);
+  flex: none;
+}
+.ot-card.rocket {
+  background:
+    radial-gradient(1px 1px at 20% 30%, #fff, transparent),
+    radial-gradient(1px 1px at 70% 60%, #fff, transparent),
+    radial-gradient(1.5px 1.5px at 40% 80%, #fff, transparent),
+    linear-gradient(160deg, #262c55, #12152b);
+  border-color: #f2b33d;
+}
+.ot-card.xs {
+  --w: 30px;
+}
+.ot-card.sm {
+  --w: 44px;
+}
+.ot-num {
+  position: absolute;
+  left: 8%;
+  top: 4%;
+  font-size: calc(var(--w) * 0.36);
+  font-weight: 900;
+  line-height: 1;
+  text-shadow: 0 1px 0 rgb(0 0 0 / 0.25);
+}
+.ot-num.corner {
+  left: auto;
+  top: auto;
+  right: 8%;
+  bottom: 4%;
+  transform: rotate(180deg);
+  font-size: calc(var(--w) * 0.24);
+}
+.ot-card.xs .ot-num.corner,
+.ot-card.xs .ot-emblem {
+  display: none;
+}
+.ot-emblem {
+  width: 62%;
+  height: 62%;
+  margin-top: 12%;
+}
+button.ot-card {
+  cursor: pointer;
+}
+button.ot-card.playable {
+  transform: translateY(-8px);
+  box-shadow: 0 0 0 2px var(--gold, #f2b33d), 0 10px 18px rgb(0 0 0 / 0.3);
+}
+.ot-card.dim {
+  filter: brightness(0.6) saturate(0.6);
+}
+.ot-card.task {
+  outline: 2px dashed #fff;
+  outline-offset: -5px;
+}
+/* 과제 줄 */
+.ot-tasks {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+.ot-task {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  gap: 3px;
+  padding: 6px 8px;
+  border-radius: 12px;
+  border: 1.5px solid var(--line);
+  background: var(--panel);
+  font: inherit;
+  color: var(--ink);
+}
+.ot-task.open:not(:disabled) {
+  cursor: pointer;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 25%, transparent);
+}
+.ot-task.done {
+  opacity: 0.6;
+}
+.ot-task-owner {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+.ot-order {
+  position: absolute;
+  top: -6px;
+  left: -6px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #1b1f38;
+  color: #fff;
+  font-weight: 900;
+  font-size: 0.75rem;
+  display: grid;
+  place-items: center;
+  z-index: 2;
+}
+.ot-order.past {
+  background: #2fa865;
+}
+.ot-opps {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+.ot-opp {
+  min-width: 130px;
+  padding: 6px 10px;
+  border-radius: 12px;
+  border: 1.5px solid var(--line);
+  border-top: 4px solid var(--seat);
+  background: var(--panel);
+  display: grid;
+  gap: 3px;
+}
+.ot-opp.acting {
+  border-color: var(--accent);
+  border-top-color: var(--seat);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 25%, transparent);
+}
+.ot-opp-head {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.85rem;
+}
+.ot-opp-signal,
+.ot-my-signal {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.ot-signal {
+  font-size: 0.72rem;
+  font-weight: 800;
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: #1b1f38;
+  color: #fff;
+  white-space: nowrap;
+}
+.ot-felt {
+  border-radius: 18px;
+  padding: 14px;
+  min-height: 150px;
+  display: grid;
+  place-items: center;
+  background:
+    radial-gradient(1px 1px at 15% 25%, #fff8, transparent),
+    radial-gradient(1px 1px at 80% 70%, #fff8, transparent),
+    radial-gradient(1.5px 1.5px at 60% 20%, #fff6, transparent),
+    radial-gradient(ellipse at 50% 40%, #2a3270, #141a3a 75%);
+  box-shadow: inset 0 0 0 2px #3a427f, inset 0 3px 18px rgb(0 0 0 / 0.45);
+}
+.ot-center {
+  display: flex;
+  gap: 10px;
+  align-items: flex-end;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+.ot-empty {
+  color: rgb(255 255 255 / 0.75);
+}
+.ot-play {
+  display: grid;
+  justify-items: center;
+  gap: 4px;
+  transform: rotate(calc((var(--i) - 1.5) * 3deg));
+}
+.ot-play.won .ot-card {
+  outline: 3px solid #f2c14e;
+  outline-offset: 2px;
+  box-shadow: 0 0 18px rgb(242 193 78 / 0.6);
+}
+.ot-play-name {
+  color: #fff;
+  display: inline-flex;
+  gap: 4px;
+  align-items: center;
+}
+.ot-hand {
+  container-type: inline-size;
+  width: 100%;
+  box-sizing: border-box;
+  display: flex;
+  justify-content: center;
+  padding: 12px 4px 2px;
+  --hw: 66px;
+}
+.ot-slot {
+  flex: none;
+  width: var(--hw);
+  margin-left: min(-6px, calc((100cqw - var(--hw) - 8px) / (var(--n) - 1) - var(--hw)));
+  transition: transform 0.18s;
+}
+.ot-slot:first-child {
+  margin-left: 0;
+}
+.ot-slot .ot-card {
+  --w: var(--hw);
+}
+.ot-slot.picked {
+  transform: translateY(-14px);
+}
+.ot-seat {
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+}
+.ot-demo {
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+}
+.ot-demo-row {
+  display: flex;
+  gap: 6px;
+  min-height: 64px;
+}
+.ot-demo-say {
+  font-weight: 700;
+  font-size: 0.85rem;
+}
+.ot-cover .ot-card {
+  --w: 150px;
+}
+@media (max-width: 759px) {
+  .ot-opp {
+    min-width: 0;
+    flex: 1 1 90px;
+    padding: 4px 6px;
+  }
+  .ot-felt {
+    min-height: 120px;
+    padding: 8px;
+  }
+  .ot-hand {
+    --hw: 52px;
+  }
+}
