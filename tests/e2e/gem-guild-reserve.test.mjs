@@ -88,6 +88,8 @@ it('시장 예약 = 앞면, 몰래 예약 = 상대에게 뒷면 · 나에게는 
   assert.match(await other.locator('.gg-hold-res .devcard-back').getAttribute('aria-label'), /2단계/);
   assert.equal(await other.locator(`.gg-hold-res .devcard[aria-label="${marketId}"]`).count(), 1, '시장 예약은 앞면');
   // 내 화면: 둘 다 앞면, 몰래 예약에는 자물쇠
+  // 내 화면은 상대보다 한 박자 늦게 갱신될 수 있어 기다림
+  await me.waitForFunction(() => document.querySelectorAll('.gg-reserved .devcard').length === 2, null, { timeout: 5000 }).catch(() => {});
   assert.equal(await me.locator('.gg-reserved .devcard').count(), 2);
   assert.equal(await me.locator('.gg-reserved .devcard .devcard-secret').count(), 1);
   assert.equal(await me.locator('.devcard-back').count(), 0, '내 화면에는 뒷면이 없음');
