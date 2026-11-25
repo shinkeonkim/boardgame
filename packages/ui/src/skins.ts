@@ -106,13 +106,43 @@ export const CHIP_TEXTURES: Skin[] = [
   { id: 'wood', name: '나뭇결', bg: 'repeating-linear-gradient(100deg, rgba(0,0,0,.08) 0 1px, transparent 1px 5px, rgba(255,255,255,.07) 5px 6px, transparent 6px 9px)' },
 ];
 
+/**
+ * 테이블 재질: 게임마다 있는 판(펠트) 위에 얹는 무늬(--table-tex)와 화면 바탕에 아주 옅게 까는 무늬(--page-tex).
+ * 판 색은 게임 고유색을 그대로 두고 질감만 바꾼다 (글자 대비가 떨어지지 않게 투명도 낮게).
+ */
+export interface TableMat extends Skin {
+  page: string;
+}
+export const TABLE_MATS: TableMat[] = [
+  { id: 'plain', name: '기본', bg: NONE, page: NONE },
+  {
+    id: 'felt',
+    name: '펠트',
+    bg: svgTile(6, 6, "<rect x='1' y='2' width='1' height='1' fill='#fff' opacity='.06'/><rect x='4' y='4' width='1' height='1' fill='#000' opacity='.1'/><rect x='3' y='0' width='1' height='1' fill='#000' opacity='.07'/>"),
+    page: 'radial-gradient(circle, rgba(0,0,0,.035) 1px, transparent 1.3px) 0 0/5px 5px',
+  },
+  {
+    id: 'wood',
+    name: '나무',
+    bg: 'repeating-linear-gradient(92deg, rgba(60,30,10,.16) 0 2px, transparent 2px 9px, rgba(255,220,170,.07) 9px 11px, transparent 11px 17px)',
+    page: 'repeating-linear-gradient(91deg, rgba(110,70,30,.06) 0 1px, transparent 1px 7px, rgba(110,70,30,.035) 7px 9px, transparent 9px 15px)',
+  },
+  {
+    id: 'linen',
+    name: '리넨',
+    bg: 'repeating-linear-gradient(0deg, rgba(255,255,255,.05) 0 1px, transparent 1px 3px), repeating-linear-gradient(90deg, rgba(0,0,0,.09) 0 1px, transparent 1px 3px)',
+    page: 'repeating-linear-gradient(0deg, rgba(0,0,0,.025) 0 1px, transparent 1px 3px), repeating-linear-gradient(90deg, rgba(0,0,0,.025) 0 1px, transparent 1px 3px)',
+  },
+];
+
 export interface SkinChoice {
   back: string;
   tex: string;
   chip: string;
+  table: string;
 }
 
-export const DEFAULT_SKIN: SkinChoice = { back: 'plum', tex: 'linen', chip: 'gloss' };
+export const DEFAULT_SKIN: SkinChoice = { back: 'plum', tex: 'linen', chip: 'gloss', table: 'plain' };
 const KEY = 'bg:skin';
 const CUSTOM_KEY = 'bg:skin:custom';
 /** 「내 이미지」 뒷면 id */
@@ -147,9 +177,10 @@ export function readCustomBack(): string | null {
 const find = (list: Skin[], id: string) => list.find((s) => s.id === id) ?? list[0];
 
 /** 고른 스킨의 CSS 변수 값 */
-export function skinVars(c: SkinChoice, custom = readCustomBack()): Record<'--card-back' | '--card-tex' | '--chip-tex', string> {
+export function skinVars(c: SkinChoice, custom = readCustomBack()): Record<'--card-back' | '--card-tex' | '--chip-tex' | '--table-tex' | '--page-tex', string> {
   const back = c.back === CUSTOM_BACK && custom ? `url("${custom}") center/cover, #3b3550` : find(CARD_BACKS, c.back).bg;
-  return { '--card-back': back, '--card-tex': find(CARD_TEXTURES, c.tex).bg, '--chip-tex': find(CHIP_TEXTURES, c.chip).bg };
+  const mat = TABLE_MATS.find((m) => m.id === c.table) ?? TABLE_MATS[0];
+  return { '--card-back': back, '--card-tex': find(CARD_TEXTURES, c.tex).bg, '--chip-tex': find(CHIP_TEXTURES, c.chip).bg, '--table-tex': mat.bg, '--page-tex': mat.page };
 }
 
 const listeners = new Set<(c: SkinChoice) => void>();

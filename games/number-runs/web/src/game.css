@@ -70,7 +70,7 @@ button.rtile:hover {
   gap: 8px;
   padding: 12px;
   border-radius: 16px;
-  background: var(--felt2);
+  background: var(--table-tex, linear-gradient(transparent, transparent)), var(--felt2);
   min-height: 120px;
   align-content: flex-start;
 }

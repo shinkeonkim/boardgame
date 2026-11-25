@@ -3,7 +3,7 @@ import { Icon } from './icons';
 import { CSSProperties, useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Modal } from './components';
-import { CARD_BACKS, CARD_TEXTURES, CHIP_TEXTURES, CUSTOM_BACK, Skin, SkinChoice, onSkinChange, readCustomBack, readSkin, saveCustomBack, saveSkin } from './skins';
+import { CARD_BACKS, CARD_TEXTURES, CHIP_TEXTURES, CUSTOM_BACK, TABLE_MATS, Skin, SkinChoice, onSkinChange, readCustomBack, readSkin, saveCustomBack, saveSkin } from './skins';
 
 export function useSkin(): SkinChoice {
   const [c, setC] = useState(readSkin);
@@ -11,12 +11,12 @@ export function useSkin(): SkinChoice {
   return c;
 }
 
-function Choices({ list, value, onPick, kind }: { list: Skin[]; value: string; onPick: (id: string) => void; kind: 'back' | 'tex' | 'chip' }) {
+function Choices({ list, value, onPick, kind }: { list: Skin[]; value: string; onPick: (id: string) => void; kind: 'back' | 'tex' | 'chip' | 'table' }) {
   return (
     <div className={`skin-grid ${kind}`} role="radiogroup">
       {list.map((s) => (
         <button key={s.id} type="button" role="radio" aria-checked={value === s.id} className={`skin-opt ${value === s.id ? 'on' : ''}`} onClick={() => onPick(s.id)}>
-          <span className={`skin-swatch ${kind}`} style={{ background: kind === 'back' ? s.bg : kind === 'tex' ? `${s.bg}, #fffdf6` : `${s.bg}, #3b82c4` } as CSSProperties} />
+          <span className={`skin-swatch ${kind}`} style={{ background: kind === 'back' ? s.bg : kind === 'tex' ? `${s.bg}, #fffdf6` : kind === 'table' ? `${s.bg}, radial-gradient(ellipse at 50% 40%, #2f7a51, #1d5a3a 80%)` : `${s.bg}, #3b82c4` } as CSSProperties} />
           <span className="skin-name">{s.name}</span>
         </button>
       ))}
@@ -72,6 +72,8 @@ export function SkinPicker({ onClose }: { onClose: () => void }) {
       <Choices list={CARD_TEXTURES} value={c.tex} onPick={(tex) => pick({ tex })} kind="tex" />
       <h4>칩·토큰 질감</h4>
       <Choices list={CHIP_TEXTURES} value={c.chip} onPick={(chip) => pick({ chip })} kind="chip" />
+      <h4>테이블 재질</h4>
+      <Choices list={TABLE_MATS} value={c.table} onPick={(table) => pick({ table })} kind="table" />
       <h4>보기 도움</h4>
       <ColorAssistToggle />
       <HapticsToggle />

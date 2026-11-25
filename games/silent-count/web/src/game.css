@@ -90,7 +90,7 @@
   display: grid;
   place-items: center;
   gap: 8px;
-  background: radial-gradient(ellipse at 50% 40%, #3b2c6a, #1d1638 75%);
+  background: var(--table-tex, linear-gradient(transparent, transparent)), radial-gradient(ellipse at 50% 40%, #3b2c6a, #1d1638 75%);
   box-shadow: inset 0 0 0 2px #4a3a85, inset 0 3px 20px rgb(0 0 0 / 0.45);
 }
 .sc-felt.missed {

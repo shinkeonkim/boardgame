@@ -42,7 +42,7 @@
 }
 .bd-table {
   border-radius: 18px;
-  background: radial-gradient(ellipse at center, color-mix(in srgb, var(--felt) 85%, white), var(--felt));
+  background: var(--table-tex, linear-gradient(transparent, transparent)), radial-gradient(ellipse at center, color-mix(in srgb, var(--felt) 85%, white), var(--felt));
   color: var(--felt-ink);
   padding: 16px;
   display: grid;

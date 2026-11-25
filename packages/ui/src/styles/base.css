@@ -5,7 +5,8 @@
 html,
 body {
   margin: 0;
-  background: var(--bg);
+  /* --page-tex: 꾸미기 「테이블 재질」 (게임 화면에서만 설정됨) */
+  background: var(--page-tex, linear-gradient(transparent, transparent)), var(--bg);
   color: var(--ink);
   font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', system-ui, sans-serif;
   -webkit-tap-highlight-color: transparent;

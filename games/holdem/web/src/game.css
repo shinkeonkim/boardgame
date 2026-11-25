@@ -17,7 +17,7 @@
   max-height: 62vh;
   margin: 0 auto;
   border-radius: 50% / 48%;
-  background: radial-gradient(ellipse at center, color-mix(in srgb, var(--hd-felt) 75%, #6ab08a) 0 35%, var(--hd-felt) 72%);
+  background: var(--table-tex, linear-gradient(transparent, transparent)), radial-gradient(ellipse at center, color-mix(in srgb, var(--hd-felt) 75%, #6ab08a) 0 35%, var(--hd-felt) 72%);
   box-shadow: inset 0 0 0 12px #5a3a22, inset 0 0 0 15px #3a2414, inset 0 0 40px rgba(0, 0, 0, 0.35), 0 14px 30px rgba(0, 0, 0, 0.3);
   color: #eef6ee;
 }
