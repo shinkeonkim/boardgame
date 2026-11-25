@@ -14,4 +14,4 @@ labels:
 images:
 - name: ghcr.io/shinkeonkim/boardgame-hearts
   newName: ghcr.io/shinkeonkim/boardgame-hearts
-  newTag: sha-ddee70c
+  newTag: sha-ac4422d
