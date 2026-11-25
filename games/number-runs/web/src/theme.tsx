@@ -29,7 +29,7 @@ export function TileFace({
       data-flip={flip}
       className={`rtile ${size} ${selected ? 'selected' : ''} ${fresh ? 'fresh' : ''} ${onPointerDown ? 'grabbable' : ''} ${lifted ? 'lifted' : ''}`}
       onClick={onClick}
-      onPointerDown={onPointerDown} aria-label={joker ? '조커' : `${INK_NAME[t.color]} ${t.n}`} style={{ ['--ink' as string]: joker ? '#c0392b' : INK[t.color] }}>
+      onPointerDown={onPointerDown} data-cbl={joker ? undefined : INK_NAME[t.color]?.[0]} aria-label={joker ? '조커' : `${INK_NAME[t.color]} ${t.n}`} style={{ ['--ink' as string]: joker ? '#c0392b' : INK[t.color] }}>
       {joker ? <span className="rtile-joker">☺</span> : <span className="rtile-n">{t.n}</span>}
       <span className="rtile-dot" aria-hidden />
     </Tag>

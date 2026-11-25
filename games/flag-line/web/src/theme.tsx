@@ -36,7 +36,7 @@ function TroopArt({ color, value }: { color: string; value: number }) {
 export function Troop({ color, value, size = 'md', selected, onClick, className = '', flip }: { color: number; value: number; size?: 'xs' | 'sm' | 'md'; selected?: boolean; onClick?: () => void; className?: string; flip?: string }) {
   const Tag = onClick ? 'button' : 'div';
   return (
-    <Tag data-flip={flip} className={`troop pc ${size} ${selected ? 'selected' : ''} ${className}`} style={{ ['--tc' as string]: TROOP_COLORS[color] }} onClick={onClick} aria-label={`${TROOP_NAMES[color]} ${value}`}>
+    <Tag data-flip={flip} data-cbl={TROOP_NAMES[color][0]} className={`troop pc ${size} ${selected ? 'selected' : ''} ${className}`} style={{ ['--tc' as string]: TROOP_COLORS[color] }} onClick={onClick} aria-label={`${TROOP_NAMES[color]} ${value}`}>
       <TroopArt color={TROOP_COLORS[color]} value={value} />
       <span className="troop-num pc-num">{value}</span>
       <span className="troop-pip" aria-hidden />

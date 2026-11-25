@@ -402,3 +402,48 @@ a.btn.primary {
   background: color-mix(in srgb, var(--accent) 12%, transparent);
   border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent);
 }
+
+/* 색 구분 도움 (설정 → 보기 도움): data-cbl 글자를 색 요소 귀퉁이에 */
+:root[data-cb='on'] [data-cbl] {
+  position: relative;
+}
+:root[data-cb='on'] [data-cbl]::after {
+  content: attr(data-cbl);
+  position: absolute;
+  /* 안쪽 귀퉁이 (카드처럼 overflow 가 잘리는 요소에서도 보이게) */
+  left: 2px;
+  top: 2px;
+  z-index: 4;
+  min-width: 1.35em;
+  height: 1.35em;
+  padding: 0 2px;
+  border-radius: 0.45em;
+  display: grid;
+  place-items: center;
+  font: 800 10px/1 system-ui, -apple-system, sans-serif;
+  color: #fff;
+  background: #1b1a17;
+  box-shadow: 0 0 0 1.5px #fff;
+  pointer-events: none;
+}
+.skin-assist {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  cursor: pointer;
+}
+.skin-assist input {
+  margin-top: 3px;
+  width: 18px;
+  height: 18px;
+}
+.skin-assist span {
+  display: grid;
+  gap: 2px;
+}
+/* 작은 점(비용 점 등)에는 더 작게 */
+:root[data-cb='on'] .cost-dot[data-cbl]::after {
+  left: -4px;
+  top: -5px;
+  font-size: 8px;
+}

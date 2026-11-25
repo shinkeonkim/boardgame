@@ -1,3 +1,4 @@
+import { useColorAssist } from './a11y';
 import { Icon } from './icons';
 import { CSSProperties, useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
@@ -71,6 +72,8 @@ export function SkinPicker({ onClose }: { onClose: () => void }) {
       <Choices list={CARD_TEXTURES} value={c.tex} onPick={(tex) => pick({ tex })} kind="tex" />
       <h4>칩·토큰 질감</h4>
       <Choices list={CHIP_TEXTURES} value={c.chip} onPick={(chip) => pick({ chip })} kind="chip" />
+      <h4>보기 도움</h4>
+      <ColorAssistToggle />
     </Modal>
   );
 }
@@ -88,3 +91,18 @@ export function SkinButton({ className = 'btn ghost tiny' }: { className?: strin
     </>
   );
 }
+
+/** 색 구분 도움 켜고 끄기 (보석·카드·타일에 색 이름 첫 글자) */
+function ColorAssistToggle() {
+  const [on, set] = useColorAssist();
+  return (
+    <label className="skin-assist">
+      <input type="checkbox" checked={on} onChange={(e) => set(e.target.checked)} />
+      <span>
+        <b>색 구분 도움</b>
+        <small className="muted">색으로만 나뉘는 보석·카드·타일에 색 이름 첫 글자(빨·파·초…)를 함께 보여요</small>
+      </span>
+    </label>
+  );
+}
+

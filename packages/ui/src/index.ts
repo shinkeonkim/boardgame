@@ -8,3 +8,4 @@ export * from './pieces';
 export * from './art';
 export * from './playing-card';
 export * from './icons';
+export * from './a11y';

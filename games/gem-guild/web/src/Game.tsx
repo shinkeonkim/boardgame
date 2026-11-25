@@ -312,7 +312,7 @@ function Holdings({ s, limit, maxReserve, compact, tableau, cardsShown }: { s: S
         </span>
         )}
         {!(tableau || cardsShown) && [0, 1, 2, 3, 4].map((gem) => (
-          <span key={gem} role="cell" className={`gg-hold-card ${s.bonuses[gem] ? '' : 'zero'}`} style={{ background: GEM_INFO[gem].fill, color: GEM_INFO[gem].ink, borderColor: GEM_INFO[gem].stroke }} title={`${GEM_INFO[gem].name} 카드 ${s.bonuses[gem]}장 (영구 할인)`}>
+          <span key={gem} role="cell" data-cbl={GEM_INFO[gem].short} className={`gg-hold-card ${s.bonuses[gem] ? '' : 'zero'}`} style={{ background: GEM_INFO[gem].fill, color: GEM_INFO[gem].ink, borderColor: GEM_INFO[gem].stroke }} title={`${GEM_INFO[gem].name} 카드 ${s.bonuses[gem]}장 (영구 할인)`}>
             {s.bonuses[gem]}
           </span>
         ))}
@@ -321,7 +321,7 @@ function Holdings({ s, limit, maxReserve, compact, tableau, cardsShown }: { s: S
           보석
         </span>
         {[0, 1, 2, 3, 4, 5].map((gem) => (
-          <span key={gem} role="cell" className={`gg-hold-chip ${s.tokens[gem] ? '' : 'zero'}`} style={{ background: GEM_INFO[gem].fill, color: GEM_INFO[gem].ink, borderColor: GEM_INFO[gem].stroke }} title={`${GEM_INFO[gem].name} ${s.tokens[gem]}개`}>
+          <span key={gem} role="cell" data-cbl={GEM_INFO[gem].short} className={`gg-hold-chip ${s.tokens[gem] ? '' : 'zero'}`} style={{ background: GEM_INFO[gem].fill, color: GEM_INFO[gem].ink, borderColor: GEM_INFO[gem].stroke }} title={`${GEM_INFO[gem].name} ${s.tokens[gem]}개`}>
             {s.tokens[gem]}
           </span>
         ))}

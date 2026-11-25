@@ -39,7 +39,7 @@ export function FlareCard({
 }) {
   const Tag = onClick ? 'button' : 'div';
   return (
-    <Tag className={`fcard pc ${size} ${color === 5 && c.sixth === 'rainbow' ? 'rainbow' : ''} ${className}`} style={colorStyle(c, color)} onClick={onClick} title={title} aria-label={`${colorName(c, color)} ${value}`}>
+    <Tag className={`fcard pc ${size} ${color === 5 && c.sixth === 'rainbow' ? 'rainbow' : ''} ${className}`} data-cbl={color === 5 && c.sixth === 'rainbow' ? '무' : COLORS[color]?.short} style={colorStyle(c, color)} onClick={onClick} title={title} aria-label={`${colorName(c, color)} ${value}`}>
       <span className="fcard-num pc-num">{value}</span>
       <Burst value={value} color={color === 5 && c.sixth === 'rainbow' ? '#d46ab8' : COLORS[color].hex} rainbow={color === 5 && c.sixth === 'rainbow'} />
       {children}

@@ -29,7 +29,7 @@ export function GemToken({ gem, n, size = 34, selected, onClick, disabled, label
   const aria = label ?? `${g.name}${n !== undefined ? ` ${n}개` : ''}`;
   if (stack === undefined)
     return (
-      <Tag className={`gem ${selected ? 'selected' : ''}`} onClick={onClick} disabled={onClick ? disabled : undefined} aria-label={aria} style={{ width: size, height: size }}>
+      <Tag className={`gem ${selected ? 'selected' : ''}`} data-cbl={g.short} onClick={onClick} disabled={onClick ? disabled : undefined} aria-label={aria} style={{ width: size, height: size }}>
         {chip}
         <i className="chip-tex" aria-hidden />
         {n !== undefined && <CountBadge n={n} />}
@@ -39,7 +39,7 @@ export function GemToken({ gem, n, size = 34, selected, onClick, disabled, label
   const step = Math.max(2, Math.round(size * 0.12));
   const h = size + step * Math.max(0, layers - 1);
   return (
-    <Tag className={`gem stacked ${layers ? '' : 'empty'} ${selected ? 'selected' : ''}`} onClick={onClick} disabled={onClick ? disabled : undefined} aria-label={aria} style={{ width: size, height: h }}>
+    <Tag className={`gem stacked ${layers ? '' : 'empty'} ${selected ? 'selected' : ''}`} data-cbl={g.short} onClick={onClick} disabled={onClick ? disabled : undefined} aria-label={aria} style={{ width: size, height: h }}>
       {layers === 0 ? (
         <span className="gem-layer gem-ghost" style={{ bottom: 0, width: size, height: size, borderColor: g.stroke }} aria-hidden />
       ) : (
@@ -60,7 +60,7 @@ export function CostDots({ cost }: { cost: number[] }) {
     <span className="cost">
       {cost.map((n, i) =>
         n > 0 ? (
-          <span key={i} className="cost-dot" style={{ background: i === 0 || i === 5 ? GEM_INFO[i].fill : GEM_INFO[i].stroke, color: GEM_INFO[i].ink, borderColor: GEM_INFO[i].stroke }}>
+          <span key={i} className="cost-dot" data-cbl={GEM_INFO[i].short} style={{ background: i === 0 || i === 5 ? GEM_INFO[i].fill : GEM_INFO[i].stroke, color: GEM_INFO[i].ink, borderColor: GEM_INFO[i].stroke }}>
             {n}
           </span>
         ) : null,
