@@ -46,6 +46,17 @@ export function Lobby({ view, act, onLeave, emotes, onEmote }: { view: RoomView;
   const spectators = view.members.filter((m) => m.role === 'spectator');
   const { maxPlayers } = view.lobby;
   const teams = client.teamsEnabled?.(view.config, players.length) ?? false;
+  // 「봇과 바로 연습하기」로 만든 방: 쉬운 봇을 최소 인원(2명 이상)까지 채우고 바로 시작
+  useEffect(() => {
+    const k = `bg:practice:${view.code}`;
+    if (!isHost || sessionStorage.getItem(k) !== '1') return;
+    sessionStorage.removeItem(k);
+    (async () => {
+      const need = Math.max(2, view.lobby.minPlayers) - players.length;
+      for (let i = 0; i < need; i++) if (!(await act('addBot', { level: 'easy' }))) return;
+      await act('start');
+    })();
+  }, [view.code, isHost]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <main className="page">

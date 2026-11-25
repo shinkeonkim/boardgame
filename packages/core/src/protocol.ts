@@ -70,6 +70,19 @@ export interface RoomView<GameView = unknown, Config = unknown> {
   actors: number[];
   /** 차례인 사람이 끊겨서 다른 사람이 대신 진행할 수 있기까지 남은 ms (해당 없으면 null) */
   nudgeInMs: number | null;
+  /** 게임 공통 결과 요약 (기기 전적·다시 보기용). 게임이 없으면 null */
+  outcome: MatchOutcome | null;
+}
+
+/** 게임마다 다른 화면과 별개로, 모든 게임이 같은 모양으로 내는 결과 요약 */
+export interface MatchOutcome {
+  /** 이번 매치 번호 (방 안에서 새로 시작할 때마다 바뀜) */
+  id: number;
+  status: 'playing' | 'round-over' | 'match-over';
+  totals: number[];
+  lowerWins: boolean;
+  /** 좌석별 봇 여부 */
+  bots: boolean[];
 }
 
 /** 무중단 배포로 서버를 교체하는 동안의 안내 (클라이언트는 이 오류면 잠시 뒤 다시 시도) */

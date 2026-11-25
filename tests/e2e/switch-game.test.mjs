@@ -94,3 +94,32 @@ it('하우스룰 링크(?rules=)로 만든 방은 그 규칙으로 시작', { ti
   // 규칙 링크 버튼이 있음
   assert.equal(await p.locator('button:has-text("규칙 링크")').count(), 1);
 });
+
+it('봇과 바로 연습하기: 쉬운 봇을 채우고 바로 시작', { timeout: 60_000 }, async () => {
+  const p = await (await browser.newContext()).newPage();
+  await p.goto(`${ORIGIN}/one-card/`);
+  await p.fill('input[placeholder="예: 민지"]', '연습');
+  await p.click('button:has-text("봇과 바로 연습하기")');
+  await p.waitForSelector('.turn-banner', { timeout: 20_000 });
+  assert.ok(await p.locator('.turn-banner').count());
+});
+
+it('포털 내 기록: 기록이 없으면 안내, 있으면 승률·게임별', { timeout: 60_000 }, async () => {
+  const ctx = await browser.newContext();
+  const p = await ctx.newPage();
+  await p.goto(`${ORIGIN}/me`);
+  await p.waitForSelector('text=아직 기록이 없어요');
+  await p.evaluate(() =>
+    localStorage.setItem(
+      'bg:stats',
+      JSON.stringify([
+        { key: 'yacht:A:1', game: 'yacht', title: 'Yacht', at: Date.now(), players: 2, bots: 1, rank: 1, won: true, score: 200, lowerWins: false },
+        { key: 'yacht:A:2', game: 'yacht', title: 'Yacht', at: Date.now(), players: 2, bots: 1, rank: 2, won: false, score: 150, lowerWins: false },
+      ]),
+    ),
+  );
+  await p.reload();
+  await p.waitForSelector('.me-cards');
+  assert.match(await p.innerText('.me-cards'), /50%/);
+  assert.match(await p.innerText('.me-games'), /요트 다이스/);
+});

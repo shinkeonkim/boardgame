@@ -40,6 +40,8 @@ export interface Room<Config = unknown, Match = unknown> {
   config: Config;
   members: Member[];
   match: Match | null;
+  /** 시작할 때마다 하나씩 (기기 전적이 같은 매치를 두 번 세지 않게) */
+  matchNo?: number;
   /** 방장이 중지한 매치와 그때의 좌석(멤버 id) — 로비에서 설정을 바꾼 뒤 이어서 할 수 있다 */
   paused: { match: Match; seatIds: string[] } | null;
   turnDeadline: number | null;
@@ -501,6 +503,7 @@ export class Rooms {
     });
     players.forEach((m, i) => (m.seat = i));
     room.match = this.rule(() => this.game.newMatch(room.config, players.length, rng));
+    room.matchNo = (room.matchNo ?? 0) + 1;
     room.startedAt = Date.now();
     this.c.started({ players: players.length });
     room.paused = null; // 새 게임을 시작하면 중지했던 게임은 버린다
@@ -975,6 +978,15 @@ export class Rooms {
       actors: room.match && this.game.status(room.match) === 'playing' ? this.actors(room.match) : [],
       turnRemainingMs: room.turnDeadline ? Math.max(0, room.turnDeadline - Date.now()) : null,
       nudgeInMs: this.nudgeInMs(room),
+      outcome: room.match
+        ? {
+            id: room.matchNo ?? 0,
+            status: this.game.status(room.match),
+            totals: this.game.totals(room.match),
+            lowerWins: !!this.game.lowerWins,
+            bots: seats.map((_, i) => !!room.members.find((m) => m.seat === i)?.bot),
+          }
+        : null,
     };
   }
 }

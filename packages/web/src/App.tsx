@@ -3,6 +3,7 @@ import { useRelocate } from './switch-game';
 import { createContext, useCallback, useContext, useEffect, useState, ReactNode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { registerServiceWorker } from './pwa';
+import { recordOutcome } from './stats';
 import { DRAIN_MESSAGE, type EmoteEvent, type RoomView } from '@bg/core';
 import { EmotesContext, Icon, NoticeSlot, applySkin, applyTheme, getTheme } from '@bg/ui';
 import type { GameClient } from './client';
@@ -150,7 +151,12 @@ function RoomPage({ code, onExit }: { code: string; onExit: (msg?: string) => vo
 
   // 서버 이벤트
   useEffect(() => {
-    const onRoom = (v: RoomView) => setView(v);
+    const onRoom = (v: RoomView) => {
+      setView(v);
+      // 매치가 끝나면 이 기기 전적에 한 줄 (포털 「내 기록」)
+      const seat = v.members.find((m) => m.id === v.you)?.seat ?? -1;
+      recordOutcome(client.id, client.title, v.code, seat, v.outcome);
+    };
     const onKicked = (reason?: string) => {
       store.setToken(code, null);
       onExit(typeof reason === 'string' ? reason : '방에서 나왔어요');

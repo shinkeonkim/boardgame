@@ -91,6 +91,8 @@ export interface GameModule<Config extends object, Match, Move, View> {
   config(match: Match): Config;
   /** 판별 누적 점수 (좌석 순) */
   totals(match: Match): number[];
+  /** 점수가 낮을수록 이기는 게임(벌점 등) — 전적·순위 계산용 */
+  lowerWins?: boolean;
   startNextRound(match: Match, rng: Rng): void;
   /** 방장이 중지한 매치를 바뀐 설정으로 이어가기 (끝난 판 점수 유지, 새 판 시작) */
   continueMatch(prev: Match, config: Config, rng: Rng): Match;

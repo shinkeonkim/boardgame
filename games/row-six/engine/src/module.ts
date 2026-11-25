@@ -35,6 +35,7 @@ export const game: GameModule<GameConfig, MatchState, Move, GameView> = {
     };
   },
   turnTimerSec: (c) => c.turnTimerSec,
+  lowerWins: true,
   newMatch,
   isMove,
   // 카드를 한 장씩 놓고 줄을 가져가는 재생(web/replay.ts: 놓기 ≈1.15초, 가져가기 +1.55초)이 끝난 뒤에 봇이 생각

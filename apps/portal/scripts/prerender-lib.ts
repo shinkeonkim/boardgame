@@ -129,6 +129,7 @@ export function prerender(games: GameMeta[], distDir: string) {
   // 검색에 나오지 않아도 되는 화면
   for (const [rel, title] of [
     ['design/index.html', '디자인 시스템'],
+    ['me/index.html', '내 기록'],
     ['admin/index.html', '관리자'],
   ] as const) {
     write(distDir, rel, page(template, { title: `${title} · ${SITE.name}`, description: SITE.description, path: `/${rel.split('/')[0]}`, robots: 'noindex, nofollow' }, ''));
@@ -158,7 +159,8 @@ export function prerender(games: GameMeta[], distDir: string) {
   write(
     distDir,
     'robots.txt',
-    ['# 보드게임 테이블', 'User-agent: *', 'Allow: /', 'Disallow: /admin', 'Disallow: /admin/', '# 방 주소는 금방 사라지고 남의 방이라 검색에서 뺀다', 'Disallow: /*/r/', '', `Sitemap: ${abs('/sitemap.xml')}`, ''].join('\n'),
+    ['# 보드게임 테이블', 'User-agent: *', 'Allow: /', 'Disallow: /admin', 'Disallow: /admin/',
+    'Disallow: /me', '# 방 주소는 금방 사라지고 남의 방이라 검색에서 뺀다', 'Disallow: /*/r/', '', `Sitemap: ${abs('/sitemap.xml')}`, ''].join('\n'),
   );
   write(
     distDir,

@@ -358,3 +358,9 @@
 .bot-note.no-bots {
   background: color-mix(in srgb, #2f6fb0 8%, var(--panel));
 }
+
+/* 봇과 바로 연습하기 (방 만들기 아래) */
+.practice-btn {
+  margin-top: 8px;
+  justify-content: center;
+}

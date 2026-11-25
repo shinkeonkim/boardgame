@@ -17,3 +17,4 @@ export * from './deal-fx';
 export * from './site-notice';
 export * from './pwa';
 export * from './rules-link';
+export * from './stats';

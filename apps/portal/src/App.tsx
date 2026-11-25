@@ -6,6 +6,7 @@ import { HomePage } from './pages/Home';
 import { SearchPage } from './pages/Search';
 import { GamePage } from './pages/Game';
 import { DesignPage } from './pages/Design';
+import { MePage } from './pages/Me';
 import { gameById } from './catalog';
 
 // 관리자 화면은 따로 불러옴 (일반 방문자 묶음에 넣지 않음)
@@ -49,6 +50,9 @@ export function App() {
   } else if (detail && gameById(detail[1])) {
     page = <GamePage id={detail[1]} />;
     title = `${gameById(detail[1])!.title} · 보드게임 테이블`;
+  } else if (path === '/me' || path === '/me/') {
+    page = <MePage />;
+    title = '내 기록 · 보드게임 테이블';
   } else if (path === '/design' || path === '/design/') {
     page = <DesignPage />;
     title = '디자인 시스템 · 보드게임 테이블';
@@ -62,7 +66,7 @@ export function App() {
   } else page = <NotFound />;
   // 주소가 바뀌면 head 도 맞춤 (빌드 때 미리 그린 head 는 첫 화면용, 화면 안에서 이동하면 여기서)
   const description = detail && gameById(detail[1]) ? gameById(detail[1])!.tagline : undefined;
-  const noindex = path.startsWith('/admin') || path.startsWith('/design');
+  const noindex = path.startsWith('/admin') || path.startsWith('/design') || path.startsWith('/me');
   useEffect(() => {
     document.title = title;
     setHead(path, description, noindex);
@@ -87,6 +91,9 @@ function Header({ path }: { path: string }) {
         <nav className="ph-nav" aria-label="주 메뉴">
           <Link href="/games" className={path.startsWith('/games') ? 'on' : ''}>
             게임 찾기
+          </Link>
+          <Link href="/me" className={path.startsWith('/me') ? 'on' : ''}>
+            내 기록
           </Link>
         </nav>
         <InstallButton />

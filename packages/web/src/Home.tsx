@@ -79,6 +79,7 @@ export function HomeShell({ children }: { children: React.ReactNode }) {
 }
 
 export function Home({ onEnter, flash }: { onEnter: (code: string) => void; flash: string | null }) {
+  const client = useGameClient();
   const [name, setName] = useState(store.name());
   const [usePw, setUsePw] = useState(false);
   const [password, setPassword] = useState('');
@@ -88,7 +89,7 @@ export function Home({ onEnter, flash }: { onEnter: (code: string) => void; flas
   // 친구가 보낸 하우스룰 링크(?rules=)로 들어왔으면 그 규칙으로 방을 만듦
   const [rules, setRules] = useState(() => readRulesParam());
 
-  const create = async () => {
+  const create = async (practice = false) => {
     if (!name.trim()) return setError('닉네임을 입력해 주세요');
     setBusy(true);
     store.setName(name.trim());
@@ -98,6 +99,8 @@ export function Home({ onEnter, flash }: { onEnter: (code: string) => void; flas
     if (!r.ok) return setError(r.error);
     store.setToken(r.code, r.token);
     store.setPassword(r.code, pw || null);
+    // 연습: 대기실에 들어가면 쉬운 봇을 채우고 바로 시작 (Lobby 가 이 표시를 보고 처리)
+    if (practice) sessionStorage.setItem(`bg:practice:${r.code}`, '1');
     onEnter(r.code);
   };
 
@@ -142,9 +145,14 @@ export function Home({ onEnter, flash }: { onEnter: (code: string) => void; flas
             <input type="checkbox" checked={usePw} onChange={(e) => setUsePw(e.target.checked)} /> 암호 걸기
           </label>
           {usePw && <input value={password} maxLength={64} onChange={(e) => setPassword(e.target.value)} placeholder="암호" onKeyDown={(e) => e.key === 'Enter' && create()} />}
-          <button className="btn primary wide big-btn" disabled={busy} onClick={create}>
+          <button className="btn primary wide big-btn" disabled={busy} onClick={() => create()}>
             방 만들기
           </button>
+          {client.bots !== false && (
+            <button className="btn wide practice-btn" disabled={busy} onClick={() => create(true)}>
+              <Icon name="bot" /> 봇과 바로 연습하기
+            </button>
+          )}
         </div>
         <div className="entry-or" aria-hidden>
           <span>또는</span>
