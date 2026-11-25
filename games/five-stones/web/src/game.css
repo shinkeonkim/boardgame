@@ -1,0 +1,152 @@
+/* Five Stones (오목) */
+.fs-table {
+  container-type: inline-size;
+  width: 100%;
+  display: grid;
+  place-items: center;
+}
+/* 나무 판: 남는 너비와 화면 높이(위 막대·띠·아래 한 줄을 뺀) 중 작은 쪽에 맞춘 정사각형 */
+.fs-board {
+  --side: min(100cqw, calc(100dvh / var(--z, 1) - 200px), 760px);
+  position: relative;
+  width: var(--side);
+  aspect-ratio: 1;
+  border-radius: 10px;
+  background:
+    radial-gradient(120% 90% at 30% 20%, rgb(255 255 255 / 0.18), transparent 60%),
+    repeating-linear-gradient(92deg, rgb(120 70 20 / 0.06) 0 3px, transparent 3px 11px),
+    linear-gradient(160deg, #e2b26a, #cf9a4f 55%, #b9823b);
+  box-shadow: inset 0 0 0 2px rgb(90 55 15 / 0.35), 0 10px 26px -12px rgb(60 35 5 / 0.6), 0 2px 0 #8f6127;
+}
+.fs-lines,
+.fs-winline {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+.fs-lines line {
+  stroke: #5a3a12;
+  stroke-width: 0.045;
+}
+.fs-star {
+  fill: #5a3a12;
+}
+.fs-winline line {
+  stroke: #d0453a;
+  stroke-width: 0.12;
+  stroke-linecap: round;
+  opacity: 0.85;
+  stroke-dasharray: 30;
+  stroke-dashoffset: 30;
+  animation: fs-draw 0.8s 0.2s ease-out forwards;
+}
+@keyframes fs-draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+.fs-cells {
+  position: absolute;
+  inset: 0;
+}
+.fs-cell {
+  position: absolute;
+  width: calc(100% / var(--n));
+  height: calc(100% / var(--n));
+  transform: translate(-50%, -50%);
+  padding: 0;
+  border: 0;
+  background: none;
+  display: grid;
+  place-items: center;
+  cursor: default;
+}
+.fs-cell.open {
+  cursor: pointer;
+}
+.fs-cell svg {
+  width: 92%;
+  height: 92%;
+}
+.fs-cell.armed {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+  border-radius: 50%;
+}
+.fs-stone.ghost {
+  opacity: 0.45;
+}
+.fs-stone.win {
+  filter: drop-shadow(0 0 4px #f2b33d) drop-shadow(0 0 2px #f2b33d);
+}
+.fs-drop {
+  display: grid;
+  width: 100%;
+  height: 100%;
+  place-items: center;
+}
+.fs-drop.last {
+  animation: fs-drop 0.28s cubic-bezier(0.3, 1.4, 0.5, 1) both;
+}
+@keyframes fs-drop {
+  from {
+    transform: scale(1.35) translateY(-8%);
+    opacity: 0.4;
+  }
+}
+.fs-seat {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+/* 첫 화면 시연 */
+.fs-demo {
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+}
+.fs-demo-board {
+  position: relative;
+  width: 150px;
+  aspect-ratio: 1;
+  border-radius: 8px;
+  background:
+    repeating-linear-gradient(0deg, transparent 0 calc(16.66% - 1px), #6a4515 calc(16.66% - 1px) 16.66%),
+    repeating-linear-gradient(90deg, transparent 0 calc(16.66% - 1px), #6a4515 calc(16.66% - 1px) 16.66%),
+    #d9a65a;
+  background-position: 8.33% 8.33%;
+}
+.fs-demo-stone {
+  position: absolute;
+  width: 15%;
+  aspect-ratio: 1;
+  transform: translate(-50%, -50%);
+  display: grid;
+}
+.fs-demo-stone svg {
+  width: 100%;
+  height: 100%;
+}
+.fs-demo-stone.win svg {
+  filter: drop-shadow(0 0 3px #f2b33d);
+}
+.fs-demo-say {
+  font-weight: 700;
+  font-size: 0.85rem;
+}
+/* 표지: 실제 판 컴포넌트를 고정 크기로 */
+.fs-cover {
+  width: 560px;
+}
+.fs-cover .fs-board {
+  --side: 560px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .fs-drop.last,
+  .fs-winline line {
+    animation: none;
+    stroke-dashoffset: 0;
+  }
+}

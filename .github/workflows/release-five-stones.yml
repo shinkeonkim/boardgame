@@ -1,0 +1,21 @@
+name: release five-stones
+on:
+  push:
+    branches: [main]
+    paths:
+      - "games/five-stones/**"
+      - "!games/five-stones/deploy/**"
+      - "packages/**"
+      - "Dockerfile"
+      - "package-lock.json"
+      - "scripts/bundle.mjs"
+  workflow_dispatch:
+permissions:
+  contents: write
+  packages: write
+jobs:
+  release:
+    uses: ./.github/workflows/_release.yml
+    with:
+      target: five-stones
+      deploy-dir: games/five-stones/deploy
