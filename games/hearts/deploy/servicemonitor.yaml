@@ -1,0 +1,14 @@
+# kube-prometheus-stack이 라벨 제한 없이 모든 ServiceMonitor를 수집한다 (oh-my-homelab values 참고).
+# 지표 목록: docs/monitoring.md
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: hearts
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: hearts
+  endpoints:
+    - port: metrics
+      path: /metrics
+      interval: 30s

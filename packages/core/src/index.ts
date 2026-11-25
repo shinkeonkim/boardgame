@@ -4,3 +4,4 @@ export * from './catalog';
 export * from './search';
 export * from './bot';
 export * from './bot-harness';
+export * from './tricks';

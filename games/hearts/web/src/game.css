@@ -1,0 +1,200 @@
+/* Hearts (하트) */
+.hr-opps {
+  min-width: 0;
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.hr-opp {
+  min-width: 140px;
+  padding: 6px 10px;
+  border-radius: 12px;
+  border: 1.5px solid var(--line);
+  border-top: 4px solid var(--seat);
+  background: var(--panel);
+  display: grid;
+  gap: 4px;
+  transition: box-shadow 0.2s, border-color 0.2s;
+}
+.hr-opp.acting {
+  border-color: var(--accent);
+  border-top-color: var(--seat);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 25%, transparent);
+}
+.hr-opp-head {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.85rem;
+}
+.hr-emote {
+  margin-left: auto;
+  font-size: 0.75rem;
+}
+.hr-opp-cards {
+  display: flex;
+  height: 34px;
+  overflow: hidden;
+}
+.hr-opp-cards > * {
+  width: 24px;
+  flex: none;
+}
+.hr-opp-cards > * + * {
+  margin-left: -16px;
+}
+.hr-opp-cards .pc {
+  --w: 24px;
+}
+.hr-opp-foot {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.hr-taken {
+  display: inline-flex;
+  gap: 4px;
+  align-items: center;
+}
+.hr-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 0.75rem;
+  font-weight: 800;
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: #fde7e4;
+  color: #a12a20;
+}
+.hr-chip.queen {
+  background: #1f2430;
+  color: #fff;
+}
+.hr-chip.jack {
+  background: #e3f2ea;
+  color: #1d6a46;
+}
+/* 가운데 펠트: 이번 트릭 */
+.hr-felt {
+  border-radius: 18px;
+  padding: 14px;
+  min-height: 150px;
+  display: grid;
+  place-items: center;
+  background: radial-gradient(ellipse at 50% 35%, #2f7a51, #1d5a3a 75%);
+  box-shadow: inset 0 0 0 3px #5a3f1f, inset 0 3px 18px rgb(0 0 0 / 0.4);
+}
+.hr-center {
+  display: flex;
+  gap: 10px;
+  align-items: flex-end;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+.hr-empty {
+  color: rgb(255 255 255 / 0.75);
+}
+.hr-play {
+  display: grid;
+  justify-items: center;
+  gap: 4px;
+  transform: rotate(calc((var(--i) - 1.5) * 3deg));
+}
+.hr-play.won .pc {
+  outline: 3px solid #f2c14e;
+  outline-offset: 2px;
+  box-shadow: 0 0 18px rgb(242 193 78 / 0.6);
+}
+.hr-play-name {
+  color: #fff;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+/* 내 손패: 겹친 부채 */
+.hr-hand {
+  container-type: inline-size;
+  /* 크기 기준(cqw)이 되려면 내용 크기가 아니라 줄 너비를 차지해야 함 */
+  width: 100%;
+  box-sizing: border-box;
+  display: flex;
+  justify-content: center;
+  padding: 10px 4px 2px;
+  min-height: 92px;
+  --hw: 70px;
+}
+/* 카드가 몇 장이든 손패 줄 너비 안에 들어가게 겹침 정도를 계산 (넘치면 화면이 옆으로 밀렸음) */
+.hr-slot {
+  flex: none;
+  width: var(--hw);
+  margin-left: min(-6px, calc((100cqw - var(--hw) - 8px) / (var(--n) - 1) - var(--hw)));
+  transition: transform 0.18s;
+}
+.hr-slot .pc {
+  --w: var(--hw);
+}
+.hr-slot:first-child {
+  margin-left: 0;
+}
+.hr-slot.picked {
+  transform: translateY(-18px);
+}
+.hr-slot.got .pc {
+  box-shadow: 0 0 0 3px #3b7be0;
+}
+.hr-slot .pc.dim {
+  filter: brightness(0.7) saturate(0.6);
+}
+.hr-seat {
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.hr-demo {
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+}
+.hr-demo-row {
+  display: flex;
+  gap: 6px;
+  min-height: 70px;
+}
+.hr-demo-say {
+  font-weight: 700;
+  font-size: 0.85rem;
+}
+.hr-cover {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 40px;
+}
+.hr-cover-queen {
+  transform: rotate(8deg) translateY(-10px);
+  filter: drop-shadow(0 16px 24px rgb(0 0 0 / 0.35));
+}
+@media (max-width: 759px) {
+  .hr-opp {
+    min-width: 0;
+    flex: 1 1 100px;
+    padding: 4px 6px;
+  }
+  .hr-opp-cards {
+    height: 26px;
+  }
+  .hr-felt {
+    min-height: 120px;
+    padding: 8px;
+  }
+  .hr-felt .pc.md {
+    --w: 52px;
+  }
+  .hr-hand {
+    --hw: 54px;
+  }
+}
