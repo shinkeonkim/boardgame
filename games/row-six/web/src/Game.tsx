@@ -288,8 +288,12 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
                       <CardBack key={i} size="xs" />
                     ))}
                   </span>
-                  <span className="muted small">
-                    이번 판 {g.penalties[seat] === null ? '비공개' : `벌점 ${g.penalties[seat]! - rp.penLag(seat)}`} · 가져간 카드 {g.takenCounts[seat] - rp.cardLag(seat)}장
+                  <span className="pen-line">
+                    {/* 가져간 카드 더미: 실제처럼 뒷면으로 아무렇게나 쌓임 (많을수록 높게) */}
+                    <PenaltyPile n={g.takenCounts[seat] - rp.cardLag(seat)} />
+                    <span className="muted small">
+                      이번 판 {g.penalties[seat] === null ? '비공개' : `벌점 ${g.penalties[seat]! - rp.penLag(seat)}`} · 가져간 카드 {g.takenCounts[seat] - rp.cardLag(seat)}장
+                    </span>
                   </span>
                   {c.teams && <span className="tag">{Math.floor(seat / 2) + 1}팀</span>}
                 </>
@@ -346,3 +350,19 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
     />
   );
 }
+
+/** 가져간 벌점 카드 더미 (최대 8장까지 그림, 장마다 살짝 다른 각도) */
+function PenaltyPile({ n }: { n: number }) {
+  if (n <= 0) return null;
+  const shown = Math.min(8, n);
+  return (
+    <span className="pen-pile" aria-hidden style={{ height: 22 + shown * 2 }}>
+      {Array.from({ length: shown }, (_, i) => (
+        <span key={i} className="pen-pile-card" style={{ bottom: i * 2, transform: `rotate(${((i * 37) % 13) - 6}deg)` }}>
+          <CardBack size="xs" />
+        </span>
+      ))}
+    </span>
+  );
+}
+

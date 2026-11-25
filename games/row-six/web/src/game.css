@@ -603,3 +603,22 @@ button.ncard.can:focus-visible {
     animation: none;
   }
 }
+
+/* 가져간 벌점 카드 더미 (옆 목록) */
+.pen-line {
+  display: inline-flex;
+  align-items: flex-end;
+  gap: 8px;
+}
+.pen-pile {
+  position: relative;
+  display: inline-block;
+  width: 24px;
+  flex: none;
+}
+.pen-pile-card {
+  position: absolute;
+  left: 0;
+  line-height: 0;
+  filter: drop-shadow(0 1px 0 rgb(0 0 0 / 0.25));
+}

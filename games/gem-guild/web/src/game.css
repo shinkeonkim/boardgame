@@ -661,7 +661,8 @@ button.noble {
   display: grid;
   place-items: center;
   width: calc(var(--slot, 40px));
-  aspect-ratio: 4 / 5;
+  /* 빈 색은 카드 높이만큼 자리를 차지하지 않게 납작하게 */
+  aspect-ratio: 4 / 2.4;
   border: 1.5px dashed color-mix(in srgb, var(--bonus) 70%, var(--line));
   border-radius: 7px;
   opacity: 0.55;
@@ -753,4 +754,46 @@ button.noble {
   display: flex;
   gap: 6px;
   flex-wrap: wrap;
+}
+
+/* ── 쌓인 보석 칩 (은행·내 상단): 남은 수만큼 더미가 높아짐 ── */
+.gem.stacked {
+  display: inline-block;
+  vertical-align: bottom;
+}
+.gem.stacked .gem-layer {
+  position: absolute;
+  left: 0;
+  display: grid;
+  line-height: 0;
+  filter: drop-shadow(0 1px 0 rgb(0 0 0 / 0.25));
+}
+.gem.stacked .gem-layer:not(.top) {
+  filter: brightness(0.92) drop-shadow(0 1px 0 rgb(0 0 0 / 0.3));
+}
+.gem.stacked .gem-layer .chip-tex {
+  position: absolute;
+}
+.gem-ghost {
+  border: 2px dashed;
+  border-radius: 50%;
+  opacity: 0.5;
+}
+.gem.stacked .count-badge {
+  position: absolute;
+  right: -6px;
+  bottom: -4px;
+  z-index: 3;
+}
+/* 은행: 칩 더미들이 같은 바닥선에 서도록 */
+.gg-bank-row {
+  align-items: flex-end;
+}
+.gg-mine-row {
+  align-items: flex-end;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .gem.stacked .gem-layer.top {
+    transition: bottom 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
 }

@@ -11,18 +11,45 @@ export const GEM_INFO = [
 ];
 
 /** 보석 칩: 카지노 칩 + 가운데 보석. 개수는 칩 위가 아니라 옆의 흰 알약(CountBadge)으로 */
-export function GemToken({ gem, n, size = 34, selected, onClick, disabled, label }: { gem: number; n?: number; size?: number; selected?: boolean; onClick?: () => void; disabled?: boolean; label?: string }) {
+/**
+ * 보석 칩. stack 을 주면 그 수만큼(최대 5개) 칩을 실제로 쌓아 보여 줌: 많이 남은 색은 더미가 높고,
+ * 하나도 없으면 빈 자리(점선 원)만. 정확한 수는 옆의 흰 알약(CountBadge).
+ */
+export function GemToken({ gem, n, size = 34, selected, onClick, disabled, label, stack }: { gem: number; n?: number; size?: number; selected?: boolean; onClick?: () => void; disabled?: boolean; label?: string; stack?: number }) {
   const g = GEM_INFO[gem];
   const Tag = onClick ? 'button' : 'span';
   const light = gem === 0 || gem === 5;
+  const chip = (
+    <ChipSvg fill={g.fill} edge={light ? g.stroke : '#fff'} size={size}>
+      {/* 깎은 보석 */}
+      <path d="M20 12.5 L26.5 17.5 L20 28 L13.5 17.5 Z" fill={light ? g.stroke : '#fff'} opacity={0.9} />
+      <path d="M13.5 17.5 H26.5 M20 12.5 L17 17.5 L20 28 L23 17.5 Z" fill="none" stroke={g.fill} strokeWidth="0.9" opacity={0.85} />
+    </ChipSvg>
+  );
+  const aria = label ?? `${g.name}${n !== undefined ? ` ${n}개` : ''}`;
+  if (stack === undefined)
+    return (
+      <Tag className={`gem ${selected ? 'selected' : ''}`} onClick={onClick} disabled={onClick ? disabled : undefined} aria-label={aria} style={{ width: size, height: size }}>
+        {chip}
+        <i className="chip-tex" aria-hidden />
+        {n !== undefined && <CountBadge n={n} />}
+      </Tag>
+    );
+  const layers = Math.max(0, Math.min(5, stack));
+  const step = Math.max(2, Math.round(size * 0.12));
+  const h = size + step * Math.max(0, layers - 1);
   return (
-    <Tag className={`gem ${selected ? 'selected' : ''}`} onClick={onClick} disabled={onClick ? disabled : undefined} aria-label={label ?? `${g.name}${n !== undefined ? ` ${n}개` : ''}`} style={{ width: size, height: size }}>
-      <ChipSvg fill={g.fill} edge={light ? g.stroke : '#fff'} size={size}>
-        {/* 깎은 보석 */}
-        <path d="M20 12.5 L26.5 17.5 L20 28 L13.5 17.5 Z" fill={light ? g.stroke : '#fff'} opacity={0.9} />
-        <path d="M13.5 17.5 H26.5 M20 12.5 L17 17.5 L20 28 L23 17.5 Z" fill="none" stroke={g.fill} strokeWidth="0.9" opacity={0.85} />
-      </ChipSvg>
-      <i className="chip-tex" aria-hidden />
+    <Tag className={`gem stacked ${layers ? '' : 'empty'} ${selected ? 'selected' : ''}`} onClick={onClick} disabled={onClick ? disabled : undefined} aria-label={aria} style={{ width: size, height: h }}>
+      {layers === 0 ? (
+        <span className="gem-layer gem-ghost" style={{ bottom: 0, width: size, height: size, borderColor: g.stroke }} aria-hidden />
+      ) : (
+        Array.from({ length: layers }, (_, i) => (
+          <span key={i} className={`gem-layer ${i === layers - 1 ? 'top' : ''}`} style={{ bottom: i * step }} aria-hidden>
+            {chip}
+            {i === layers - 1 && <i className="chip-tex" />}
+          </span>
+        ))
+      )}
       {n !== undefined && <CountBadge n={n} />}
     </Tag>
   );

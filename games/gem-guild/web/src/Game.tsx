@@ -1,5 +1,12 @@
 import { useEffect, useState } from 'react';
 
+/** 남은 장수만큼 더미가 두툼하게 (5장마다 한 겹, 최대 6겹) */
+function deckThickness(n: number): React.CSSProperties {
+  const layers = Math.min(6, Math.ceil(n / 5));
+  if (!layers) return { opacity: 0.35 };
+  return { boxShadow: Array.from({ length: layers }, (_, i) => `${(i + 1) * 1}px ${(i + 1) * 1.6}px 0 -0.5px color-mix(in srgb, var(--card-back-edge, #2a2540) ${100 - i * 8}%, #000)`).join(', ') };
+}
+
 const SHORT_LAND = '(max-height: 520px) and (min-aspect-ratio: 1/1)';
 function useMedia(q: string): boolean {
   const [on, setOn] = useState(() => typeof window !== 'undefined' && !!window.matchMedia?.(q).matches);
@@ -128,7 +135,7 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
           <section className="gg-market" aria-label="시장">
             {[2, 1, 0].map((tier) => (
               <div key={tier} className="gg-tier">
-                <button className={`gg-deck pc back t${tier + 1}`} disabled={!myTurn || !g.deckCounts[tier] || (mine?.reservedCount ?? 0) >= c.maxReserve} onClick={() => act('move', { move: { type: 'reserve', tier: tier + 1 } })} title="맨 위 카드를 몰래 예약">
+                <button className={`gg-deck pc back t${tier + 1}`} style={deckThickness(g.deckCounts[tier])} disabled={!myTurn || !g.deckCounts[tier] || (mine?.reservedCount ?? 0) >= c.maxReserve} onClick={() => act('move', { move: { type: 'reserve', tier: tier + 1 } })} title="맨 위 카드를 몰래 예약">
                   <b>{tier + 1}단계</b>
                   <small>{g.deckCounts[tier]}장</small>
                 </button>
@@ -185,9 +192,9 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
             </div>
             <div className="gg-bank-row">
               {[0, 1, 2, 3, 4].map((gem) => (
-                <GemToken key={gem} gem={gem} n={g.bank[gem]} size={46} selected={pick.includes(gem)} onClick={() => toggleGem(gem)} disabled={!myTurn || g.phase !== 'turn' || g.bank[gem] === 0} label={`${GEM_INFO[gem].name} ${g.bank[gem]}개 남음`} />
+                <GemToken key={gem} gem={gem} n={g.bank[gem]} stack={g.bank[gem]} size={46} selected={pick.includes(gem)} onClick={() => toggleGem(gem)} disabled={!myTurn || g.phase !== 'turn' || g.bank[gem] === 0} label={`${GEM_INFO[gem].name} ${g.bank[gem]}개 남음`} />
               ))}
-              <GemToken gem={5} n={g.bank[5]} size={46} label={`황금 ${g.bank[5]}개 (예약할 때만 받아요)`} />
+              <GemToken gem={5} n={g.bank[5]} stack={g.bank[5]} size={46} label={`황금 ${g.bank[5]}개 (예약할 때만 받아요)`} />
             </div>
           </section>
           {mine && (
@@ -200,7 +207,7 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
               <div className="gg-mine-row">
                 {[0, 1, 2, 3, 4, 5].map((gem) => (
                   <span key={gem} className="gg-mine-cell">
-                    <GemToken gem={gem} n={mine.tokens[gem]} size={30} />
+                    <GemToken gem={gem} n={mine.tokens[gem]} stack={mine.tokens[gem]} size={30} />
                     {gem < 5 && <span className="gg-bonus" title="카드 보너스 (영구 할인)" style={{ background: GEM_INFO[gem].fill, color: GEM_INFO[gem].ink }}>+{mine.bonuses[gem]}</span>}
                     {g.phase === 'discard' && myTurn && mine.tokens[gem] > 0 && (
                       <span className="gg-drop">
