@@ -14,4 +14,4 @@ labels:
 images:
 - name: ghcr.io/shinkeonkim/boardgame-sketch-quiz
   newName: ghcr.io/shinkeonkim/boardgame-sketch-quiz
-  newTag: sha-bc8cbcc
+  newTag: sha-2954a3e
