@@ -134,6 +134,30 @@ export function DevCardView({ card, onClick, selected, affordable, size = 'md', 
   );
 }
 
+/**
+ * 산 카드를 실제 탁자처럼 색별로 쌓아 보여 줌 (위 카드의 점수·보석 띠만 보이게 겹침).
+ * 비어 있는 색은 점선 자리만. 카드 수가 곧 그 색의 영구 할인.
+ */
+export function Tableau({ cards, size = 'xs', label }: { cards: DevCard[]; size?: 'xs' | 'sm'; label?: string }) {
+  return (
+    <div className={`gg-tableau ${size}`} role="group" aria-label={label ?? '산 카드'}>
+      {[0, 1, 2, 3, 4].map((gem) => {
+        const col = cards.filter((c) => c.bonus === gem).sort((a, b) => a.tier - b.tier || a.points - b.points);
+        const pts = col.reduce((a, c) => a + c.points, 0);
+        return (
+          <div key={gem} className={`gg-tab-col ${col.length ? '' : 'empty'}`} style={{ ['--bonus' as string]: GEM_INFO[gem].fill, ['--n' as string]: col.length }} aria-label={`${GEM_INFO[gem].name} 카드 ${col.length}장${pts ? `, ${pts}점` : ''}`}>
+            {col.length ? col.map((c) => <DevCardView key={c.id} card={c} size={size} flip={false} />) : <span className="gg-tab-slot" aria-hidden><GemToken gem={gem} size={size === 'sm' ? 18 : 14} /></span>}
+            <span className="gg-tab-count" aria-hidden>
+              {col.length}
+              {pts ? <small> · {pts}점</small> : null}
+            </span>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 /** 몰래 예약한 카드의 뒷면 (단계만 보임) */
 export function ReservedBack({ tier, size = 'xs' }: { tier: 1 | 2 | 3; size?: 'xs' | 'sm' }) {
   return (

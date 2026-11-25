@@ -17,7 +17,7 @@ import type { RoomView } from '@bg/core';
 import { DevCard, GameConfig, GameView, LogEntry } from '@bg/gem-guild-engine';
 import { AlertBanner, SeatDot, seatColor, Icon } from '@bg/ui';
 import { useNarrow, GameScreenProps, ResultSheet, SeatList, TableBanner, TableEmotes, TableLayout, TableTopBar, Ticker, rankOf, usePeek, useTable, useLogSounds } from '@bg/web';
-import { DevCardView, GEM_INFO, GemToken, NobleView, ReservedBack } from './theme';
+import { DevCardView, GEM_INFO, GemToken, NobleView, ReservedBack, Tableau } from './theme';
 import type { SeenPlayer } from '@bg/gem-guild-engine';
 
 type View = RoomView<GameView, GameConfig>;
@@ -46,6 +46,9 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
   const narrow = useNarrow();
   // 폰 가로(낮은 화면): 정보 패널이 접히므로 상대 띠를 오른쪽 열에
   const shortLand = useMedia(SHORT_LAND);
+  // 넓은 창: 오른쪽 목록에서 산 카드를 색별로 쌓아 모두 보여 줌 (좁으면 장수만)
+  const wide = useMedia('(min-width: 1280px) and (min-height: 700px)');
+  const [showAll, setShowAll] = useState(false);
   const describe = (e: LogEntry | undefined): string => {
     if (!e) return '보석을 모아 카드를 사고, 카드 보너스로 더 싸게 사요';
     switch (e.type) {
@@ -155,6 +158,10 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
           {/* 폰: 오른쪽 목록이 판 아래로 내려가므로, 상대 상단을 판 위에 작게 */}
           {(narrow || shortLand) && g.players > 1 && (
             <section className="gg-opps" aria-label="상대 상단">
+              <button type="button" className="gg-opp gg-opp-all" onClick={() => setShowAll(true)} aria-label="모두의 상단 펼쳐 보기">
+                <Icon name="cards" />
+                <span>펼쳐 보기</span>
+              </button>
               {g.seats.map((s, seat) =>
                 seat === me ? null : (
                   <div key={seat} className={`gg-opp ${g.turn === seat && g.status === 'playing' ? 'active' : ''}`} style={{ ['--seat' as string]: seatColor(seat) }}>
@@ -238,6 +245,9 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
       side={
         <>
           {g.finalRound && g.status === 'playing' && <AlertBanner icon={<Icon name="flag" />} title="마지막 바퀴" critical sub={`누군가 ${c.winPoints}점에 닿았어요. 첫 사람 차례 전까지 하고 끝나요`} />}
+          <button type="button" className="btn small gg-all-btn" onClick={() => setShowAll(true)}>
+            <Icon name="cards" /> 모두의 상단 펼쳐 보기
+          </button>
           <SeatList
             t={t}
             view={view}
@@ -246,13 +256,15 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
               seat,
               accent: seatColor(seat),
               score: `${s.points}점`,
-              children: <Holdings s={s} limit={c.tokenLimit} maxReserve={c.maxReserve} />,
+              children: <Holdings s={s} limit={c.tokenLimit} maxReserve={c.maxReserve} tableau={wide} />,
             }))}
           />
         </>
       }
       overlay={
-        g.status !== 'playing' &&
+        showAll && g.status === 'playing' ? (
+          <AllTableaus g={g} names={names} me={me} limit={c.tokenLimit} maxReserve={c.maxReserve} onClose={() => setShowAll(false)} />
+        ) : g.status !== 'playing' &&
         (peek ? (
           <button className="btn primary peek-btn" onClick={() => setPeek(false)}>
             결과 보기
@@ -281,20 +293,23 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
  * 한 사람의 상단 (오른쪽 목록): 색마다 「카드(영구 할인) 몇 장 · 보석 몇 개」를 같은 칸에,
  * 아래에 합계와 예약 카드 — 시장에서 예약한 건 앞면, 더미에서 몰래 예약한 건 뒷면.
  */
-function Holdings({ s, limit, maxReserve, compact }: { s: SeenPlayer; limit: number; maxReserve: number; /** 폰 위쪽 띠: 작게, 예약은 개수·뒷면 수만 */ compact?: boolean }) {
+function Holdings({ s, limit, maxReserve, compact, tableau, cardsShown }: { s: SeenPlayer; limit: number; maxReserve: number; /** 폰 위쪽 띠: 작게, 예약은 개수·뒷면 수만 */ compact?: boolean; /** 넓은 창: 카드 장수 대신 산 카드를 색별로 쌓아서 */ tableau?: boolean; /** 산 카드를 바로 위에 따로 크게 보여 줌 (장수 줄·작은 쌓기 생략) */ cardsShown?: boolean }) {
   const cards = s.bonuses.reduce((a, b) => a + b, 0);
   return (
     <span className={`gg-hold ${compact ? 'compact' : ''}`}>
-      <span className="gg-hold-grid" role="table" aria-label="색별 카드와 보석">
+      {tableau && !cardsShown && <Tableau cards={s.cards} size="xs" />}
+      <span className="gg-hold-grid" role="table" aria-label={tableau || cardsShown ? '색별 보석' : '색별 카드와 보석'}>
+        {!(tableau || cardsShown) && (
         <span className="gg-hold-label" role="rowheader">
           카드
         </span>
-        {[0, 1, 2, 3, 4].map((gem) => (
+        )}
+        {!(tableau || cardsShown) && [0, 1, 2, 3, 4].map((gem) => (
           <span key={gem} role="cell" className={`gg-hold-card ${s.bonuses[gem] ? '' : 'zero'}`} style={{ background: GEM_INFO[gem].fill, color: GEM_INFO[gem].ink, borderColor: GEM_INFO[gem].stroke }} title={`${GEM_INFO[gem].name} 카드 ${s.bonuses[gem]}장 (영구 할인)`}>
             {s.bonuses[gem]}
           </span>
         ))}
-        <span role="cell" />
+        {!(tableau || cardsShown) && <span role="cell" />}
         <span className="gg-hold-label" role="rowheader">
           보석
         </span>
@@ -331,6 +346,51 @@ function Holdings({ s, limit, maxReserve, compact }: { s: SeenPlayer; limit: num
         </span>
       )}
     </span>
+  );
+}
+
+/** 모두의 상단을 실제 탁자처럼 펼쳐 보기: 사람마다 산 카드(색별로 쌓음)·보석·예약·귀족 */
+function AllTableaus({ g, names, me, limit, maxReserve, onClose }: { g: GameView; names: string[]; me: number; limit: number; maxReserve: number; onClose: () => void }) {
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose();
+    addEventListener('keydown', onKey);
+    return () => removeEventListener('keydown', onKey);
+  }, [onClose]);
+  // 나부터, 그다음 차례 순서
+  const order = g.seats.map((_, i) => (me >= 0 ? (me + i) % g.players : i));
+  return (
+    <div className="overlay gg-all" role="dialog" aria-modal="true" aria-label="모두의 상단" onClick={(e) => e.target === e.currentTarget && onClose()}>
+      <div className="panel sheet gg-all-sheet">
+        <div className="gg-all-head">
+          <h2>모두의 상단</h2>
+          <button type="button" className="btn small" onClick={onClose} autoFocus>
+            <Icon name="x" /> 닫기
+          </button>
+        </div>
+        <div className="gg-all-grid">
+          {order.map((seat) => {
+            const s = g.seats[seat];
+            return (
+              <section key={seat} className={`gg-all-seat ${g.turn === seat ? 'active' : ''}`} style={{ ['--seat' as string]: seatColor(seat) }} aria-label={`${names[seat]} 님의 상단`}>
+                <header className="gg-all-name">
+                  <SeatDot seat={seat} size={12} /> <b>{seat === me ? `${names[seat]} (나)` : names[seat]}</b>
+                  <span className="gg-all-pts">{s.points}점</span>
+                </header>
+                <Tableau cards={s.cards} size="sm" label={`${names[seat]} 님이 산 카드`} />
+                <Holdings s={s} limit={limit} maxReserve={maxReserve} cardsShown />
+                {s.nobles.length > 0 && (
+                  <div className="gg-all-nobles">
+                    {s.nobles.map((n) => (
+                      <NobleView key={n.id} noble={n} size="sm" />
+                    ))}
+                  </div>
+                )}
+              </section>
+            );
+          })}
+        </div>
+      </div>
+    </div>
   );
 }
 

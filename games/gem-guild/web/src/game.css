@@ -626,3 +626,131 @@ button.noble {
     flex: 1 0 140px;
   }
 }
+
+/* ── 산 카드를 실제 탁자처럼 색별로 쌓기 (Tableau) ── */
+.gg-tableau {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 6px;
+  align-items: start;
+}
+.gg-tab-col {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 0;
+}
+/* 아래 카드는 윗단(점수·보석 띠)만 보이게 겹침 — 실제로 앞사람 상단을 내려다보는 모습 */
+.gg-tab-col .devcard {
+  flex: none;
+}
+.gg-tab-col .devcard + .devcard {
+  margin-top: calc(var(--cw) * -0.92);
+}
+.gg-tableau.xs .devcard {
+  --cw: 40px;
+}
+.gg-tableau.sm .devcard {
+  --cw: 58px;
+}
+.gg-tableau.xs .devcard .cost {
+  display: none;
+}
+.gg-tab-slot {
+  display: grid;
+  place-items: center;
+  width: calc(var(--slot, 40px));
+  aspect-ratio: 4 / 5;
+  border: 1.5px dashed color-mix(in srgb, var(--bonus) 70%, var(--line));
+  border-radius: 7px;
+  opacity: 0.55;
+}
+.gg-tableau.sm .gg-tab-slot {
+  --slot: 58px;
+}
+.gg-tab-count {
+  margin-top: 3px;
+  font-size: 0.7rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+.gg-tab-count small {
+  font-weight: 600;
+  color: var(--muted);
+}
+.gg-tab-col.empty .gg-tab-count {
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.gg-all-btn {
+  width: 100%;
+  justify-content: center;
+}
+.gg-opp-all {
+  flex: 0 0 64px;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 2px;
+  font: inherit;
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: var(--ink);
+  cursor: pointer;
+  border-left-width: 1.5px;
+}
+.gg-opp-all .ic {
+  width: 20px;
+  height: 20px;
+}
+
+/* 모두의 상단 펼쳐 보기 */
+.gg-all-sheet {
+  width: min(1180px, 100%);
+}
+.gg-all-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+.gg-all-head h2 {
+  margin: 0;
+}
+.gg-all-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr));
+  gap: 12px;
+}
+.gg-all-seat {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px;
+  border-radius: 14px;
+  border: 1.5px solid var(--line);
+  border-top: 4px solid var(--seat);
+  background: var(--card-bg, var(--surface));
+}
+.gg-all-seat.active {
+  border-color: var(--accent);
+  border-top-color: var(--seat);
+}
+.gg-all-name {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.gg-all-pts {
+  margin-left: auto;
+  font-weight: 900;
+  font-size: 1.1rem;
+}
+.gg-all-nobles {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}

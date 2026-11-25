@@ -9,6 +9,8 @@ export interface SeenPlayer {
   bonuses: number[];
   points: number;
   cardCount: number;
+  /** 산 카드 (모두에게 공개 — 화면이 넓으면 색별로 쌓아 보여 줌) */
+  cards: DevCard[];
   /** 내 예약 카드 (남의 것은 null — reservedSeen을 봄) */
   reserved: DevCard[] | null;
   reservedCount: number;
@@ -49,6 +51,7 @@ const see = (p: PlayerState, mine: boolean): SeenPlayer => ({
   bonuses: bonuses(p),
   points: pointsOf(p),
   cardCount: p.cards.length,
+  cards: p.cards,
   reserved: mine ? p.reserved : null,
   reservedCount: p.reserved.length,
   reservedSeen: p.reserved.map((c) => {
