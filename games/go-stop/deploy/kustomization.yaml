@@ -14,4 +14,4 @@ labels:
 images:
 - name: ghcr.io/shinkeonkim/boardgame-go-stop
   newName: ghcr.io/shinkeonkim/boardgame-go-stop
-  newTag: sha-f796c64
+  newTag: sha-3e109db
