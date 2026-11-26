@@ -75,3 +75,53 @@
 .danger-text {
   color: var(--danger);
 }
+/* 화면 배치 고르기: 작은 그림 (판 = 진한 칸, 정보 = 옅은 칸) */
+.skin-layouts {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(76px, 1fr));
+  gap: 8px;
+}
+.skin-layout-pic {
+  display: grid;
+  gap: 3px;
+  width: 58px;
+  height: 40px;
+  padding: 3px;
+  border-radius: 6px;
+  border: 1px solid var(--line);
+  background: var(--surface, #fff);
+  grid-template-columns: 2fr 1fr;
+}
+.skin-layout-pic > i {
+  border-radius: 3px;
+  background: color-mix(in srgb, var(--accent) 55%, transparent);
+}
+.skin-layout-pic > i + i {
+  background: color-mix(in srgb, var(--muted) 30%, transparent);
+}
+.skin-layout-pic.left {
+  grid-template-columns: 1fr 2fr;
+}
+.skin-layout-pic.left > i + i {
+  order: -1;
+}
+.skin-layout-pic.bottom {
+  grid-template-columns: 1fr;
+  grid-template-rows: 2fr 1fr;
+}
+.skin-layout-pic.focus {
+  grid-template-columns: 1fr;
+}
+.skin-layout-pic.focus > i + i {
+  display: none;
+}
+.skin-layout-pic.auto {
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+}
+.skin-layout-pic.auto::after {
+  content: '';
+  border-radius: 3px;
+  background: color-mix(in srgb, var(--muted) 30%, transparent);
+  grid-column: 1 / -1;
+}

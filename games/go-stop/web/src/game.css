@@ -21,49 +21,179 @@ button.gs-card:hover {
 .gs-card.dim {
   opacity: 0.55;
 }
-.gs-felt {
+/* 판 전체가 하나의 담요(펠트): 위 상대, 가운데 바닥과 더미, 아래 내 자리 */
+.gs-room {
+  flex: 1;
+  min-height: 100%;
   display: grid;
-  grid-template-columns: auto 1fr;
-  gap: 12px;
+  grid-template-rows: auto minmax(0, 1fr) auto auto;
+  gap: 10px;
+  padding: 12px 14px 10px;
+  border-radius: 20px;
+  background: var(--table-tex, linear-gradient(transparent, transparent)), radial-gradient(ellipse at 50% 45%, #2f6a4a, #1b4530 85%);
+  box-shadow: inset 0 0 0 3px rgb(0 0 0 / 0.15), inset 0 8px 30px rgb(0 0 0 / 0.32);
+  color: #f3f7f0;
+}
+.gs-room .ticker {
+  color: #dfe9dc;
+  text-align: center;
+}
+/* 상대 자리: 펠트 위 반투명 판 */
+.seat-list.gs-opps {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+}
+.seat-list.gs-opps .seat-row {
+  flex: 1 1 320px;
+  max-width: 640px;
+  background: rgb(0 0 0 / 0.18);
+  border-color: rgb(255 255 255 / 0.12);
+  color: inherit;
+}
+.seat-list.gs-opps .seat-row.active {
+  box-shadow: 0 0 0 2px var(--seat, #ffd54a);
+}
+.gs-opp {
+  display: grid;
+  gap: 6px;
+}
+.gs-opp-hand {
+  display: flex;
+  min-height: calc(var(--cw) * 0.37);
+}
+.gs-opp-hand > .gs-back + .gs-back {
+  margin-left: calc(var(--cw) * -0.26);
+}
+.gs-opp .gs-cap-label,
+.gs-me .gs-cap-label {
+  color: #cfe0cb;
+}
+/* 바닥: [달 묶음들 | 더미 | 달 묶음들] */
+.gs-field {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
   align-items: center;
-  padding: 14px;
-  border-radius: 16px;
-  background: var(--table-tex, linear-gradient(transparent, transparent)), radial-gradient(ellipse at 50% 40%, #2f6a4a, #1d4a33 80%);
-  box-shadow: inset 0 0 0 3px rgb(0 0 0 / 0.15), inset 0 6px 24px rgb(0 0 0 / 0.3);
-  color: #fff;
+  gap: 14px;
+  min-height: calc(var(--cw) * 1.9);
+}
+.gs-field-side {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 14px;
+  align-content: center;
+}
+.gs-field-side.left {
+  justify-content: flex-end;
+}
+.gs-field-side.right {
+  justify-content: flex-start;
+}
+.gs-field-empty {
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  transform: translateX(-50%);
+  color: #cfe0cb;
+}
+/* 같은 달끼리 겹쳐 놓기 (실제로 바닥에 짝을 맞춰 두듯) */
+.gs-month {
+  display: inline-flex;
+  border-radius: 8px;
+  transition: transform 0.15s;
+}
+.gs-month > .gs-month-card + .gs-month-card {
+  margin-left: calc(var(--cw) * -0.62);
+}
+.gs-month-card:nth-child(2) {
+  transform: translateY(4px) rotate(4deg);
+}
+.gs-month-card:nth-child(3) {
+  transform: translateY(-3px) rotate(-3deg);
+}
+.gs-month.target {
+  transform: translateY(-4px);
+}
+.gs-month-card,
+.gs-hand-slot,
+.gs-cap-card {
+  display: inline-block;
+  line-height: 0;
 }
 .gs-pile {
   display: grid;
   justify-items: center;
-  gap: 4px;
+  gap: 6px;
 }
 .gs-pile-stack {
   display: inline-block;
   line-height: 0;
-  filter: drop-shadow(0 calc(var(--h) * 1.5px) 0 #5a1414) drop-shadow(0 2px 4px rgb(0 0 0 / 0.4));
+  transform: rotate(-4deg);
+  filter: drop-shadow(0 calc(var(--h) * 1.6px) 0 #5a1414) drop-shadow(0 4px 6px rgb(0 0 0 / 0.45));
 }
-.gs-table {
+.gs-pile-empty {
+  width: var(--cw);
+  height: calc(var(--cw) * 1.6);
+  border: 2px dashed rgb(255 255 255 / 0.25);
+  border-radius: 6px;
+}
+.gs-pile-n {
+  font-weight: 800;
+  font-size: 0.85rem;
+  padding: 1px 8px;
+  border-radius: 99px;
+  background: rgb(0 0 0 / 0.3);
+}
+/* 내 자리 */
+.gs-me {
+  display: grid;
+  gap: 6px;
+  padding: 8px 10px 4px;
+  border-radius: 14px;
+  background: rgb(0 0 0 / 0.16);
+}
+.gs-me.active {
+  box-shadow: 0 0 0 2px #ffd54a;
+}
+.gs-me-head {
   display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  min-height: 60px;
+  justify-content: space-between;
   align-items: center;
+  gap: 8px;
+}
+.gs-me-score {
+  font-size: 1.05rem;
+  color: #ffe58a;
+}
+.gs-lines {
+  color: #cfe0cb;
 }
 .gs-hand {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
   justify-content: center;
-  padding-top: 6px;
+  padding-top: 4px;
+}
+.gs-hand-slot.lifted {
+  transform: translateY(-10px);
 }
 .gs-captured {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px 12px;
+  gap: 6px 14px;
 }
 .gs-cap-group {
   display: grid;
   gap: 2px;
+  align-content: start;
+}
+.gs-cap-group.empty .gs-cap-stack {
+  display: none;
 }
 .gs-cap-label {
   color: var(--muted);
@@ -72,20 +202,14 @@ button.gs-card:hover {
   display: flex;
   min-height: calc(var(--w) * 1.6);
 }
-.gs-cap-stack > .gs-card + .gs-card {
+.gs-cap-stack > * + * {
   margin-left: calc(var(--w) * -0.6);
 }
-.gs-cap-stack > .gs-card {
-  box-shadow: 0 1px 2px rgb(0 0 0 / 0.25);
+.gs-cap-stack .gs-card {
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.3);
 }
-.gs-opp {
-  display: grid;
-  gap: 4px;
-}
-.gs-opp-hand {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
+.gs-captured.compact .gs-cap-label {
+  color: var(--muted);
 }
 .gs-go-badge {
   color: #c0392b;
@@ -132,13 +256,29 @@ button.gs-card:hover {
   display: flex;
   gap: 12px;
 }
-@media (max-width: 759px) {
-  .gs-felt {
-    padding: 10px;
-    gap: 8px;
+@media (max-width: 759px), (max-aspect-ratio: 1/1) {
+  .gs-room {
+    padding: 8px;
+    gap: 6px;
+    border-radius: 14px;
   }
-  .gs-table,
+  .gs-field {
+    gap: 6px;
+  }
+  .gs-field-side {
+    gap: 6px 8px;
+  }
   .gs-hand {
     gap: 4px;
+  }
+  .seat-list.gs-opps .seat-row {
+    flex-basis: 160px;
+    padding: 6px 8px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .gs-month,
+  .gs-hand-slot {
+    transition: none;
   }
 }

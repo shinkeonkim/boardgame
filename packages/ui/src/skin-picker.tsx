@@ -3,7 +3,7 @@ import { Icon } from './icons';
 import { CSSProperties, useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Modal } from './components';
-import { CARD_BACKS, CARD_TEXTURES, CHIP_TEXTURES, CUSTOM_BACK, TABLE_MATS, Skin, SkinChoice, onSkinChange, readCustomBack, readSkin, saveCustomBack, saveSkin } from './skins';
+import { CARD_BACKS, CARD_TEXTURES, CHIP_TEXTURES, CUSTOM_BACK, LAYOUT_CHOICES, TABLE_MATS, Skin, SkinChoice, onSkinChange, readCustomBack, readSkin, saveCustomBack, saveSkin } from './skins';
 
 export function useSkin(): SkinChoice {
   const [c, setC] = useState(readSkin);
@@ -74,6 +74,19 @@ export function SkinPicker({ onClose }: { onClose: () => void }) {
       <Choices list={CHIP_TEXTURES} value={c.chip} onPick={(chip) => pick({ chip })} kind="chip" />
       <h4>테이블 재질</h4>
       <Choices list={TABLE_MATS} value={c.table} onPick={(table) => pick({ table })} kind="table" />
+      <h4>화면 배치</h4>
+      <div className="skin-layouts" role="radiogroup">
+        {LAYOUT_CHOICES.map((l) => (
+          <button key={l.id} type="button" role="radio" aria-checked={c.layout === l.id} className={`skin-opt ${c.layout === l.id ? 'on' : ''}`} onClick={() => pick({ layout: l.id })}>
+            <span className={`skin-layout-pic ${l.id}`} aria-hidden>
+              <i />
+              <i />
+            </span>
+            <span className="skin-name">{l.name}</span>
+          </button>
+        ))}
+      </div>
+      <p className="small muted">넓은 화면에서 판과 정보(자리·점수·규칙)를 어디에 둘지 골라요. 폰 세로 화면은 늘 위아래예요.</p>
       <h4>보기 도움</h4>
       <ColorAssistToggle />
       <HapticsToggle />

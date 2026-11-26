@@ -18,7 +18,7 @@ describe('카드·칩 꾸미기', () => {
     expect(v).toMatch(/0 0\/10px 10px, #123$/);
   });
   it('모르는 id는 첫 번째 무늬로', () => {
-    const vars = skinVars({ back: 'nope', tex: 'nope', chip: 'nope', table: 'nope' }, null);
+    const vars = skinVars({ back: 'nope', tex: 'nope', chip: 'nope', table: 'nope', layout: 'auto' }, null);
     expect(vars['--table-tex']).toBe(TABLE_MATS[0].bg);
     expect(vars['--card-back']).toBe(CARD_BACKS[0].bg);
     expect(vars['--card-tex']).toBe(CARD_TEXTURES[0].bg);

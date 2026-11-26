@@ -7,13 +7,13 @@
  *  - TableBanner: 차례 배너 + 타이머 + 대신 진행
  *  - SeatList: 2~10명 좌석 목록 (이름·봇·연결·점수·차례·말풍선 + 게임 전용 내용)
  *  - ResultSheet: 판/게임 결과 표 + 다음 판·대기실·판 다시 보기
- *  - TableLayout: 기기 화면에 고정된 [가운데 테이블 | 오른쪽 정보] (좁으면 위아래)
+ *  - TableLayout: 기기 화면에 고정된 [가운데 테이블 | 정보] (좁으면 위아래). 배치는 게임 기본값(layout) 또는 사용자가 꾸미기에서 고른 값
  * 새 게임은 이것들로 틀을 만들고 가운데 테이블과 손패만 그린다.
  */
 import { useReplay } from './replay';
 import { CSSProperties, ReactNode, useEffect, useMemo, useRef, useState, useLayoutEffect } from 'react';
 import type { EmoteEvent, RoomView } from '@bg/core';
-import { EmoteBubble, EmoteButton, EmoteFeed, SkinButton, ThemeToggle, TurnBanner, TurnSplash, TurnTimer, useCountdown, Icon, iconize } from '@bg/ui';
+import { EmoteBubble, EmoteButton, EmoteFeed, SkinButton, ThemeToggle, TurnBanner, TurnSplash, TurnTimer, useCountdown, useSkin, Icon, iconize, type TableLayoutKind } from '@bg/ui';
 import { useFlip } from './motion';
 import { fitZoom } from './fit';
 export { fitZoom };
@@ -466,8 +466,14 @@ function fitMain(main: HTMLElement | null, inner: HTMLElement | null) {
   main.dataset.fit = String(z);
 }
 
-export function TableLayout({ className = '', top, main, side, mine, splash, overlay }: { className?: string; top: ReactNode; main: ReactNode; side: ReactNode; mine?: boolean; splash?: Table['splash']; overlay?: ReactNode }) {
+/**
+ * layout: 이 게임에 어울리는 기본 배치 (꾸미기에서 사용자가 고르면 그걸 따름).
+ *  right(기본) · left · bottom(가로로 긴 판) · focus(판만 화면 가득, 정보는 버튼 — 둘러앉는 카드 게임)
+ */
+export function TableLayout({ className = '', top, main, side, mine, splash, overlay, layout = 'right' }: { className?: string; top: ReactNode; main: ReactNode; side: ReactNode; mine?: boolean; splash?: Table['splash']; overlay?: ReactNode; layout?: TableLayoutKind }) {
   const zoom = useFitZoom();
+  const pref = useSkin().layout;
+  const kind = pref && pref !== 'auto' ? pref : layout;
   const root = useRef<HTMLElement>(null);
   const mainRef = useRef<HTMLElement>(null);
   const innerRef = useRef<HTMLDivElement>(null);
@@ -485,7 +491,7 @@ export function TableLayout({ className = '', top, main, side, mine, splash, ove
   // 낮은 가로 화면(휴대폰 눕힘)에서는 정보 패널을 접어 테이블을 넓게 (버튼으로 펼침)
   const [sideOpen, setSideOpen] = useState(false);
   return (
-    <main ref={root} className={`page game table-game ${mine ? 'my-turn' : ''} ${sideOpen ? 'side-open' : ''} ${className}`} style={{ '--z': zoom } as CSSProperties}>
+    <main ref={root} data-layout={kind} className={`page game table-game ${mine ? 'my-turn' : ''} ${sideOpen ? 'side-open' : ''} ${className}`} style={{ '--z': zoom } as CSSProperties}>
       {top}
       <div className="table-layout">
         <section className="table-main" ref={mainRef}>

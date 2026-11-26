@@ -439,3 +439,98 @@
 .following main .hand-panel * {
   pointer-events: none;
 }
+
+/* ---------- 화면 배치 (TableLayout layout / 꾸미기 「화면 배치」) ---------- */
+/* 넓은 화면에서만 바뀐다. 폰 세로는 늘 [판 위, 정보 아래] */
+@media (min-width: 760px) and (min-aspect-ratio: 1/1) and (min-height: 561px) {
+  .table-game[data-layout='left'] .table-layout {
+    grid-template-columns: clamp(280px, 28vw, 360px) minmax(0, 1fr);
+  }
+  .table-game[data-layout='left'] .table-side {
+    order: -1;
+  }
+  /* 아래: 판을 가로로 넓게, 정보는 아래 띠 (칸마다 옆으로 늘어놓고 넘치면 띠 안에서 스크롤) */
+  .table-game[data-layout='bottom'] {
+    max-width: 1440px;
+  }
+  .table-game[data-layout='bottom'] .table-layout {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr) auto;
+    gap: 10px;
+  }
+  .table-game[data-layout='bottom'] .table-side {
+    height: auto;
+    max-height: 30dvh;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    border-top: 1px solid var(--line);
+    padding-top: 8px;
+  }
+  .table-game[data-layout='bottom'] .table-side > * {
+    flex: 1 1 280px;
+    min-width: 0;
+  }
+  .table-game[data-layout='bottom'] .table-side .seat-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 6px;
+    flex-basis: 100%;
+  }
+}
+/* 판만 크게: 정보는 숨기고 「정보」 버튼으로 오른쪽에 겹쳐 연다 (모든 화면) */
+.table-game[data-layout='focus'] {
+  max-width: 1440px;
+  position: relative;
+}
+.table-game[data-layout='focus'] .table-layout {
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1fr);
+}
+.table-game[data-layout='focus'] .table-main {
+  max-height: none;
+}
+.table-game[data-layout='focus'] .table-side {
+  display: none;
+}
+.table-game[data-layout='focus'] .side-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+  height: 30px;
+  position: absolute;
+  left: 50%;
+  top: 10px;
+  transform: translateX(-50%);
+  z-index: 31;
+  padding: 3px 10px;
+  font-size: 0.78rem;
+}
+.table-game[data-layout='focus'].side-open .table-side {
+  display: flex;
+  position: absolute;
+  z-index: 30;
+  top: 40px;
+  right: 8px;
+  bottom: 8px;
+  width: min(360px, calc(100% - 16px));
+  height: auto;
+  padding: 10px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--bg);
+  box-shadow: 0 12px 40px rgb(0 0 0 / 0.28);
+  animation: side-drawer 0.18s ease-out;
+}
+@keyframes side-drawer {
+  from {
+    transform: translateX(16px);
+    opacity: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .table-game[data-layout='focus'].side-open .table-side {
+    animation: none;
+  }
+}

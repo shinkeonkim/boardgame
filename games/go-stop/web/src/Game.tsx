@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useViewport } from './viewport';
 import type { RoomView } from '@bg/core';
 import { GameConfig, GameView, HCard, LogEntry, MONTH_NAMES } from '@bg/go-stop-engine';
 import { SeatDot, seatColor } from '@bg/ui';
@@ -59,11 +60,35 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
   const hint = gostop ? `고: 더 가서 점수 +1 (3고부터 두 배) · 상대가 먼저 나면 위험` : playing ? '빛나는 카드는 바닥에 같은 달이 있어요' : `${g.goAt}점부터 고/스톱`;
   const matchOver = g.status === 'match-over';
   const ranks = rankOf(g.totals);
-  const cw = narrow ? 38 : 50;
+  const vp = useViewport();
+  // 카드 크기: 넓은 화면은 높이에 맞춰 크게, 폰은 손패 한 줄(5~6장)이 너비에 들어가게
+  const cw = narrow ? Math.max(34, Math.min(50, Math.floor((vp.w - 48) / 7.4))) : Math.max(44, Math.min(78, Math.floor((vp.h - 250) / 7.6)));
+  const cap = Math.round(cw * (narrow ? 0.52 : 0.6));
+  // 바닥: 같은 달끼리 겹쳐 묶고, 더미를 가운데 두고 양옆에 나눠 놓는다
+  const fieldGroups = Object.values(
+    g.table.reduce<Record<number, HCard[]>>((acc, x) => {
+      (acc[x.month] ??= []).push(x);
+      return acc;
+    }, {}),
+  ).sort((a, b) => a[0].month - b[0].month);
+  const half = Math.ceil(fieldGroups.length / 2);
+  const renderGroup = (list: HCard[]) => (
+    <span key={list[0].month} className={`gs-month ${pending && pending.month === list[0].month ? 'target' : ''}`} data-n={list.length}>
+      {list.map((x) => {
+        const target = !!pending && x.month === pending.month;
+        return (
+          <span key={x.id} data-flip={x.id} className="gs-month-card">
+            <HwatuCard card={x} w={cw} glow={target} dim={!!pending && !target} onClick={target ? () => tapTable(x) : undefined} />
+          </span>
+        );
+      })}
+    </span>
+  );
   const lastStop = [...g.log].reverse().find((e) => e.type === 'stop' || e.type === 'nagari');
 
   return (
     <TableLayout
+      layout="focus"
       mine={myTurn}
       splash={t.splash}
       top={
@@ -97,49 +122,74 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
         </>
       }
       main={
-        <>
-          <section className="gs-felt" aria-label="바닥">
+        <section className="gs-room" style={{ ['--cw' as string]: `${cw}px` }} aria-label="고스톱 판">
+          <SeatList
+            t={t}
+            view={view}
+            emotes={emotes}
+            className="gs-opps"
+            rows={g.captured
+              .map((cards, seat) => ({
+                seat,
+                accent: seatColor(seat),
+                score: `${g.scores[seat]}점${g.goes[seat] ? ` · ${g.goes[seat]}고` : ''}`,
+                children: (
+                  <div className="gs-opp">
+                    <span className="gs-opp-hand" aria-label={`손패 ${g.handCounts[seat]}장`}>
+                      {Array.from({ length: g.handCounts[seat] }, (_, i) => (
+                        <HwatuBack key={i} w={Math.round(cap * 0.8)} />
+                      ))}
+                    </span>
+                    <Captured cards={cards} w={cap} flip />
+                  </div>
+                ),
+              }))
+              .filter((r) => r.seat !== me)}
+          />
+          <div className="gs-field" aria-label="바닥">
+            <div className="gs-field-side left">{fieldGroups.slice(0, half).map(renderGroup)}</div>
             <div className="gs-pile" aria-label={`더미 ${g.pileCount}장`}>
-              {g.pileCount > 0 && (
-                <span className="gs-pile-stack" style={{ ['--h' as string]: Math.min(6, Math.ceil(g.pileCount / 4)) }}>
-                  <HwatuBack w={cw * 0.8} />
+              {g.pileCount > 0 ? (
+                <span className="gs-pile-stack" style={{ ['--h' as string]: Math.min(7, Math.ceil(g.pileCount / 3)) }}>
+                  <HwatuBack w={cw} />
                 </span>
+              ) : (
+                <span className="gs-pile-empty" />
               )}
-              <span className="small">{g.pileCount}</span>
+              <span className="gs-pile-n">{g.pileCount}</span>
             </div>
-            <div className="gs-table">
-              {g.table.map((x) => {
-                const target = !!pending && x.month === pending.month;
-                return <HwatuCard key={x.id} card={x} w={cw} glow={target} dim={!!pending && !target} onClick={target ? () => tapTable(x) : undefined} />;
-              })}
-              {!g.table.length && <span className="muted small">바닥이 비었어요</span>}
-            </div>
-          </section>
+            <div className="gs-field-side right">{fieldGroups.slice(half).map(renderGroup)}</div>
+            {!g.table.length && <span className="gs-field-empty small">바닥이 비었어요</span>}
+          </div>
           {me >= 0 && (
-            <section className="hand-panel gs-mine" aria-label="내 패">
-              <div className="hand-panel-head small">
+            <div className={`gs-me ${myTurn ? 'active' : ''}`} aria-label="내 자리">
+              <div className="gs-me-head small">
                 <span>
-                  <SeatDot seat={me} size={14} /> 내 점수 <b>{g.scores[me]}점</b>
+                  <SeatDot seat={me} size={14} /> <b>{names[me]}</b> <b className="gs-me-score">{g.scores[me]}점</b>
                   {g.goes[me] > 0 && <b className="gs-go-badge"> {g.goes[me]}고</b>}
-                  {g.lines[me].length > 0 && <span className="muted"> · {g.lines[me].map((l) => `${l.label} ${l.points}`).join(' · ')}</span>}
+                  {g.lines[me].length > 0 && <span className="gs-lines"> · {g.lines[me].map((l) => `${l.label} ${l.points}`).join(' · ')}</span>}
                 </span>
                 {pending && (
-                  <button type="button" className="btn tiny ghost" onClick={() => setPending(null)}>
+                  <button type="button" className="btn tiny" onClick={() => setPending(null)}>
                     다른 카드
                   </button>
                 )}
               </div>
-              <Captured cards={g.captured[me]} w={narrow ? 24 : 30} />
+              <Captured cards={g.captured[me]} w={cap} flip />
               <div className="gs-hand">
                 {g.hand.map((x) => {
                   const match = g.table.some((y) => y.month === x.month);
-                  return <HwatuCard key={x.id} card={x} w={cw} glow={playing && match && !pending} dim={(!!pending && pending.id !== x.id) || !playing} onClick={playing ? () => tapHand(x) : undefined} />;
+                  return (
+                    <span key={x.id} data-flip={x.id} className={`gs-hand-slot ${pending?.id === x.id ? 'lifted' : ''}`}>
+                      <HwatuCard card={x} w={cw} glow={playing && match && !pending} dim={(!!pending && pending.id !== x.id) || !playing} onClick={playing ? () => tapHand(x) : undefined} />
+                    </span>
+                  );
                 })}
               </div>
-            </section>
+            </div>
           )}
           <Ticker text={describe(g.log[g.log.length - 1])} />
-        </>
+        </section>
       }
       side={
         <>
@@ -151,15 +201,7 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
               seat,
               accent: seatColor(seat),
               score: `${g.scores[seat]}점${g.goes[seat] ? ` · ${g.goes[seat]}고` : ''}`,
-              children:
-                seat === me ? null : (
-                  <div className="gs-opp">
-                    <span className="gs-opp-hand small muted">
-                      <HwatuBack w={12} /> 손패 {g.handCounts[seat]}
-                    </span>
-                    <Captured cards={cards} w={18} />
-                  </div>
-                ),
+              children: <Captured cards={cards} compact />,
             }))}
           />
           <SideNote title="점수">

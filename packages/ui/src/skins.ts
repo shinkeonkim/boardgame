@@ -135,14 +135,32 @@ export const TABLE_MATS: TableMat[] = [
   },
 ];
 
+/**
+ * 게임 화면 배치. 게임마다 어울리는 기본값이 있고(TableLayout 의 layout), 사용자가 고르면 그걸 따른다.
+ *  - right: 가운데 판 + 오른쪽 정보 (보드가 정사각형인 게임)
+ *  - left: 정보를 왼쪽에 (왼손잡이·습관)
+ *  - bottom: 판을 넓게, 정보는 아래 띠 (가로로 긴 판)
+ *  - focus: 판만 화면 가득, 정보는 「정보」 버튼으로 (카드 테이블처럼 둘러앉는 게임)
+ */
+export type TableLayoutKind = 'right' | 'left' | 'bottom' | 'focus';
+export const LAYOUT_CHOICES: { id: 'auto' | TableLayoutKind; name: string; hint: string }[] = [
+  { id: 'auto', name: '게임마다', hint: '게임에 맞는 배치' },
+  { id: 'right', name: '오른쪽', hint: '정보를 오른쪽에' },
+  { id: 'left', name: '왼쪽', hint: '정보를 왼쪽에' },
+  { id: 'bottom', name: '아래', hint: '판을 넓게, 정보는 아래' },
+  { id: 'focus', name: '판만 크게', hint: '정보는 버튼으로' },
+];
+
 export interface SkinChoice {
   back: string;
   tex: string;
   chip: string;
   table: string;
+  /** 게임 화면 배치 ('auto' = 게임 기본값) */
+  layout: 'auto' | TableLayoutKind;
 }
 
-export const DEFAULT_SKIN: SkinChoice = { back: 'plum', tex: 'linen', chip: 'gloss', table: 'plain' };
+export const DEFAULT_SKIN: SkinChoice = { back: 'plum', tex: 'linen', chip: 'gloss', table: 'plain', layout: 'auto' };
 const KEY = 'bg:skin';
 const CUSTOM_KEY = 'bg:skin:custom';
 /** 「내 이미지」 뒷면 id */

@@ -10,22 +10,28 @@ const GROUPS: { id: string; label: string; test: (c: HCard) => boolean }[] = [
 ];
 
 /** 먹은 카드: 종류별로 겹쳐 쌓기 (피는 장수, 쌍피는 2) */
-export function Captured({ cards, w = 34, compact }: { cards: HCard[]; w?: number; compact?: boolean }) {
+export function Captured({ cards, w = 34, compact, flip }: { cards: HCard[]; w?: number; compact?: boolean; flip?: boolean }) {
   return (
     <div className={`gs-captured ${compact ? 'compact' : ''}`}>
       {GROUPS.map((g) => {
         const list = cards.filter(g.test).sort((a, b) => a.month - b.month);
         const n = g.id === 'pi' ? piCount(list) : list.length;
         return (
-          <div key={g.id} className="gs-cap-group">
+          <div key={g.id} className={`gs-cap-group ${list.length ? '' : 'empty'}`}>
             <span className="gs-cap-label small">
               {g.label} <b>{n}</b>
             </span>
             {!compact && (
               <div className="gs-cap-stack" style={{ ['--w' as string]: `${w}px` }}>
-                {list.map((c) => (
-                  <HwatuCard key={c.id} card={c} w={w} />
-                ))}
+                {list.map((c) =>
+                  flip ? (
+                    <span key={c.id} data-flip={c.id} className="gs-cap-card">
+                      <HwatuCard card={c} w={w} />
+                    </span>
+                  ) : (
+                    <HwatuCard key={c.id} card={c} w={w} />
+                  ),
+                )}
               </div>
             )}
           </div>

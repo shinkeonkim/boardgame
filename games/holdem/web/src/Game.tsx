@@ -107,6 +107,7 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
 
   return (
     <TableLayout
+      layout="focus"
       mine={myTurn}
       splash={t.splash}
       top={
