@@ -89,12 +89,15 @@ export function PlayingCard({
   flip,
   className = '',
   style,
+  flipFrom,
 }: {
   card: Card;
   size?: 'sm' | 'md' | 'lg';
   playable?: boolean;
   onClick?: () => void;
   flip?: string;
+  /** 처음 나타날 때 어디서 날아오는지 (선택자, 예: '.oc-deck') */
+  flipFrom?: string;
   className?: string;
   style?: CSSProperties;
 }) {
@@ -104,7 +107,7 @@ export function PlayingCard({
   const rank = joker ? '★' : RANK[card.rank];
   const sym = joker ? 'JOKER' : SUITS[card.suit];
   return (
-    <Tag data-flip={flip} className={`oc-card pc light ${size} ${red ? 'red' : 'black'} ${playable ? 'playable' : ''} ${className}`} onClick={onClick} style={style} aria-label={cardName(card)}>
+    <Tag data-flip={flip} data-flip-from={flipFrom} className={`oc-card pc light ${size} ${red ? 'red' : 'black'} ${playable ? 'playable' : ''} ${className}`} onClick={onClick} style={style} aria-label={cardName(card)}>
       <span className="pc-idx tl">
         <b>{rank}</b>
         {!joker && <i>{sym}</i>}

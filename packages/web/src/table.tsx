@@ -458,8 +458,14 @@ function fitMain(main: HTMLElement | null, inner: HTMLElement | null) {
   const have = main.clientHeight;
   let z = 1;
   // 줄이면 판(남는 높이를 채우는 보드)이 다시 커질 수 있어 몇 번 다시 잰다
+  // 필요한 높이는 내용의 「배치」 높이로 잰다. scrollHeight는 움직이는 중인(transform) 카드까지 넣어 재서
+  // 카드가 날아가는 동안 판 전체가 줄었다 커지는(번쩍이는) 일이 있었다.
+  const cs = getComputedStyle(main);
+  const pad = (parseFloat(cs.paddingTop) || 0) + (parseFloat(cs.paddingBottom) || 0);
+  const k = main.offsetHeight ? main.getBoundingClientRect().height / main.offsetHeight : 1;
+  const layoutNeed = () => inner.getBoundingClientRect().height / (k || 1) + pad;
   for (let i = 0; i < 4 && have > 0; i++) {
-    const need = main.scrollHeight;
+    const need = layoutNeed();
     if (need <= have + 2 || z <= MIN_MAIN_FIT) break;
     z = Math.max(MIN_MAIN_FIT, Math.floor(z * (have / need) * 1000) / 1000);
     inner.style.zoom = String(z);
@@ -571,7 +577,10 @@ const seatOf = (e: unknown): number | null => {
  * 처음 화면을 열었을 때(이미 쌓인 기록)는 울리지 않는다. 한 번에 여러 개 생기면 차례로 (최대 6개).
  * feed를 주면 남이 둔 것을 보여 준다: 자리 반짝 + 말풍선 + 새 카드가 그 자리에서 날아옴 + 소리가 그 자리 쪽에서.
  */
-export function useLogSounds<E extends { n: number }>(log: E[], pick: (e: E) => Fx | Fx[] | null | undefined, feed: LogFeed<E> = {}) {
+/** 효과음 하나, 또는 [효과음, 이 항목 시작에서 몇 초 뒤] (손놀림 순서에 맞출 때) */
+export type SoundPick = Fx | readonly [Fx, number];
+
+export function useLogSounds<E extends { n: number }>(log: E[], pick: (e: E) => SoundPick | readonly SoundPick[] | null | undefined, feed: LogFeed<E> = {}) {
   const last = useRef<number | null>(null);
   const lastN = log.length ? log[log.length - 1].n : 0;
   const actorOf = (e: E) => (feed.actor ? feed.actor(e) : seatOf(e)) ?? null;
@@ -594,9 +603,11 @@ export function useLogSounds<E extends { n: number }>(log: E[], pick: (e: E) => 
       const f = pick(e);
       let d = at;
       const pan = who !== null && who !== feed.me ? panOf(who) : 0;
-      for (const name of f ? (Array.isArray(f) ? f : [f]) : []) {
-        sound.fx(name, d, others ? { pan, gain: 0.85 } : { pan });
-        d += 0.05;
+      const list: readonly SoundPick[] = !f ? [] : typeof f === 'string' || (f.length === 2 && typeof f[1] === 'number') ? [f as SoundPick] : (f as readonly SoundPick[]);
+      for (const item of list) {
+        const [name, after] = typeof item === 'string' ? [item, null] : item;
+        sound.fx(name, after !== null ? at + after : d, others ? { pan, gain: 0.85 } : { pan });
+        if (after === null) d += 0.05;
       }
       if (visible) {
         const st = feed.stamp?.(e);

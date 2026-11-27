@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { RoomView } from '@bg/core';
 import { GameConfig, GameView, LogEntry } from '@bg/holdem-engine';
 import { CardBack, CountBadge, EmoteBubble, PlayingCard, SeatDot, seatColor, iconize } from '@bg/ui';
@@ -15,7 +15,7 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
   const showdown = g.phase === 'showdown';
   const t = useTable(view, notify, { title: "Hold'em", turn: g.turn, playing: g.status === 'playing', simultaneous: showdown, quiet: showdown, stepKey: `${g.handNo}-${g.street}-${g.log.length ? g.log[g.log.length - 1].n : 0}`, mySub: g.toCall ? `${g.toCall} 콜?` : '체크 또는 베팅' });
   // 소리: 콜·레이즈는 칩, 올인은 칩 여러 개, 접기는 카드, 새 카드는 카드 깔기, 이기면 칩 쓸어 담기
-  useLogSounds(g.log, (e) => (e.type === 'act' ? (e.act === 'allin' ? 'chips' : e.act === 'fold' ? 'card' : e.act === 'check' ? 'tick' : 'chip') : e.type === 'street' ? 'deal' : e.type === 'hand' ? 'shuffle' : e.type === 'win' ? ['sweep', 'coins'] : e.type === 'end' ? 'win' : e.type === 'bust' ? 'thud' : null), { me: t.me, describe: (e) => describe(e), stamp: (e) => (e.type === 'act' && e.act === 'allin' ? { text: '올인!', tone: 'hot', shake: 1.2 } : e.type === 'bust' ? { text: '파산', tone: 'bad' } : null) });
+  useLogSounds(g.log, (e) => (e.type === 'act' ? (e.act === 'allin' ? 'chips' : e.act === 'fold' ? 'card' : e.act === 'check' ? 'tick' : 'chip') : e.type === 'street' ? ['chipStack', ['flip', 0.35]] : e.type === 'hand' ? 'shuffle' : e.type === 'win' ? ['sweep', 'coins'] : e.type === 'end' ? 'win' : e.type === 'bust' ? 'thud' : null), { me: t.me, describe: (e) => describe(e), stamp: (e) => (e.type === 'act' && e.act === 'allin' ? { text: '올인!', tone: 'hot', shake: 1.2 } : e.type === 'bust' ? { text: '파산', tone: 'bad' } : null) });
   // 팟을 가져가면 칩이 이긴 사람 자리로 쓸려 감
   const winLog = [...g.log].reverse().find((e) => e.type === 'win');
   const winN = winLog?.n ?? 0;
@@ -26,6 +26,33 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
       p.winners.forEach((w) => flyClone(pot, document.querySelector(`[data-hd-seat="${w}"] .hd-chips`), { count: Math.min(5, 2 + Math.floor(p.amount / 200)), delay: 250 + k * 200, duration: 700, like: pot?.querySelector('.hd-stack') ?? null })),
     );
   }, [winN]); // eslint-disable-line react-hooks/exhaustive-deps
+  // 칩이 실제로 오간다: 베팅하면 자리 칩 → 베팅 자리, 한 바퀴가 끝나면 베팅 칩이 모두 팟으로 쓸려 감
+  const lastN = g.log.length ? g.log[g.log.length - 1].n : 0;
+  const seenN = useRef<number | null>(null);
+  const betsRef = useRef<number[]>(g.bets);
+  useEffect(() => {
+    const prev = seenN.current;
+    const prevBets = betsRef.current;
+    seenN.current = lastN;
+    betsRef.current = g.bets;
+    if (prev === null || lastN <= prev) return;
+    const seatQ = (s: number) => document.querySelector(`[data-hd-seat="${s}"]`);
+    const chipLook = (el: Element | null | undefined) => el?.querySelector('.hd-stack') ?? document.querySelector('.hd-pot .hd-stack');
+    g.log
+      .filter((e) => e.n > prev)
+      .forEach((e, i) => {
+        if (e.type === 'act' && e.amount > 0) {
+          const bet = seatQ(e.seat)?.querySelector('.hd-bet');
+          flyClone(seatQ(e.seat)?.querySelector('.hd-chips'), bet, { count: e.act === 'allin' ? 4 : e.amount >= 100 ? 3 : 2, duration: 460, delay: i * 140, like: chipLook(bet) });
+        }
+        if (e.type === 'street' || e.type === 'win') {
+          const pot = document.querySelector('.hd-pot');
+          prevBets.forEach((b, s) => {
+            if (b > 0) flyClone(seatQ(s), pot?.querySelector('.hd-stack') ?? pot, { count: 2, duration: 520, delay: i * 140 + s * 50, like: chipLook(pot) });
+          });
+        }
+      });
+  }, [lastN]); // eslint-disable-line react-hooks/exhaustive-deps
   // 새 판마다 카드를 섞고 나눠 주는 연출 (@bg/web deal-fx)
   useDealFx(`${g.round}-${g.handNo}`, { per: 2, seats: '.hd-seat:not(.busted)', hand: null, origin: '.hd-center', initial: g.log.length <= 4 });
   const names = t.names;
@@ -126,7 +153,7 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
                 <div className="hd-others">{order.filter((s) => s !== me).map(seatEl)}</div>
                 <div className="hd-center">
                   <div className="hd-board">
-                    {Array.from({ length: 5 }, (_, i) => (g.board[i] ? <PlayingCard key={g.board[i].id} card={g.board[i]} size="md" flip={`b${g.board[i].id}`} /> : <span key={i} className="hd-slot" />))}
+                    {Array.from({ length: 5 }, (_, i) => (g.board[i] ? <PlayingCard key={g.board[i].id} card={g.board[i]} size="md" flip={`b${g.board[i].id}`} className="flip-reveal" /> : <span key={i} className="hd-slot" />))}
                   </div>
                   <div className="hd-pot">
                     <ChipStack amount={g.pot} size={24} />
@@ -139,7 +166,7 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
               <>
                 <div className="hd-center">
                   <div className="hd-board">
-                    {Array.from({ length: 5 }, (_, i) => (g.board[i] ? <PlayingCard key={g.board[i].id} card={g.board[i]} size="md" flip={`b${g.board[i].id}`} /> : <span key={i} className="hd-slot" />))}
+                    {Array.from({ length: 5 }, (_, i) => (g.board[i] ? <PlayingCard key={g.board[i].id} card={g.board[i]} size="md" flip={`b${g.board[i].id}`} className="flip-reveal" /> : <span key={i} className="hd-slot" />))}
                   </div>
                   <div className="hd-pot">
                     <ChipStack amount={g.pot} size={24} />

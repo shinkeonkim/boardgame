@@ -157,14 +157,7 @@ export function stamp(text: ReactNode, tone: StampTone = 'hot') {
   }, 1250);
 }
 
-/** 판 흔들림 (큰 공격·쪽 같은 순간). 화면 맞춤 배율 밖의 .table-main 전체를 살짝 */
-export function shakeBoard(strength = 1) {
-  if (reduced() || typeof document === 'undefined') return;
-  const el = document.querySelector<HTMLElement>('.table-main');
-  if (!el) return;
-  const d = 5 * strength;
-  el.animate(
-    [{ transform: 'translate(0,0)' }, { transform: `translate(${-d}px, ${d / 2}px)` }, { transform: `translate(${d}px, ${-d / 2}px)` }, { transform: `translate(${-d / 2}px, 0)` }, { transform: 'translate(0,0)' }],
-    { duration: 320, easing: 'ease-out' },
-  );
+/** 판 흔들림: 화면이 흔들리면 어지럽다는 의견에 따라 지금은 아무것도 하지 않는다 (호출하는 곳은 그대로 둠) */
+export function shakeBoard(_strength = 1) {
+  /* 일부러 비움 */
 }

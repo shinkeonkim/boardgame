@@ -167,11 +167,14 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
             <section className={`co-board ${g.spymaster ? 'spy' : ''}`} style={{ ['--n' as string]: c.size }} aria-label="단어 보드">
               {g.words.map((w, i) => {
                 const open = g.revealed[i] !== null;
+                // 방금 고른 카드는 한 번 뒤집히며 정체를 보여 준다
+                const lastLog = g.log[g.log.length - 1];
+                const just = open && lastLog?.type === 'guess' && lastLog.index === i;
                 const marks = g.marks[i] ?? [];
                 return (
                   <button
-                    key={i}
-                    className={`co-card pc light ${cardClass(g.key[i], open, g.spymaster)} ${armed === i ? 'armed' : ''} ${canGuess && !open ? 'can' : ''}`}
+                    key={just ? `${i}-open` : i}
+                    className={`co-card pc light ${cardClass(g.key[i], open, g.spymaster)} ${armed === i ? 'armed' : ''} ${canGuess && !open ? 'can' : ''} ${just ? 'flip-reveal' : ''}`}
                     onClick={() => tap(i)}
                     aria-label={`${w}${open ? ' (공개됨)' : ''}`}
                     disabled={open}

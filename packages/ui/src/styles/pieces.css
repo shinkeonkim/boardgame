@@ -123,7 +123,7 @@ button.pc:hover:not(:disabled) {
 }
 @keyframes count-bump {
   40% {
-    transform: scale(1.35);
+    transform: scale(1.12);
   }
 }
 
@@ -142,21 +142,15 @@ button.pc:hover:not(:disabled) {
 
 /* 공개될 때 카드·타일이 뒤집히는 느낌 (가로로 접혔다 펴짐 — 3D 없이도 어디서나 같은 모양) */
 .flip-reveal {
-  animation: flip-reveal 0.55s cubic-bezier(0.3, 0.7, 0.3, 1.2) both;
+  animation: flip-reveal 0.42s cubic-bezier(0.25, 0.8, 0.3, 1) both;
   transform-origin: center;
 }
 @keyframes flip-reveal {
   0% {
-    transform: perspective(500px) rotateY(90deg) scale(1.06);
-    filter: brightness(0.7);
-  }
-  60% {
-    transform: perspective(500px) rotateY(-8deg) scale(1.04);
-    filter: brightness(1.08);
+    transform: perspective(500px) rotateY(90deg);
   }
   100% {
     transform: none;
-    filter: none;
   }
 }
 @media (prefers-reduced-motion: reduce) {

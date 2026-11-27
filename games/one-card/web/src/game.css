@@ -40,7 +40,6 @@
 .oc-opp.one .oc-opp-count {
   color: #fff;
   background: var(--danger);
-  animation: pulse 1s infinite;
 }
 .oc-opp-name {
   position: relative;
@@ -137,7 +136,6 @@
   background: var(--danger);
   border-radius: 999px;
   padding: 2px 12px;
-  animation: pulse 0.9s infinite;
 }
 /* 원카드 외치기 */
 .oc-call {
@@ -152,7 +150,6 @@
   padding: 12px 30px;
   border-radius: 999px;
   color: #fff;
-  animation: oc-call 0.6s ease-in-out infinite alternate;
 }
 .oc-call-btn.mine {
   background: #2f8a5a;

@@ -2,8 +2,12 @@
  * 화면 움직임 (FLIP). 게임은 움직일 요소에 data-flip="고유id"만 붙이면 된다.
  *  - 같은 id가 다른 자리로 옮겨 가면 → 이전 자리에서 새 자리로 미끄러지듯 이동
  *    (손패 → 줄, 은행 → 내 보석, 공장 → 작업대 …)
- *  - 처음 보이는 id → 살짝 커지며 나타남 (새로 뽑은 카드 등)
+ *  - 처음 보이는 id → 남이 둔 것이면 그 사람 자리에서 날아오고, 아니면 살며시 나타남
  *  - data-flip-enter="none"이면 나타남 효과 없음 (자주 생겼다 사라지는 표시용)
+ * 실제 손놀림처럼 단계를 나눌 수 있다 (한 번의 상태 변화 안에서):
+ *  - data-flip-via="id"   : 그 id가 「있던 자리」를 거쳐 간다 (화투: 손 → 맞춘 바닥 카드 위 → 먹은 패)
+ *  - data-flip-delay="ms" : 그만큼 제자리에 머물렀다 움직인다 (먼저 친 카드가 내려앉은 뒤에 쓸어 감)
+ *  - data-flip-land="slap": 내려앉을 때 살짝 눌렸다 펴짐 (내리치는 느낌, 번쩍임 없음)
  * TableLayout이 화면 전체에 대해 한 번 건다. 모든 렌더 뒤에 위치를 재고, 스크롤·크기 변화는 다시 잰다.
  * prefers-reduced-motion이면 움직이지 않는다.
  */
@@ -33,6 +37,40 @@ function measure(root: HTMLElement): Snap {
 }
 
 const reduced = () => typeof matchMedia !== 'undefined' && matchMedia('(prefers-reduced-motion: reduce)').matches;
+const EASE = 'cubic-bezier(0.22, 0.8, 0.28, 1)';
+
+const center = (r: DOMRect) => ({ x: r.left + r.width / 2, y: r.top + r.height / 2 });
+
+/**
+ * 한 요소를 시작점(from) → (경유점 via) → 제자리로. 좌표는 화면 기준 중심점.
+ * 크기는 시작 요소 크기에서 제 크기로 자연스럽게 (손패의 큰 카드가 먹은 패의 작은 카드가 되는 등).
+ */
+function travel(node: HTMLElement, r: DOMRect, from: DOMRect, o: { via?: DOMRect | null; delay?: number; land?: string | undefined; duration?: number }) {
+  const scale = node.offsetWidth ? r.width / node.offsetWidth : 1;
+  const z = scale > 0.2 ? scale : 1; // 화면 맞춤 배율(zoom) 보정
+  const c = center(r);
+  const off = (p: DOMRect) => {
+    const q = center(p);
+    return { x: (q.x - c.x) / z, y: (q.y - c.y) / z, s: r.width ? Math.max(0.4, Math.min(2.2, p.width / r.width)) : 1 };
+  };
+  const a = off(from);
+  const v = o.via ? off(o.via) : null;
+  const dist = Math.hypot(a.x, a.y) + (v ? Math.hypot(a.x - v.x, a.y - v.y) : 0);
+  const duration = o.duration ?? Math.min(720, 300 + dist * 0.4) + (v ? 260 : 0);
+  const frames: Keyframe[] = [{ transform: `translate(${a.x}px, ${a.y}px) scale(${a.s})`, zIndex: 6 }];
+  if (v) {
+    // 경유점에 내려앉아 잠깐 머무름 (맞춘 카드 위에 탁 → 같이 쓸어 감)
+    frames.push({ transform: `translate(${v.x}px, ${v.y - 2}px) scale(${v.s})`, zIndex: 6, offset: 0.38, easing: 'ease-in' });
+    frames.push({ transform: `translate(${v.x}px, ${v.y}px) scale(${v.s * 0.98})`, zIndex: 6, offset: 0.46 });
+    frames.push({ transform: `translate(${v.x}px, ${v.y}px) scale(${v.s})`, zIndex: 6, offset: 0.62, easing: EASE });
+  }
+  if (o.land === 'slap') {
+    frames.push({ transform: 'translate(0, -3px) scale(1.02)', zIndex: 6, offset: 0.86, easing: 'ease-in' });
+    frames.push({ transform: 'translate(0, 0) scale(0.985)', zIndex: 6, offset: 0.93 });
+  }
+  frames.push({ transform: 'translate(0, 0) scale(1)', zIndex: 6 });
+  node.animate(frames, { duration, delay: o.delay ?? 0, easing: v || o.land ? 'linear' : EASE, fill: 'backwards' });
+}
 
 export function useFlip(root: RefObject<HTMLElement>) {
   const prev = useRef<Snap | null>(null);
@@ -54,38 +92,25 @@ export function useFlip(root: RefObject<HTMLElement>) {
       const r = now.get(id);
       if (!r) return;
       const p = before.get(id);
+      const viaId = node.dataset.flipVia;
+      const via = viaId ? (before.get(viaId) ?? null) : null;
+      const delay = Number(node.dataset.flipDelay ?? 0) || 0;
+      const land = node.dataset.flipLand;
       if (p) {
-        const dx = p.left - r.left;
-        const dy = p.top - r.top;
-        if (Math.abs(dx) + Math.abs(dy) < 3) return;
-        // 화면 맞춤 배율(zoom) 안에서는 transform 픽셀도 배율만큼 커지므로 되돌린다
-        const scale = node.offsetWidth ? r.width / node.offsetWidth : 1;
-        const s = scale > 0.2 ? scale : 1;
-        const dist = Math.hypot(dx, dy);
-        node.animate([{ transform: `translate(${dx / s}px, ${dy / s}px)`, zIndex: 5 }, { transform: 'translate(0, 0)', zIndex: 5 }], {
-          duration: Math.min(560, 260 + dist * 0.35),
-          easing: 'cubic-bezier(0.2, 0.8, 0.2, 1)',
-        });
+        if (Math.abs(p.left - r.left) + Math.abs(p.top - r.top) < 3) return;
+        travel(node, r, p, { via, delay, land });
       } else if (node.dataset.flipEnter !== 'none') {
         // 남이 방금 둔 것: 그 사람 자리(또는 data-flip-from이 가리키는 곳)에서 날아온다
         const src = fromOf(node, actor);
-        if (src && !node.closest('[data-seat]')) {
+        const own = actor !== null && !node.dataset.flipFrom && !via && node.closest(`[data-seat="${actor}"]`);
+        if (src && !own) {
           const a = src.getBoundingClientRect();
-          const scale = node.offsetWidth ? r.width / node.offsetWidth : 1;
-          const s = scale > 0.2 ? scale : 1;
-          const dx = (a.left + a.width / 2 - (r.left + r.width / 2)) / s;
-          const dy = (a.top + a.height / 2 - (r.top + r.height / 2)) / s;
-          const tilt = dx > 0 ? 14 : -14;
-          node.animate(
-            [
-              { transform: `translate(${dx}px, ${dy}px) scale(0.45) rotate(${tilt}deg)`, opacity: 0.3, zIndex: 6 },
-              { transform: `translate(${dx * 0.3}px, ${dy * 0.3 - 18}px) scale(1.12) rotate(${tilt / 3}deg)`, opacity: 1, zIndex: 6, offset: 0.6 },
-              { transform: 'translate(0, 0) scale(1) rotate(0deg)', opacity: 1, zIndex: 6 },
-            ],
-            { duration: 560, easing: 'cubic-bezier(0.25, 0.8, 0.3, 1)' },
-          );
-          node.animate([{ boxShadow: '0 0 0 3px var(--accent, #f5b301)' }, { boxShadow: '0 0 0 0 transparent' }], { duration: 1400, delay: 520, easing: 'ease-out' });
-        } else node.animate([{ opacity: 0, transform: 'scale(0.7)' }, { opacity: 1, transform: 'scale(1)' }], { duration: 260, easing: 'cubic-bezier(0.2, 0.8, 0.2, 1)' });
+          // 자리 상자는 카드보다 크므로 카드 크기로 줄여 가운데서 출발
+          const w = Math.min(a.width, r.width);
+          const h = Math.min(a.height, r.height);
+          const start = new DOMRect(a.left + a.width / 2 - w / 2, a.top + a.height / 2 - h / 2, w, h);
+          travel(node, r, start, { via, delay, land: land ?? 'slap' });
+        } else node.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 220, delay, easing: 'ease-out', fill: 'backwards' });
       }
     });
     clearActor();
@@ -156,7 +181,7 @@ export function flyClone(
     const anim = ghost.animate(
       [
         { transform: `translate(${dx}px, ${dy}px) scale(0.9)`, opacity: 0.95 },
-        { transform: `translate(${dx * 0.4}px, ${dy * 0.4 - 24}px) scale(1.1)`, opacity: 1, offset: 0.55 },
+        { transform: `translate(${dx * 0.4}px, ${dy * 0.4 - 10}px) scale(1.02)`, opacity: 1, offset: 0.55 },
         { transform: 'translate(0, 0) scale(1)', opacity: 1 },
       ],
       { duration: opts.duration ?? 520, delay: (opts.delay ?? 0) + i * 70, easing: 'cubic-bezier(0.25, 0.8, 0.3, 1)', fill: 'backwards' },

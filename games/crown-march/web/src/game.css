@@ -127,7 +127,6 @@
   display: grid;
   place-items: center;
   color: var(--danger);
-  animation: marker 1.4s ease-in-out infinite;
 }
 .cell.t-hero .marker {
   inset: 6%;
@@ -212,7 +211,6 @@
   stroke-width: 0.09;
   stroke-dasharray: 0.18 0.12;
   stroke-linecap: round;
-  animation: dash 0.8s linear infinite;
 }
 .path circle {
   fill: var(--gold);
@@ -284,7 +282,6 @@
 .crown svg {
   width: 100%;
   height: 100%;
-  animation: crown-bob 2.4s ease-in-out infinite;
 }
 @keyframes crown-bob {
   50% {
@@ -457,7 +454,7 @@
   text-shadow: 0 1px 2px #000;
 }
 .deck.drawable .deck-back {
-  animation: glow 1.4s ease-in-out infinite;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent, #c0612a) 45%, transparent);
 }
 @keyframes glow {
   50% {

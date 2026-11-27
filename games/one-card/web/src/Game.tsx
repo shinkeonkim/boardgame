@@ -1,8 +1,8 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { RoomView } from '@bg/core';
 import { Card, GameConfig, GameView, LogEntry } from '@bg/one-card-engine';
 import { EmoteBubble, SeatDot, seatColor, iconize } from '@bg/ui';
-import { GameScreenProps, ResultSheet, SideNote, TableBanner, TableEmotes, TableLayout, TableTopBar, Ticker, emotesBySeat, rankOf, useLogSounds, usePeek, useTable, useDealFx } from '@bg/web';
+import { GameScreenProps, ResultSheet, SideNote, TableBanner, TableEmotes, TableLayout, TableTopBar, Ticker, emotesBySeat, rankOf, useLogSounds, usePeek, useTable, useDealFx, flyClone } from '@bg/web';
 import { CardBack, PlayingCard, SUITS, SUIT_NAMES, cardName, isRed } from './theme';
 
 type View = RoomView<GameView, GameConfig>;
@@ -47,6 +47,21 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
   const calling = g.phase === 'call' && g.callFor !== null;
   const iAmCalled = calling && g.callFor === me;
 
+  // 남이 카드를 가져가면 더미에서 그 자리로 뒷면 카드가 미끄러져 간다
+  const drawN = g.log.length ? g.log[g.log.length - 1].n : 0;
+  const seenDraw = useRef<number | null>(null);
+  useEffect(() => {
+    const prev = seenDraw.current;
+    seenDraw.current = drawN;
+    if (prev === null) return;
+    g.log
+      .filter((e) => e.n > prev && e.type === 'draw' && e.seat !== t.me)
+      .forEach((e, i) => {
+        if (e.type !== 'draw') return;
+        const seat = document.querySelector(`.oc-opp[data-seat="${e.seat}"] .oc-opp-count`) ?? document.querySelector(`[data-seat="${e.seat}"]`);
+        flyClone(document.querySelector('.oc-deck'), seat, { count: Math.min(e.count, 5), duration: 520, delay: i * 120, like: document.querySelector('.oc-deck .pc') });
+      });
+  }, [drawN]); // eslint-disable-line react-hooks/exhaustive-deps
   const describe = (e: LogEntry | undefined) => {
     if (!e) return '무늬나 숫자가 같은 카드를 내요. 먼저 다 내면 이겨요';
     switch (e.type) {
@@ -176,7 +191,7 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
               <div className="oc-hand">
                 {g.hand.map((card, i) => (
                   <span key={card.id} className="oc-hand-slot" style={{ transform: `rotate(${(i - handMid) * Math.min(5, 40 / g.hand.length)}deg) translateY(${Math.abs(i - handMid) ** 1.4 * 2}px)` }}>
-                    <PlayingCard card={card} flip={`oc${card.id}`} playable={g.playable.includes(card.id)} onClick={() => tryPlay(card)} />
+                    <PlayingCard card={card} flip={`oc${card.id}`} flipFrom=".oc-deck" playable={g.playable.includes(card.id)} onClick={() => tryPlay(card)} />
                   </span>
                 ))}
               </div>

@@ -53,7 +53,7 @@ button.disc {
 .ht-mat.can-flip {
   cursor: pointer;
   border-color: var(--accent);
-  animation: ht-pulse 1.4s ease-in-out infinite;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent, #c0612a) 45%, transparent);
 }
 @keyframes ht-pulse {
   50% {

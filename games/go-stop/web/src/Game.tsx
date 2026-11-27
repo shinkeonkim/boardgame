@@ -1,10 +1,10 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useViewport } from './viewport';
 import type { RoomView } from '@bg/core';
 import { GameConfig, GameView, HCard, LogEntry, MONTH_NAMES } from '@bg/go-stop-engine';
 import { SeatDot, seatColor } from '@bg/ui';
 import { GameScreenProps, ResultSheet, SeatList, SideNote, TableBanner, TableEmotes, TableLayout, TableTopBar, Ticker, rankOf, useLogSounds, useNarrow, usePeek, useTable } from '@bg/web';
-import { Captured } from './Captured';
+import { Captured, type Stage } from './Captured';
 import { HwatuBack, HwatuCard } from './theme';
 
 type View = RoomView<GameView, GameConfig>;
@@ -24,11 +24,8 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
     g.log,
     (e) =>
       e.type === 'play'
-        ? e.special.length
-          ? ['slapHard', ...(e.stolen ? (['pop'] as const) : [])]
-          : e.took.length
-            ? ['slap', 'sweep']
-            : 'slap'
+        ? // 카드 소리를 손놀림 순서에 맞춘다: 낸 카드 탁 → 뒤집은 카드 탁 → 쓸어 감
+          [e.special.length ? 'slapHard' : 'slap', ...(e.flip ? ([['slap', 0.42]] as const) : []), ...(e.took.length ? ([['sweep', e.flip ? 0.86 : 0.55]] as const) : []), ...(e.stolen ? ([['pop', 1.1]] as const) : [])]
         : e.type === 'go'
           ? 'gong'
           : e.type === 'stop'
@@ -104,15 +101,28 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
     }, {}),
   ).sort((a, b) => a[0].month - b[0].month);
   const half = Math.ceil(fieldGroups.length / 2);
-  // 방금 더미에서 뒤집힌 카드는 더미에서 날아온다 (낸 카드는 낸 사람 자리에서)
+  // 실제 화투처럼 순서대로: ① 낸 카드가 맞는 바닥 카드 위에 탁 → ② 더미 카드를 뒤집어 탁 → ③ 먹은 카드를 쓸어 감 → ④ 뺏은 피
   const lastPlay = g.log[g.log.length - 1];
   const flippedId = lastPlay?.type === 'play' ? lastPlay.flip?.id : undefined;
+  const stage = useMemo<Stage>(() => {
+    const e = lastPlay;
+    if (e?.type !== 'play') return {};
+    const out: Stage = {};
+    const took = new Set(e.took.map((x) => x.id));
+    const mate = (c: HCard) => e.took.find((x) => x.month === c.month && x.id !== c.id && x.id !== e.flip?.id && x.id !== e.card.id)?.id ?? e.took.find((x) => x.month === c.month && x.id !== c.id)?.id;
+    out[e.card.id] = took.has(e.card.id) ? { via: mate(e.card), land: 'slap' } : { land: 'slap' };
+    if (e.flip) out[e.flip.id] = { from: '.gs-pile', delay: 380, land: 'slap', via: took.has(e.flip.id) ? mate(e.flip) : undefined };
+    for (const x of e.took) if (x.id !== e.card.id && x.id !== e.flip?.id) out[x.id] = { delay: e.flip ? 820 : 520 };
+    return out;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [lastPlay?.n]);
+  const st = (id: string) => stage[id] ?? {};
   const renderGroup = (list: HCard[]) => (
     <span key={list[0].month} className={`gs-month ${pending && pending.month === list[0].month ? 'target' : ''}`} data-n={list.length}>
       {list.map((x) => {
         const target = !!pending && x.month === pending.month;
         return (
-          <span key={x.id} data-flip={x.id} data-flip-from={x.id === flippedId ? '.gs-pile' : undefined} className="gs-month-card">
+          <span key={x.id} data-flip={x.id} data-flip-from={st(x.id).from ?? (x.id === flippedId ? '.gs-pile' : undefined)} data-flip-delay={st(x.id).delay} data-flip-land={st(x.id).land} className="gs-month-card">
             <HwatuCard card={x} w={cw} glow={target} dim={!!pending && !target} onClick={target ? () => tapTable(x) : undefined} />
           </span>
         );
@@ -175,7 +185,7 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
                         <HwatuBack key={i} w={Math.round(cap * 0.8)} />
                       ))}
                     </span>
-                    <Captured cards={cards} w={cap} flip />
+                    <Captured cards={cards} w={cap} flip stage={stage} />
                   </div>
                 ),
               }))
@@ -210,7 +220,7 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
                   </button>
                 )}
               </div>
-              <Captured cards={g.captured[me]} w={cap} flip />
+              <Captured cards={g.captured[me]} w={cap} flip stage={stage} />
               <div className="gs-hand">
                 {g.hand.map((x) => {
                   const match = g.table.some((y) => y.month === x.month);

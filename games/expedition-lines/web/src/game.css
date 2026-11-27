@@ -214,7 +214,6 @@ button.card:focus-visible {
 }
 .timer.hot {
   color: var(--danger);
-  animation: pulse 0.6s infinite;
 }
 .log {
   max-height: 180px;
@@ -277,7 +276,6 @@ button.card:focus-visible {
   height: 8px;
   border-radius: 50%;
   background: var(--accent);
-  animation: pulse 1.2s infinite;
 }
 @keyframes pulse {
   50% {
@@ -311,7 +309,7 @@ button.card:focus-visible {
   border-color: var(--accent);
   cursor: pointer;
   background: color-mix(in srgb, var(--accent) 16%, transparent);
-  animation: glow 1.4s infinite;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent, #c0612a) 45%, transparent);
 }
 .col-empty {
   position: absolute;
@@ -394,7 +392,7 @@ button.card:focus-visible {
 .pile.target .pile-hit {
   cursor: pointer;
   border-color: #ffc45a;
-  animation: glow 1.4s infinite;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent, #c0612a) 45%, transparent);
 }
 .pile.target .pile-hit {
   border-style: dashed;
@@ -485,7 +483,7 @@ button.card:focus-visible {
 .deck.drawable {
   cursor: pointer;
   border-color: #ffc45a;
-  animation: glow 1.4s infinite;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent, #c0612a) 45%, transparent);
 }
 .deck.drawable .l0 {
   transition: transform 0.2s;

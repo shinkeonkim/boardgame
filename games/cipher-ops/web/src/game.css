@@ -242,7 +242,6 @@ button.co-card.can:hover {
   height: 7px;
   border-radius: 50%;
   background: var(--accent);
-  animation: pulse 1.2s infinite;
 }
 .co-member .emote-bubble {
   left: auto;

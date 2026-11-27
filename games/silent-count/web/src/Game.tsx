@@ -101,7 +101,7 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
               {g.pile.slice(-4, -1).map((n, i) => (
                 <NumCard key={`${n}-${i}`} n={n} size="sm" className="sc-under" />
               ))}
-              {g.top ? <NumCard key={g.top} n={g.top} size="lg" className="flip-reveal sc-top" /> : <span className="sc-empty">첫 카드를 기다려요</span>}
+              {g.top ? <NumCard key={g.top} n={g.top} size="lg" className="sc-top" flip={`h${g.top}`} /> : <span className="sc-empty">첫 카드를 기다려요</span>}
             </div>
             {miss && (
               <div className="sc-miss" role="alert">
