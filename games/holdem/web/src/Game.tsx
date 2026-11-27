@@ -15,7 +15,7 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
   const showdown = g.phase === 'showdown';
   const t = useTable(view, notify, { title: "Hold'em", turn: g.turn, playing: g.status === 'playing', simultaneous: showdown, quiet: showdown, stepKey: `${g.handNo}-${g.street}-${g.log.length ? g.log[g.log.length - 1].n : 0}`, mySub: g.toCall ? `${g.toCall} 콜?` : '체크 또는 베팅' });
   // 소리: 콜·레이즈는 칩, 올인은 칩 여러 개, 접기는 카드, 새 카드는 카드 깔기, 이기면 칩 쓸어 담기
-  useLogSounds(g.log, (e) => (e.type === 'act' ? (e.act === 'allin' ? 'chips' : e.act === 'fold' ? 'card' : e.act === 'check' ? 'tick' : 'chip') : e.type === 'street' ? 'deal' : e.type === 'hand' ? 'shuffle' : e.type === 'win' ? ['sweep', 'coins'] : e.type === 'end' ? 'win' : e.type === 'bust' ? 'thud' : null));
+  useLogSounds(g.log, (e) => (e.type === 'act' ? (e.act === 'allin' ? 'chips' : e.act === 'fold' ? 'card' : e.act === 'check' ? 'tick' : 'chip') : e.type === 'street' ? 'deal' : e.type === 'hand' ? 'shuffle' : e.type === 'win' ? ['sweep', 'coins'] : e.type === 'end' ? 'win' : e.type === 'bust' ? 'thud' : null), { me: t.me, describe: (e) => describe(e), stamp: (e) => (e.type === 'act' && e.act === 'allin' ? { text: '올인!', tone: 'hot', shake: 1.2 } : e.type === 'bust' ? { text: '파산', tone: 'bad' } : null) });
   // 팟을 가져가면 칩이 이긴 사람 자리로 쓸려 감
   const winLog = [...g.log].reverse().find((e) => e.type === 'win');
   const winN = winLog?.n ?? 0;
@@ -70,7 +70,7 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
           const hole = g.hole[s];
           const m = view.members.find((x) => x.seat === s);
           return (
-            <div key={s} data-hd-seat={s} className={`hd-seat ${g.turn === s && !showdown ? 'acting' : ''} ${g.folded[s] ? 'folded' : ''} ${g.busted[s] ? 'busted' : ''} ${winners.has(s) ? 'winner' : ''} ${s === me ? 'me' : ''}`} style={{ ...pos, ['--seat' as string]: seatColor(s) }}>
+            <div key={s} data-hd-seat={s} data-seat={s} className={`hd-seat ${g.turn === s && !showdown ? 'acting' : ''} ${g.folded[s] ? 'folded' : ''} ${g.busted[s] ? 'busted' : ''} ${winners.has(s) ? 'winner' : ''} ${s === me ? 'me' : ''}`} style={{ ...pos, ['--seat' as string]: seatColor(s) }}>
               <EmoteBubble e={bySeat.get(s)} />
               <div className="hd-cards">
                 {hole === null ? (

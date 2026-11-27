@@ -11,6 +11,9 @@ export { useTable, emotesBySeat, TableTopBar, TableBanner, SeatList, TableEmotes
 export type { Fx } from './fx';
 export { FX_NAMES } from './fx';
 export { useFlip, flyClone } from './motion';
+export { callout, stamp, shakeBoard, pulseSeat, seatAnchor, panOf } from './action-feed';
+export type { SoundTheme } from './sound';
+export type { LogFeed, StampSpec } from './table';
 export type { Table, SeatRow, ResultRow, TableOptions } from './table';
 export * from './narrow';
 export * from './deal-fx';

@@ -33,7 +33,7 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
     mySub: `${COLORS[g.color].name} 조각을 놓아요`,
   });
   // 소리: 블록을 놓으면 나무 톡, 막히면 실패음
-  useLogSounds(g.log, (e) => (e.type === 'place' ? 'wood' : e.type === 'stuck' ? 'fail' : null));
+  useLogSounds(g.log, (e) => (e.type === 'place' ? (e.size >= 5 ? ['tile', 'tiles'] : 'tile') : e.type === 'stuck' ? 'fail' : null), { me: t.me, describe: (e) => describe(e), stamp: (e) => (e.type === 'stuck' ? { text: '더 못 놓아요', tone: 'bad' } : null) });
   const names = t.names;
   const me = t.me;
   const myTurn = t.myTurn;
@@ -399,7 +399,7 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
           </section>
           <section className="panel small cc-players">
             {Array.from({ length: g.players }, (_, s) => (
-              <div key={s} className="cc-player">
+              <div key={s} data-seat={s} className="cc-player">
                 {g.fixedOwners.flatMap((o, col) => (o === s ? [<span key={col} className="cc-swatch" style={{ background: COLORS[col].fill }} />] : []))}
                 <b>{names[s]}</b>
                 {view.members.find((m) => m.seat === s)?.bot && (

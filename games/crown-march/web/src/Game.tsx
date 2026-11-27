@@ -46,7 +46,7 @@ export function Game({
   const g = view.game!;
   const zoom = useFitZoom();
   // 소리: 돌을 놓으면 묵직하게, 기사로 뒤집으면 뒤집기 + 돌, 카드 뽑기는 미끄러짐
-  useLogSounds(g.log, (e) => (e.type === 'place' ? 'stone' : e.type === 'hero' ? ['flip', 'stone'] : e.type === 'draw' ? 'deal' : e.type === 'pass' ? 'tick' : null));
+  useLogSounds(g.log, (e) => (e.type === 'place' ? ['card', 'stone'] : e.type === 'hero' ? ['drum', 'stone'] : e.type === 'draw' ? (e.reshuffled ? 'riffle' : 'deal') : e.type === 'pass' ? 'tick' : null), { me: g.me, describe: (e) => describe(e, view.seats), stamp: (e) => (e.type === 'hero' ? { text: '기사 출격!', tone: 'hot', shake: 1.2 } : null) });
   const c = g.config;
   const names = view.seats;
   const me = g.me;
@@ -563,7 +563,7 @@ function PlayerRow({
   const hand = g.hands[seat];
   const stonesOnBoard = g.board.filter((v) => v === seat).length;
   return (
-    <div className={`player-row ${active ? 'active' : ''} ${mine ? 'mine' : ''}`} style={seatVars(seat)}>
+    <div data-seat={seat} className={`player-row ${active ? 'active' : ''} ${mine ? 'mine' : ''}`} style={seatVars(seat)}>
       <div className="board-head small">
         <span className="name">
           <EmoteBubble e={emote} />

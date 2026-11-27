@@ -1,7 +1,7 @@
 /**
  * 화투 48장: 12달 × 4장. kind: gwang(광) · animal(열끗) · ribbon(띠) · pi(피) · double(쌍피).
  * ribbon 은 set 으로 홍단(red) · 청단(blue) · 초단(grass) · 그 밖(plain).
- * 그림은 web 이 직접 그린다 (원작 그림을 옮기지 않음).
+ * 그림은 web 이 직접 그린다 (전통 화투 구도를 따라 SVG로 새로 그림: hwatu-art.tsx).
  */
 export type Kind = 'gwang' | 'animal' | 'ribbon' | 'pi' | 'double';
 export interface HCard {

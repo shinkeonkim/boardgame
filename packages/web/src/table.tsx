@@ -22,6 +22,7 @@ import { GuideButton } from './Guide';
 import { CloseRoomButton, StopGameButton } from './Lobby';
 import { sound } from './sound';
 import type { Fx } from './fx';
+import { callout, noteActor, panOf, pulseSeat, shakeBoard, stamp, type StampTone } from './action-feed';
 
 export interface TableOptions {
   /** 탭 제목 (게임 이름) */
@@ -540,26 +541,81 @@ export function SideNote({ title, className = '', children }: { title: ReactNode
   );
 }
 
+/** useLogSounds의 셋째 인자: 남이 둔 것을 「보이게」 */
+export interface LogFeed<E> {
+  /** 내 자리 (내 것은 말풍선·날아오기 없음, 소리만) */
+  me?: number;
+  /** 그 항목을 한 문장으로 (보통 Ticker에 쓰는 describe) → 그 사람 자리 옆 말풍선 */
+  describe?: (e: E) => ReactNode;
+  /** 누가 했는지 (기본: e.seat) */
+  actor?: (e: E) => number | null | undefined;
+  /** 큰 순간이면 판 가운데 도장 (쪽!, 공격 +2, 요트!) */
+  stamp?: (e: E) => StampSpec | string | null | undefined | false;
+}
+export interface StampSpec {
+  text: ReactNode;
+  tone?: StampTone;
+  /** 판 흔들기 세기 (0이면 안 흔듦) */
+  shake?: number;
+  /** 남이 한 것일 때만 */
+  othersOnly?: boolean;
+}
+
+const seatOf = (e: unknown): number | null => {
+  const s = (e as { seat?: unknown }).seat;
+  return typeof s === 'number' ? s : null;
+};
+
 /**
  * 기록(log)에 새 항목이 생길 때마다 소리. pick이 그 항목에 맞는 효과음(들)을 고른다.
- * 처음 화면을 열었을 때(이미 쌓인 기록)는 울리지 않는다. 한 번에 여러 개 생기면 조금씩 늦게 (최대 6개).
+ * 처음 화면을 열었을 때(이미 쌓인 기록)는 울리지 않는다. 한 번에 여러 개 생기면 차례로 (최대 6개).
+ * feed를 주면 남이 둔 것을 보여 준다: 자리 반짝 + 말풍선 + 새 카드가 그 자리에서 날아옴 + 소리가 그 자리 쪽에서.
  */
-export function useLogSounds<E extends { n: number }>(log: E[], pick: (e: E) => Fx | Fx[] | null | undefined) {
+export function useLogSounds<E extends { n: number }>(log: E[], pick: (e: E) => Fx | Fx[] | null | undefined, feed: LogFeed<E> = {}) {
   const last = useRef<number | null>(null);
   const lastN = log.length ? log[log.length - 1].n : 0;
+  const actorOf = (e: E) => (feed.actor ? feed.actor(e) : seatOf(e)) ?? null;
+  // 렌더 중에 적어 둠: 이 렌더로 새로 생긴 카드·말은 그 사람 자리에서 날아온다 (useFlip)
+  if (last.current !== null && lastN > last.current) {
+    const fresh = log.filter((e) => e.n > last.current!);
+    const who = fresh.map(actorOf).filter((s): s is number => s !== null && s !== feed.me);
+    if (who.length) noteActor(who[who.length - 1]);
+  }
   useEffect(() => {
     const prev = last.current;
     last.current = lastN;
     if (prev === null || lastN <= prev) return;
     const fresh = log.filter((e) => e.n > prev).slice(-6);
-    let delay = 0;
+    const visible = typeof document === 'undefined' || !document.hidden;
+    let at = 0; // 이 항목을 보여 줄 때 (초)
     for (const e of fresh) {
+      const who = actorOf(e);
+      const others = who !== null && feed.me !== undefined && who !== feed.me;
       const f = pick(e);
+      let d = at;
+      const pan = who !== null && who !== feed.me ? panOf(who) : 0;
       for (const name of f ? (Array.isArray(f) ? f : [f]) : []) {
-        sound.fx(name, delay);
-        delay += 0.05;
+        sound.fx(name, d, others ? { pan, gain: 0.85 } : { pan });
+        d += 0.05;
       }
-      delay += 0.12;
+      if (visible) {
+        const st = feed.stamp?.(e);
+        const spec: StampSpec | null = !st ? null : typeof st === 'string' ? { text: st } : st;
+        const text = others && feed.describe ? feed.describe(e) : null;
+        const show = () => {
+          if (others && who !== null) {
+            pulseSeat(who);
+            if (text) callout(who, text);
+          }
+          if (spec && (!spec.othersOnly || others)) {
+            stamp(spec.text, spec.tone ?? 'hot');
+            if (spec.shake) shakeBoard(spec.shake);
+          }
+        };
+        if (at === 0) show();
+        else window.setTimeout(show, at * 1000); // 다음 변화가 와도 취소하지 않음 (보여 줄 건 끝까지)
+      }
+      at += others || f ? 0.5 : 0.15;
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [lastN]);

@@ -21,7 +21,7 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
     mySub: g.phase === 'team' ? '원정대를 골라요' : g.phase === 'vote' ? '찬성? 반대?' : g.phase === 'mission' ? '원정 카드를 내요' : '예언자를 찾아요',
   });
   // 소리: 원정대 발표는 종이, 투표 공개는 카드 뒤집기, 원정 성공은 띵/실패는 쿵, 사냥은 경고
-  useLogSounds(g.log, (e) => (e.type === 'team' ? 'paper' : e.type === 'vote' ? (e.approved ? 'flip' : ['flip', 'tick']) : e.type === 'mission' ? (e.success ? ['shuffle', 'success'] : ['shuffle', 'thud']) : e.type === 'hunt' ? ['alert', e.hit ? 'thud' : 'success'] : e.type === 'end' ? 'win' : null));
+  useLogSounds(g.log, (e) => (e.type === 'team' ? ['paper', 'stamp'] : e.type === 'vote' ? (e.approved ? ['flip', 'stamp'] : ['flip', 'buzzer']) : e.type === 'mission' ? (e.success ? ['riffle', 'success'] : ['riffle', 'thud']) : e.type === 'hunt' ? ['heartbeat', e.hit ? 'thud' : 'success'] : e.type === 'end' ? 'win' : null), { me: t.me, describe: (e) => describe(e), stamp: (e) => (e.type === 'vote' ? { text: e.approved ? '원정대 승인' : '부결', tone: e.approved ? 'good' : 'bad' } : e.type === 'mission' ? { text: e.success ? '임무 성공!' : `임무 실패 (${e.fails})`, tone: e.success ? 'good' : 'hot', shake: e.success ? 0 : 1.2 } : e.type === 'hunt' ? { text: e.hit ? '저격 성공!' : '저격 실패', tone: 'hot', shake: 1.4 } : null) });
   const names = t.names;
   const me = t.me;
   const myTurn = t.myTurn;
@@ -127,6 +127,7 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
               return (
                 <button
                   key={s}
+                  data-seat={s}
                   className={`sm-seat ${onTeam ? 'on-team' : ''} ${g.actors.includes(s) ? 'acting' : ''} ${s === me ? 'me' : ''} ${known ? `known-${known}` : ''} ${role ? (isSpy(role) ? 'reveal-spy' : 'reveal-agent') : ''}`}
                   style={{ left: `${x}%`, top: `${y}%`, ['--seat' as string]: seatColor(s) }}
                   onClick={() => toggle(s)}

@@ -64,7 +64,7 @@ export function Game({
   const g = view.game!;
   const zoom = useFitZoom();
   // 소리: 탐험대에 내거나 버리면 카드 탁, 가져오면 미끄러짐
-  useLogSounds(g.log, (e) => (e.move.type === 'draw' ? 'deal' : 'card'));
+  useLogSounds(g.log, (e) => (e.move.type === 'draw' ? 'deal' : e.move.type === 'discard' ? 'pageTurn' : 'card'), { me: g.me, actor: (e) => e.player, describe: (e) => describe(e, view.seats) });
   const c = g.config;
   const range: [number, number] = [c.minValue, c.maxValue];
   // 새 판마다 카드를 섞고 나눠 주는 연출 (@bg/web deal-fx)
@@ -631,7 +631,7 @@ const PlayerBoard = forwardRef<
   const cols = view.expeditions[seat];
   const score = scorePlayer(c, cols);
   return (
-    <div ref={ref} className={`board ${compact ? 'compact' : ''} ${active ? 'active' : ''}`}>
+    <div ref={ref} data-seat={seat} className={`board ${compact ? 'compact' : ''} ${active ? 'active' : ''}`}>
       <div className="board-head small">
         <span className="name">
           <EmoteBubble e={emote} />

@@ -20,7 +20,7 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
     mySub: g.phase === 'clue' ? '힌트 한 단어를 써요' : '정답을 맞혀요',
   });
   // 소리: 힌트가 모이면 쪽지 소리(겹치면 똑), 맞히면 종·틀리면 실패음
-  useLogSounds(g.log, (e) => (e.type === 'clues' ? (e.erased ? ['paper', 'tick'] : 'paper') : e.type === 'guess' ? (e.ok ? 'success' : e.guess === null ? 'tick' : 'fail') : e.type === 'end' ? 'win' : null));
+  useLogSounds(g.log, (e) => (e.type === 'clues' ? (e.erased ? ['scribble', 'tear'] : 'scribble') : e.type === 'guess' ? (e.ok ? ['ding', 'success'] : e.guess === null ? 'tick' : 'buzzer') : e.type === 'end' ? 'win' : null), { me: t.me, describe: (e) => describe(e), stamp: (e) => (e.type === 'guess' && e.ok ? { text: '정답!', tone: 'good', shake: 0.5 } : e.type === 'guess' && e.guess !== null ? { text: '아쉬워요', tone: 'bad' } : null) });
   const names = t.names;
   const me = t.me;
   const myTurn = t.myTurn;

@@ -21,7 +21,7 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
     mySub: g.attack > 0 ? `공격 ${g.attack}장! 막거나 받아요` : '카드를 내요',
   });
   // 소리: 내면 카드 탁(공격이면 경고), 가져오면 미끄러짐(많이면 여러 장), 원카드 외치기는 종, 잡히면 실패음, 나가면 축하
-  useLogSounds(g.log, (e) => (e.type === 'play' ? (e.attack > 0 ? ['card', 'alert'] : 'card') : e.type === 'draw' ? (e.count > 1 ? 'shuffle' : 'deal') : e.type === 'call' ? (e.caught ? ['alert', 'fail'] : 'bell') : e.type === 'out' ? (e.bankrupt ? 'thud' : 'success') : e.type === 'end' ? 'win' : null));
+  useLogSounds(g.log, (e) => (e.type === 'play' ? (e.attack > 0 ? ['cardSnap', 'alert'] : 'cardSnap') : e.type === 'draw' ? (e.count > 1 ? ['riffle', 'thud'] : 'deal') : e.type === 'call' ? (e.caught ? ['alert', 'buzzer'] : ['bell', 'pop']) : e.type === 'out' ? (e.bankrupt ? 'thud' : 'success') : e.type === 'end' ? 'win' : null), { me: t.me, describe: (e) => describe(e), stamp: (e) => (e.type === 'play' && e.attack > 0 ? { text: `공격 +${e.attack}!`, tone: 'hot', shake: Math.min(1.6, 0.4 + e.attack * 0.25) } : e.type === 'call' ? { text: e.caught ? '원카드 못 외침!' : '원카드!', tone: e.caught ? 'bad' : 'hot', shake: 0.6 } : e.type === 'out' && e.bankrupt ? { text: '파산', tone: 'bad' } : null) });
   // 새 판마다 카드를 섞고 나눠 주는 연출 (@bg/web deal-fx)
   useDealFx(`${g.round}`, { per: 3, seats: '.oc-opp', initial: g.log.length <= 2 });
   const names = t.names;
@@ -98,7 +98,7 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
               const n = g.handCounts[s];
               const out = g.out.includes(s);
               return (
-                <div key={s} className={`oc-opp ${g.turn === s && !calling ? 'acting' : ''} ${out ? 'out' : ''} ${n === 1 && !out ? 'one' : ''}`} style={{ ['--seat' as string]: seatColor(s) }}>
+                <div key={s} data-seat={s} className={`oc-opp ${g.turn === s && !calling ? 'acting' : ''} ${out ? 'out' : ''} ${n === 1 && !out ? 'one' : ''}`} style={{ ['--seat' as string]: seatColor(s) }}>
                   <span className="oc-opp-name">
                     <EmoteBubble e={bySeat.get(s)} />
                     <SeatDot seat={s} size={11} /> <b>{names[s]}</b>
@@ -129,7 +129,7 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
                 {Array.from({ length: Math.min(5, Math.max(0, g.discardCount - 1)) }, (_, i) => (
                   <span key={i} className="oc-under" style={{ transform: `rotate(${((i * 53) % 17) - 8}deg) translate(${((i * 29) % 7) - 3}px, ${i}px)` }} aria-hidden />
                 ))}
-                <PlayingCard key={g.top.id + g.discardCount} card={g.top} size="lg" className="oc-top" />
+                <PlayingCard key={g.top.id + g.discardCount} card={g.top} size="lg" className="oc-top" flip={`oc${g.top.id}`} />
               </span>
               <span className="small">버린 카드</span>
             </div>

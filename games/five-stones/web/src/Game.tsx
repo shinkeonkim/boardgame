@@ -21,7 +21,7 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
     mySub: `${g.myStone === null ? '' : stoneName(g.myStone)} 돌을 놓아요`,
   });
   // 소리: 돌 놓기는 나무 딱, 이기면 축하
-  useLogSounds(g.log, (e) => (e.type === 'place' ? 'stone' : e.type === 'win' ? 'win' : e.type === 'draw' ? 'tick' : null));
+  useLogSounds(g.log, (e) => (e.type === 'place' ? 'clack' : e.type === 'win' ? 'win' : e.type === 'draw' ? 'tick' : null), { me: t.me, describe: (e) => describe(e), stamp: (e) => (e.type === 'win' && e.line ? { text: '오목!', tone: 'good', shake: 0.6 } : null) });
   const names = t.names;
   const me = t.me;
   const myTurn = t.myTurn;

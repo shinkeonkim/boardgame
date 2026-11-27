@@ -27,7 +27,7 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
   const c = g.config;
   const t = useTable(view, notify, { title: 'Bluff Dice', turn: g.turn, playing: g.status === 'playing', stepKey: `${g.hand}-${g.phase}-${g.bids.length}`, mySub: g.phase === 'reveal' ? '주사위를 굴려 다음 판' : '더 높게 걸거나 거짓말!' });
   // 소리: 호가는 칩, 「거짓말!」은 경고 + 컵을 여는 주사위, 탈락은 쿵 / 새로 굴리면 컵 흔들기
-  useLogSounds(g.log, (e) => (e.type === 'bid' ? 'chip' : e.type === 'call' ? ['alert', 'dice'] : e.type === 'out' ? 'thud' : e.type === 'win' ? 'win' : null));
+  useLogSounds(g.log, (e) => (e.type === 'bid' ? ['chip', 'wood'] : e.type === 'call' ? ['alert', 'cup'] : e.type === 'out' ? 'thud' : e.type === 'win' ? 'win' : null), { me: t.me, describe: (e) => describe(e, t.names), stamp: (e) => (e.type === 'call' ? { text: e.kind === 'exact' ? '딱 맞춰!' : '거짓말!', tone: 'hot', shake: 1 } : e.type === 'out' ? { text: '탈락', tone: 'bad' } : null) });
   useChangeSound(`${g.round}-${g.hand}`, 'cup', g.status === 'playing');
   const names = t.names;
   const me = t.me;

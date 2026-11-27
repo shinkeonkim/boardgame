@@ -35,7 +35,7 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
   const c = g.config;
   const t = useTable(view, notify, { title: 'Gem Guild', turn: g.turn, playing: g.status === 'playing', mySub: '보석 · 예약 · 사기 중 하나' });
   // 소리: 보석 가져오기·버리기는 칩 여러 개, 사기는 카드 + 동전, 예약은 카드, 귀족은 축하
-  useLogSounds(g.log, (e) => (e.type === 'take' || e.type === 'discard' ? 'chips' : e.type === 'buy' ? ['card', 'coins'] : e.type === 'reserve' ? 'deal' : e.type === 'noble' ? 'success' : e.type === 'final' ? 'bell' : null));
+  useLogSounds(g.log, (e) => (e.type === 'take' ? ['crystal', 'crystal'] : e.type === 'discard' ? 'chips' : e.type === 'buy' ? ['cardSnap', 'coins'] : e.type === 'reserve' ? ['deal', 'coin'] : e.type === 'noble' ? ['fanfare'] : e.type === 'final' ? 'bell' : null), { me: t.me, describe: (e) => describe(e), stamp: (e) => (e.type === 'noble' ? { text: '귀족 방문!', tone: 'good' } : e.type === 'final' ? { text: '마지막 바퀴!', tone: 'hot', shake: 0.6 } : null) });
   const names = t.names;
   const me = t.me;
   const myTurn = t.myTurn;

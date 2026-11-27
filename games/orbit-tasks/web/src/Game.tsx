@@ -19,7 +19,7 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
     stepKey: `${g.round}-${g.phase}-${g.trickNo}-${g.trick.length}-${g.tasks.filter((x) => x.owner !== null).length}`,
     mySub: draft ? '맡을 과제를 골라요' : '카드를 1장 내요',
   });
-  useLogSounds(g.log, (e) => (e.type === 'play' ? 'card' : e.type === 'take' ? 'paper' : e.type === 'signal' ? 'bell' : e.type === 'trick' ? (e.done.length ? ['sweep', 'success'] : 'sweep') : e.type === 'result' ? (e.success ? 'win' : 'fail') : e.type === 'mission' ? 'shuffle' : null));
+  useLogSounds(g.log, (e) => (e.type === 'play' ? 'cardSnap' : e.type === 'take' ? 'pageTurn' : e.type === 'signal' ? ['beep', 'static'] : e.type === 'trick' ? (e.done.length ? ['sweep', 'ding'] : 'sweep') : e.type === 'result' ? (e.success ? 'win' : 'fail') : e.type === 'mission' ? 'riffle' : null), { me: t.me, describe: (e) => describe(e), stamp: (e) => (e.type === 'result' ? { text: e.success ? '임무 성공!' : '임무 실패', tone: e.success ? 'good' : 'bad', shake: e.success ? 0.5 : 1 } : e.type === 'signal' ? { text: '신호!', tone: 'info', othersOnly: true } : null) });
   const names = t.names;
   const me = t.me;
   const myTurn = t.myTurn;

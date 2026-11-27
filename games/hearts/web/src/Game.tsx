@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import type { RoomView } from '@bg/core';
-import { Card, GameConfig, GameView, LogEntry } from '@bg/hearts-engine';
+import { Card, GameConfig, GameView, LogEntry, isQueenOfSpades } from '@bg/hearts-engine';
 import { CardBack, EmoteBubble, PlayingCard, SeatDot, cardName, seatColor } from '@bg/ui';
 import { GameScreenProps, ResultSheet, SeatList, SideNote, TableBanner, TableEmotes, TableLayout, TableTopBar, Ticker, emotesBySeat, flyClone, rankOf, useLogSounds, usePeek, useTable } from '@bg/web';
 import { DIR_TEXT, TakenBadge } from './theme';
@@ -20,7 +20,7 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
     stepKey: `${g.round}-${g.phase}-${g.trickNo}-${g.trick.length}`,
     mySub: passing ? '건넬 카드 3장을 골라요' : '카드를 1장 내요',
   });
-  useLogSounds(g.log, (e) => (e.type === 'play' ? 'card' : e.type === 'trick' ? (e.points > 0 ? ['sweep', 'thud'] : 'sweep') : e.type === 'pass' ? 'shuffle' : e.type === 'broken' ? 'alert' : e.type === 'end' ? 'win' : null));
+  useLogSounds(g.log, (e) => (e.type === 'play' ? 'cardSnap' : e.type === 'trick' ? (e.points > 0 ? ['sweep', 'thud'] : 'sweep') : e.type === 'pass' ? 'riffle' : e.type === 'broken' ? ['alert', 'heartbeat'] : e.type === 'end' ? 'win' : null), { me: t.me, describe: (e) => describe(e), stamp: (e) => (e.type === 'broken' ? { text: '하트 깨짐!', tone: 'hot', shake: 0.6 } : e.type === 'trick' && e.cards.some(isQueenOfSpades) ? { text: '스페이드 퀸!', tone: 'bad', shake: 1 } : e.type === 'hand' && e.moon !== null ? { text: '달 쏘기!', tone: 'good', shake: 1.4 } : null) });
   const names = t.names;
   const me = t.me;
   const myTurn = t.myTurn;
@@ -127,7 +127,7 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
               {shown.length === 0 && <span className="hr-empty small">{passing ? '모두 건넬 카드를 고르는 중' : `${names[g.turn]} 님이 시작해요`}</span>}
               {shown.map((p, i) => (
                 <div key={p.card.id} className={`hr-play ${g.lastTrick && !g.trick.length && p.seat === g.lastTrick.winner ? 'won' : ''}`} style={{ ['--i' as string]: i }}>
-                  <PlayingCard card={p.card} size="md" className="flip-reveal" />
+                  <PlayingCard card={p.card} size="md" className="flip-reveal" flip={`h${p.card.id}`} />
                   <span className="hr-play-name small">
                     <SeatDot seat={p.seat} size={8} /> {p.seat === me ? '나' : names[p.seat]}
                   </span>

@@ -44,9 +44,7 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
     mySub: g.phase === 'clue' ? '한 단어와 숫자로 힌트를 주세요' : `「${g.clue?.word}」 힌트로 단어를 골라요`,
   });
   // 소리: 힌트는 쪽지, 단어를 고르면 카드 뒤집기 + 맞으면 띵/틀리면 둔탁, 암살자는 쿵
-  useLogSounds(g.log, (e) =>
-    e.type === 'clue' ? 'paper' : e.type === 'guess' ? (e.key === 'X' ? ['flip', 'thud'] : e.key === e.team ? ['flip', 'bell'] : ['flip', 'fail']) : e.type === 'win' ? 'win' : null,
-  );
+  useLogSounds(g.log, (e) => (e.type === 'clue' ? ['static', 'beep'] : e.type === 'guess' ? (e.key === 'X' ? ['cardSnap', 'thud'] : e.key === e.team ? ['cardSnap', 'ding'] : ['cardSnap', 'buzzer']) : e.type === 'win' ? 'win' : null), { me: t.me, describe: (e) => describe(e, t.names), stamp: (e) => (e.type === 'guess' && e.key === 'X' ? { text: '암살자!', tone: 'hot', shake: 1.6 } : e.type === 'clue' ? { text: `${e.word} · ${e.count}`, tone: 'info', othersOnly: true } : null) });
   const names = t.names;
   const me = t.me;
   const { bySeat } = emotesBySeat(emotes);
@@ -118,7 +116,7 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
       {[g.spymasters[team], ...g.operatives[team]].map((seat) => {
         const m = view.members.find((x) => x.seat === seat);
         return (
-          <div key={seat} className={`co-member ${g.actors.includes(seat) ? 'acting' : ''}`}>
+          <div key={seat} data-seat={seat} className={`co-member ${g.actors.includes(seat) ? 'acting' : ''}`}>
             <EmoteBubble e={bySeat.get(seat)} />
             <span className="co-role">{seat === g.spymasters[team] ? iconize('🕵️ 팀장') : '요원'}</span>
             <b>{names[seat]}</b>

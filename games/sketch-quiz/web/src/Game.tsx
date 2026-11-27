@@ -12,7 +12,7 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
   const g = v.game!;
   const t = useTable(view, notify, { title: 'Sketch Quiz', turn: g.drawer, playing: g.status === 'playing', simultaneous: g.phase !== 'pick', quiet: g.phase !== 'pick', stepKey: `${g.turnNo}-${g.phase}`, mySub: '그릴 단어를 골라요' });
   // 소리: 차례가 바뀌면 종이, 맞히면 성공, 아깝다는 톡, 공개는 종, 끝은 축하
-  useLogSounds(g.log, (e) => (e.type === 'turn' ? 'paper' : e.type === 'correct' ? 'success' : e.type === 'guess' ? (e.close ? 'pop' : null) : e.type === 'reveal' ? 'bell' : e.type === 'end' ? 'win' : null));
+  useLogSounds(g.log, (e) => (e.type === 'turn' ? ['pageTurn', 'scribble'] : e.type === 'correct' ? ['ding', 'success'] : e.type === 'guess' ? (e.close ? 'pop' : null) : e.type === 'reveal' ? 'bell' : e.type === 'end' ? 'win' : null), { me: t.me, actor: (e) => ('seat' in e ? e.seat : 'drawer' in e ? e.drawer : null), stamp: (e) => (e.type === 'correct' && e.order === 0 ? { text: '첫 정답!', tone: 'good', shake: 0.5 } : e.type === 'reveal' ? { text: e.word, tone: 'info' } : null) });
   const names = t.names;
   const me = t.me;
   const drawing = me === g.drawer;

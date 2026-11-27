@@ -13,7 +13,7 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
   const c = g.config;
   const t = useTable(view, notify, { title: 'Flag Line', turn: g.turn, playing: g.status === 'playing', mySub: '카드를 깃발에 놓아요' });
   // 소리: 카드를 깃발 앞에 탁, 깃발을 차지하면 축하
-  useLogSounds(g.log, (e) => (e.type === 'play' ? 'card' : e.type === 'claim' ? 'success' : e.type === 'win' ? 'win' : null));
+  useLogSounds(g.log, (e) => (e.type === 'play' ? 'cardSnap' : e.type === 'claim' ? ['drum', 'success'] : e.type === 'win' ? 'win' : null), { me: t.me, describe: (e) => describe(e), stamp: (e) => (e.type === 'claim' ? { text: `${e.flag + 1}번 깃발 점령!`, tone: e.seat === t.me ? 'good' : 'hot', shake: 0.6 } : null) });
   const names = t.names;
   const me = t.me;
   const myTurn = t.myTurn;
@@ -155,7 +155,7 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
             {Array.from({ length: g.players }, (_, s) => {
               const m = view.members.find((x) => x.seat === s);
               return (
-                <div key={s} className={`fl-player ${g.turn === s ? 'acting' : ''}`}>
+                <div key={s} data-seat={s} className={`fl-player ${g.turn === s ? 'acting' : ''}`}>
                   <EmoteBubble e={bySeat.get(s)} />
                   <span className={`fl-dot side${s % 2 === mySide ? 'm' : 't'}`} />
                   <b>{names[s]}</b>

@@ -15,7 +15,7 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
   const c = g.config;
   const t = useTable(view, notify, { title: 'Number Runs', turn: g.turn, playing: g.status === 'playing', mySub: '타일을 내거나 1장 가져와요' });
   // 소리: 타일을 내면 여러 개 딱, 가져오면 하나, 이기면 축하
-  useLogSounds(g.log, (e) => (e.type === 'play' ? 'tiles' : e.type === 'draw' ? 'tile' : e.type === 'win' ? 'win' : null));
+  useLogSounds(g.log, (e) => (e.type === 'play' ? ['tiles', 'tile'] : e.type === 'draw' ? 'tile' : e.type === 'win' ? 'win' : null), { me: t.me, describe: (e) => describe(e), stamp: (e) => (e.type === 'play' && e.first ? { text: '첫 등록!', tone: 'good', othersOnly: true } : null) });
   const names = t.names;
   const me = t.me;
   const myTurn = t.myTurn;

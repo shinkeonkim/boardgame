@@ -36,7 +36,7 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
   const discardIds = new Set(g.discards.flat().map((d) => d.id));
   const pile = g.log.flatMap((e) => (e.type === 'play' && e !== lastPlay && discardIds.has(e.card.id) ? [e] : [])).slice(-4);
   // 소리: 편지(카드)를 내면 종이, 탈락은 쿵, 판이 끝나면 축하
-  useLogSounds(g.log, (e) => (e.type === 'play' ? ['paper', 'card'] : e.type === 'out' ? 'thud' : e.type === 'round' ? 'success' : null));
+  useLogSounds(g.log, (e) => (e.type === 'play' ? ['paper', 'stamp'] : e.type === 'out' ? ['tear', 'thud'] : e.type === 'round' ? 'success' : null), { me: t.me, describe: (e) => describe(e, t.names), stamp: (e) => (e.type === 'out' ? { text: '탈락!', tone: 'hot', shake: 1.2 } : e.type === 'round' ? { text: '편지 전달!', tone: 'good' } : null) });
   // 새 판마다 카드를 섞고 나눠 주는 연출 (@bg/web deal-fx)
   useDealFx(`${g.round}`, { per: 1, initial: g.log.length <= 2 });
   const names = t.names;

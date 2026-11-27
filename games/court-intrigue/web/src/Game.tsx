@@ -64,8 +64,7 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
               ? 'thud'
               : e.type === 'win'
                 ? 'win'
-                : null,
-  );
+                : null, { me: t.me, describe: (e) => describe(e, t.names), stamp: (e) => (e.type === 'challenge' ? { text: e.ok ? '의심 성공!' : '의심 실패', tone: e.ok ? 'hot' : 'bad', shake: e.ok ? 1 : 0 } : e.type === 'block' ? { text: '막기!', tone: 'info' } : e.type === 'act' && (e.action === 'coup' || e.action === 'assassinate') ? { text: e.action === 'coup' ? '쿠데타!' : '암살!', tone: 'hot', shake: 1.4 } : e.type === 'out' ? { text: '탈락', tone: 'bad' } : null) });
   // 새 판마다 카드를 섞고 나눠 주는 연출 (@bg/web deal-fx)
   useDealFx(`${g.round}`, { per: 2, seats: '.ci-seat', initial: g.log.length <= 1 });
   const names = t.names;
@@ -135,7 +134,7 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
                 const out = g.influence[s] === 0;
                 const acting = g.actors.includes(s);
                 return (
-                  <div key={s} className={`ci-seat ${out ? 'out' : ''} ${acting ? 'acting' : ''} ${pend?.target === s ? 'targeted' : ''}`} style={{ ['--seat' as string]: seatColor(s) }}>
+                  <div key={s} data-seat={s} className={`ci-seat ${out ? 'out' : ''} ${acting ? 'acting' : ''} ${pend?.target === s ? 'targeted' : ''}`} style={{ ['--seat' as string]: seatColor(s) }}>
                     <div className="ci-seat-head small">
                       <span className="seat-name">
                         <EmoteBubble e={bySeat.get(s)} />

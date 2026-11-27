@@ -8,8 +8,20 @@
  * prefers-reduced-motion이면 움직이지 않는다.
  */
 import { RefObject, useEffect, useLayoutEffect, useRef } from 'react';
+import { clearActor, peekActor, seatAnchor } from './action-feed';
 
 type Snap = Map<string, DOMRect>;
+
+/** 새 요소가 날아올 출발점: data-flip-from="선택자"(예: 더미) > 방금 둔 사람 자리 */
+function fromOf(node: HTMLElement, actor: number | null): Element | null {
+  const sel = node.dataset.flipFrom;
+  if (sel) {
+    if (sel === 'none') return null;
+    if (/^\d+$/.test(sel)) return seatAnchor(Number(sel));
+    return document.querySelector(sel);
+  }
+  return actor === null ? null : seatAnchor(actor);
+}
 
 function measure(root: HTMLElement): Snap {
   const out: Snap = new Map();
@@ -32,7 +44,11 @@ export function useFlip(root: RefObject<HTMLElement>) {
     const before = prev.current;
     const now = measure(el);
     prev.current = now;
-    if (!before || reduced()) return;
+    const actor = peekActor();
+    if (!before || reduced()) {
+      clearActor();
+      return;
+    }
     el.querySelectorAll<HTMLElement>('[data-flip]').forEach((node) => {
       const id = node.dataset.flip!;
       const r = now.get(id);
@@ -51,9 +67,28 @@ export function useFlip(root: RefObject<HTMLElement>) {
           easing: 'cubic-bezier(0.2, 0.8, 0.2, 1)',
         });
       } else if (node.dataset.flipEnter !== 'none') {
-        node.animate([{ opacity: 0, transform: 'scale(0.7)' }, { opacity: 1, transform: 'scale(1)' }], { duration: 260, easing: 'cubic-bezier(0.2, 0.8, 0.2, 1)' });
+        // 남이 방금 둔 것: 그 사람 자리(또는 data-flip-from이 가리키는 곳)에서 날아온다
+        const src = fromOf(node, actor);
+        if (src && !node.closest('[data-seat]')) {
+          const a = src.getBoundingClientRect();
+          const scale = node.offsetWidth ? r.width / node.offsetWidth : 1;
+          const s = scale > 0.2 ? scale : 1;
+          const dx = (a.left + a.width / 2 - (r.left + r.width / 2)) / s;
+          const dy = (a.top + a.height / 2 - (r.top + r.height / 2)) / s;
+          const tilt = dx > 0 ? 14 : -14;
+          node.animate(
+            [
+              { transform: `translate(${dx}px, ${dy}px) scale(0.45) rotate(${tilt}deg)`, opacity: 0.3, zIndex: 6 },
+              { transform: `translate(${dx * 0.3}px, ${dy * 0.3 - 18}px) scale(1.12) rotate(${tilt / 3}deg)`, opacity: 1, zIndex: 6, offset: 0.6 },
+              { transform: 'translate(0, 0) scale(1) rotate(0deg)', opacity: 1, zIndex: 6 },
+            ],
+            { duration: 560, easing: 'cubic-bezier(0.25, 0.8, 0.3, 1)' },
+          );
+          node.animate([{ boxShadow: '0 0 0 3px var(--accent, #f5b301)' }, { boxShadow: '0 0 0 0 transparent' }], { duration: 1400, delay: 520, easing: 'ease-out' });
+        } else node.animate([{ opacity: 0, transform: 'scale(0.7)' }, { opacity: 1, transform: 'scale(1)' }], { duration: 260, easing: 'cubic-bezier(0.2, 0.8, 0.2, 1)' });
       }
     });
+    clearActor();
   });
 
   // 스크롤·화면 크기 변화로 위치가 바뀐 건 움직임이 아니다 → 다시 재 둔다

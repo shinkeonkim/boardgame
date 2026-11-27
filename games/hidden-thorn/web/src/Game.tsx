@@ -40,7 +40,7 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
     mySub: g.phase === 'flip' ? '뒤집을 원판을 골라요' : g.phase === 'bidding' ? '더 부르거나 포기' : '원판을 놓거나 도전',
   });
   // 소리: 원판(칩) 놓기·호가는 딸깍, 뒤집어 장미면 뒤집기, 가시면 쿵, 성공은 축하
-  useLogSounds(g.log, (e) => (e.type === 'bid' ? 'chip' : e.type === 'pass' ? 'tick' : e.type === 'flip' ? (e.disc === 'thorn' ? ['flip', 'thud'] : 'flip') : e.type === 'success' ? 'success' : e.type === 'fail' ? 'fail' : e.type === 'win' ? 'win' : null));
+  useLogSounds(g.log, (e) => (e.type === 'bid' ? 'chipStack' : e.type === 'pass' ? 'tick' : e.type === 'flip' ? (e.disc === 'thorn' ? ['flip', 'heartbeat', 'thud'] : ['flip', 'pluck']) : e.type === 'success' ? 'success' : e.type === 'fail' ? 'fail' : e.type === 'win' ? 'win' : null), { me: t.me, describe: (e) => describe(e, t.names), stamp: (e) => (e.type === 'flip' && e.disc === 'thorn' ? { text: '가시!', tone: 'hot', shake: 1.3 } : e.type === 'success' ? { text: '도전 성공!', tone: 'good' } : e.type === 'out' ? { text: '탈락', tone: 'bad' } : null) });
   useChangeSound(g.matCounts.reduce((a, b) => a + b, 0), 'chip', g.status === 'playing');
   const names = t.names;
   const me = t.me;
@@ -100,7 +100,7 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
               const m = view.members.find((x) => x.seat === s);
               const canFlip = g.phase === 'flip' && myTurn && s !== me && g.flippedDiscs[s].length < g.matCounts[s];
               return (
-                <div key={s} className={`ht-mat ${out ? 'out' : ''} ${g.actors.includes(s) ? 'acting' : ''} ${canFlip ? 'can-flip' : ''} ${s === me ? 'mine' : ''}`} style={{ ['--seat' as string]: seatColor(s) }} onClick={canFlip ? () => flip(s) : undefined}>
+                <div key={s} data-seat={s} className={`ht-mat ${out ? 'out' : ''} ${g.actors.includes(s) ? 'acting' : ''} ${canFlip ? 'can-flip' : ''} ${s === me ? 'mine' : ''}`} style={{ ['--seat' as string]: seatColor(s) }} onClick={canFlip ? () => flip(s) : undefined}>
                   <div className="ht-mat-head small">
                     <span className="seat-name">
                       <EmoteBubble e={bySeat.get(s)} />

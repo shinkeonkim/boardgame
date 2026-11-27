@@ -20,7 +20,39 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
     stepKey: `${g.round}-${g.phase}-${g.handCounts.join('.')}`,
     mySub: g.phase === 'gostop' ? '고? 스톱?' : '카드를 내요',
   });
-  useLogSounds(g.log, (e) => (e.type === 'play' ? (e.special.length ? 'chip' : e.took.length ? 'card' : 'card') : e.type === 'go' ? 'bell' : e.type === 'stop' ? 'win' : e.type === 'deal' ? 'shuffle' : e.type === 'nagari' ? 'fizzle' : null));
+  useLogSounds(
+    g.log,
+    (e) =>
+      e.type === 'play'
+        ? e.special.length
+          ? ['slapHard', ...(e.stolen ? (['pop'] as const) : [])]
+          : e.took.length
+            ? ['slap', 'sweep']
+            : 'slap'
+        : e.type === 'go'
+          ? 'gong'
+          : e.type === 'stop'
+            ? ['gong', 'win']
+            : e.type === 'deal'
+              ? 'riffle'
+              : e.type === 'nagari'
+                ? 'fizzle'
+                : null,
+    {
+      me: t.me,
+      describe: (e) => describe(e),
+      stamp: (e) =>
+        e.type === 'play' && e.special.length
+          ? { text: `${e.special.join(' · ')}!`, tone: e.special.includes('뻑') ? 'bad' : 'hot', shake: e.special.includes('뻑') ? 0 : 1 }
+          : e.type === 'go'
+            ? { text: `${e.count}고!`, tone: 'hot', shake: e.count >= 3 ? 1.4 : 0.6 }
+            : e.type === 'stop'
+              ? { text: '스톱!', tone: 'good' }
+              : e.type === 'nagari'
+                ? { text: '나가리', tone: 'bad' }
+                : null,
+    },
+  );
   const names = t.names;
   const me = t.me;
   const myTurn = t.myTurn;
@@ -72,12 +104,15 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
     }, {}),
   ).sort((a, b) => a[0].month - b[0].month);
   const half = Math.ceil(fieldGroups.length / 2);
+  // 방금 더미에서 뒤집힌 카드는 더미에서 날아온다 (낸 카드는 낸 사람 자리에서)
+  const lastPlay = g.log[g.log.length - 1];
+  const flippedId = lastPlay?.type === 'play' ? lastPlay.flip?.id : undefined;
   const renderGroup = (list: HCard[]) => (
     <span key={list[0].month} className={`gs-month ${pending && pending.month === list[0].month ? 'target' : ''}`} data-n={list.length}>
       {list.map((x) => {
         const target = !!pending && x.month === pending.month;
         return (
-          <span key={x.id} data-flip={x.id} className="gs-month-card">
+          <span key={x.id} data-flip={x.id} data-flip-from={x.id === flippedId ? '.gs-pile' : undefined} className="gs-month-card">
             <HwatuCard card={x} w={cw} glow={target} dim={!!pending && !target} onClick={target ? () => tapTable(x) : undefined} />
           </span>
         );

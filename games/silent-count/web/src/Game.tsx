@@ -18,7 +18,7 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
     stepKey: `${g.round}`,
     mySub: '때가 되면 가장 낮은 카드를 내요',
   });
-  useLogSounds(g.log, (e) => (e.type === 'play' ? 'card' : e.type === 'miss' ? ['fail', 'thud'] : e.type === 'star' ? 'sweep' : e.type === 'clear' ? 'success' : e.type === 'level' ? 'deal' : e.type === 'end' ? (e.won ? 'win' : 'fail') : null));
+  useLogSounds(g.log, (e) => (e.type === 'play' ? 'cardSnap' : e.type === 'miss' ? ['buzzer', 'thud'] : e.type === 'star' ? ['sparkle', 'sweep'] : e.type === 'clear' ? 'success' : e.type === 'level' ? 'riffle' : e.type === 'end' ? (e.won ? 'win' : 'fail') : null), { me: t.me, describe: (e) => describe(e), stamp: (e) => (e.type === 'miss' ? { text: '삐끗!', tone: 'hot', shake: 1.2 } : e.type === 'clear' ? { text: `${e.level}단계 통과!`, tone: 'good' } : null) });
   const names = t.names;
   const me = t.me;
   const [peek, setPeek] = usePeek(`${g.status}-${g.round}`);

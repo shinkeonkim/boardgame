@@ -51,7 +51,7 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
     prevFactories.current = g.factories;
   }, [g.factories]);
   // 소리: 공장에서 가져오면 타일 여러 개, 벽에 붙이면 타일 하나, 보너스는 축하
-  useLogSounds(g.log, (e) => (e.type === 'take' ? 'tiles' : e.type === 'tile' ? 'tile' : e.type === 'bonus' ? 'success' : e.type === 'round' ? 'shuffle' : null));
+  useLogSounds(g.log, (e) => (e.type === 'take' ? ['tiles', 'tile'] : e.type === 'tile' ? ['tile', 'tile'] : e.type === 'bonus' ? ['crystal', 'success'] : e.type === 'round' ? 'tiles' : null), { me: t.me, describe: (e) => describe(e), stamp: (e) => (e.type === 'bonus' ? { text: `보너스 +${e.points}`, tone: 'good' } : e.type === 'take' && e.first ? { text: '선 플레이어 표식', tone: 'info', othersOnly: true } : null) });
   const names = t.names;
   const me = t.me;
   const myTurn = t.myTurn;

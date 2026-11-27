@@ -33,7 +33,7 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
     mySub: '주사위를 굴려요',
   });
   // 소리: 굴리면 주사위 구르는 소리, 적으면 칩 딸깍(0점은 똑), 요트는 축하
-  useLogSounds(g.log, (e) => (e.type === 'roll' ? 'dice' : e.type === 'score' ? (e.yacht && e.points >= 50 ? 'win' : e.points === 0 ? 'tick' : 'chip') : e.type === 'end' ? 'win' : null));
+  useLogSounds(g.log, (e) => (e.type === 'roll' ? 'dice' : e.type === 'score' ? (e.yacht && e.points >= 50 ? ['fanfare', 'win'] : e.points === 0 ? 'thud' : ['scribble', 'chip']) : e.type === 'end' ? 'win' : null), { me: t.me, describe: (e) => describe(e), stamp: (e) => (e.type === 'score' && e.yacht && e.points >= 50 ? { text: '요트!', tone: 'hot', shake: 1.6 } : e.type === 'score' && e.points === 0 ? { text: '0점…', tone: 'bad', othersOnly: true } : null) });
   const names = t.names;
   const me = t.me;
   const myTurn = t.myTurn;

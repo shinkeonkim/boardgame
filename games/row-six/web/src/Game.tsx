@@ -48,7 +48,7 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
     mySub: g.phase === 'take' ? '가져갈 줄을 골라 주세요' : '모두 고르면 한꺼번에 공개돼요',
   });
   // 소리: 공개는 카드를 한꺼번에 뒤집고, 놓을 때마다 탁, 줄을 가져가면 쓸어 모음
-  useLogSounds(g.log, (e) => (e.type === 'reveal' ? 'shuffle' : e.type === 'place' ? (e.took.length ? ['card', 'sweep'] : 'card') : e.type === 'round' ? 'shuffle' : null));
+  useLogSounds(g.log, (e) => (e.type === 'reveal' ? ['riffle', 'flip'] : e.type === 'place' ? (e.took.length ? ['cardSnap', 'sweep', 'thud'] : 'cardSnap') : e.type === 'round' ? 'riffle' : null), { me: t.me, describe: (e) => describe(e, t.names), stamp: (e) => (e.type === 'place' && e.took.length >= 3 ? { text: `${e.took.length}장 먹음!`, tone: 'bad', shake: 0.8 } : null) });
   // 새 판마다 카드를 섞고 나눠 주는 연출 (@bg/web deal-fx)
   useDealFx(`${g.round}`, { per: 3, initial: g.turn === 1 && g.log.length <= 2 });
   const names = t.names;

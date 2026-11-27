@@ -18,7 +18,7 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
     stepKey: `${g.round}-${g.step}-${g.active}-${g.row.length}-${g.next.filter((s) => s.claim !== null).length}`,
     mySub: g.step === 'place' ? '도미노를 왕국에 놓아요' : '다음 도미노를 골라요',
   });
-  useLogSounds(g.log, (e) => (e.type === 'place' ? 'tile' : e.type === 'claim' ? 'wood' : e.type === 'discard' ? 'fizzle' : e.type === 'end' ? 'win' : null));
+  useLogSounds(g.log, (e) => (e.type === 'place' ? ['tile', 'tile'] : e.type === 'claim' ? 'pegs' : e.type === 'discard' ? 'fizzle' : e.type === 'end' ? 'win' : null), { me: t.me, describe: (e) => describe(e), stamp: (e) => (e.type === 'discard' ? { text: '못 놓아서 버림', tone: 'bad', othersOnly: true } : null) });
   const names = t.names;
   const me = t.me;
   const myTurn = t.myTurn;

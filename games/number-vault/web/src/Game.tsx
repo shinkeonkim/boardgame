@@ -32,7 +32,7 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
   const c = g.config;
   const t = useTable(view, notify, { title: 'Number Vault', turn: g.turn, playing: g.status === 'playing', stepKey: `${g.turn}-${g.log.length ? g.log[g.log.length - 1].n : 0}-${g.phase}`, mySub: '타일을 가져오고 숫자를 맞혀요' });
   // 소리: 타일 가져오기는 딱, 맞히면 금고 철컥, 틀리면 실패음 + 내 타일 공개, 탈락은 쿵
-  useLogSounds(g.log, (e) => (e.type === 'draw' ? 'tile' : e.type === 'guess' ? (e.ok ? 'lock' : 'fail') : e.type === 'expose' ? 'flip' : e.type === 'out' ? 'thud' : e.type === 'win' ? 'win' : e.type === 'stop' ? 'tick' : null));
+  useLogSounds(g.log, (e) => (e.type === 'draw' ? 'tile' : e.type === 'guess' ? (e.ok ? ['lock', 'ding'] : ['lock', 'buzzer']) : e.type === 'expose' ? 'flip' : e.type === 'out' ? 'thud' : e.type === 'win' ? 'win' : e.type === 'stop' ? 'tick' : null), { me: t.me, describe: (e) => describe(e, t.names), stamp: (e) => (e.type === 'guess' ? { text: e.ok ? '정답!' : '틀림', tone: e.ok ? 'good' : 'bad', shake: e.ok ? 0 : 0.5 } : e.type === 'out' ? { text: '금고 열림', tone: 'hot', shake: 1 } : null) });
   const names = t.names;
   const me = t.me;
   const myTurn = t.myTurn;
@@ -102,7 +102,7 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
               const out = g.outOrder.includes(seat);
               const m = view.members.find((x) => x.seat === seat);
               return (
-                <div key={seat} className={`nv-row ${g.turn === seat && g.status === 'playing' ? 'active' : ''} ${out ? 'out' : ''}`}>
+                <div key={seat} data-seat={seat} className={`nv-row ${g.turn === seat && g.status === 'playing' ? 'active' : ''} ${out ? 'out' : ''}`}>
                   <div className="nv-row-head small">
                     <span className="seat-name">
                       <EmoteBubble e={bySeat.get(seat)} />

@@ -15,7 +15,7 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
   const c = g.config;
   const t = useTable(view, notify, { title: 'Trio Hunt', turn: g.turn, playing: g.status === 'playing', mySub: '같은 숫자 세 장을 찾아요' });
   // 소리: 뒤집으면 카드 뒤집기, 세트는 축하, 틀리면 실패음
-  useLogSounds(g.log, (e) => (e.type === 'flip' ? 'flip' : e.type === 'trio' ? 'success' : e.type === 'miss' ? 'fail' : e.type === 'win' ? 'win' : null));
+  useLogSounds(g.log, (e) => (e.type === 'flip' ? 'flip' : e.type === 'trio' ? ['sweep', 'success'] : e.type === 'miss' ? ['buzzer', 'deal'] : e.type === 'win' ? 'win' : null), { me: t.me, describe: (e) => describe(e), stamp: (e) => (e.type === 'trio' ? { text: `${e.value} 트리오!`, tone: 'good', shake: 0.6 } : e.type === 'miss' ? { text: '꽝', tone: 'bad' } : null) });
   // 새 판마다 카드를 섞고 나눠 주는 연출 (@bg/web deal-fx)
   useDealFx(`${g.round}`, { per: 3, seats: '.th-seat', hand: null, origin: '.th-middle', initial: g.flips.length === 0 && g.log.length === 0 });
   const names = t.names;
@@ -54,7 +54,7 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
     const mine = s === me;
     const cards = mine ? g.hand : Array.from({ length: h.count }, () => null);
     return (
-      <div key={s} className={`th-seat ${g.turn === s ? 'acting' : ''} ${mine ? 'mine' : ''}`} style={{ ['--seat' as string]: seatColor(s) }}>
+      <div key={s} data-seat={s} className={`th-seat ${g.turn === s ? 'acting' : ''} ${mine ? 'mine' : ''}`} style={{ ['--seat' as string]: seatColor(s) }}>
         <div className="th-seat-head small">
           <span className="seat-name">
             <EmoteBubble e={bySeat.get(s)} />

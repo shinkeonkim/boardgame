@@ -1,3 +1,4 @@
+import { sound } from './sound';
 import { SiteNotice } from './site-notice';
 import { useRelocate } from './switch-game';
 import { createContext, useCallback, useContext, useEffect, useState, ReactNode } from 'react';
@@ -41,6 +42,7 @@ function CoverFrame({ client }: { client: GameClient<any, any> }) {
 /** 게임 웹 앱을 #root에 띄운다 */
 export function mountGame(client: GameClient<any, any>) {
   setGameId(client.id);
+  sound.setTheme(client.sounds);
   applyTheme(getTheme());
   applySkin();
   // 빌드 때 넣은 검색용 제목(「요트 다이스 온라인 · …」)이 있으면 그대로 둠

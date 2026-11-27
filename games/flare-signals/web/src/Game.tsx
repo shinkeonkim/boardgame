@@ -47,7 +47,7 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
     cardRects.current = m;
   });
   // 소리: 힌트는 토큰 딸깍, 성공하면 불꽃 쉭-펑, 실패는 불발, 버리기는 카드, 뽑기는 미끄러짐
-  useLogSounds(g.log, (e) => (e.type === 'hint' ? 'chip' : e.type === 'play' ? (e.ok ? 'firework' : 'fizzle') : e.type === 'discard' ? 'card' : e.type === 'draw' ? 'deal' : null));
+  useLogSounds(g.log, (e) => (e.type === 'hint' ? ['whoosh', 'pop'] : e.type === 'play' ? (e.ok ? 'firework' : 'fizzle') : e.type === 'discard' ? 'pageTurn' : e.type === 'draw' ? 'deal' : null), { me: t.me, describe: (e) => describe(e, g.config, t.names), stamp: (e) => (e.type === 'play' ? (e.ok ? (e.bonus ? { text: '불꽃 완성!', tone: 'good', shake: 0.5 } : null) : { text: '불발!', tone: 'bad', shake: 0.8 }) : null) });
   // 새 판마다 카드를 섞고 나눠 주는 연출 (@bg/web deal-fx)
   useDealFx(`${g.round}`, { per: 2, seats: '.hand-panel:not(.mine)', hand: '.hand-panel.mine', initial: g.log.length <= 1 });
   const names = t.names;
@@ -196,7 +196,7 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
               const choosing = hintTo === seat;
               const m = view.members.find((x) => x.seat === seat);
               return (
-                <div key={seat} className={`other ${active ? 'active' : ''} ${choosing ? 'choosing' : ''}`}>
+                <div key={seat} data-seat={seat} className={`other ${active ? 'active' : ''} ${choosing ? 'choosing' : ''}`}>
                   <div className="other-head small">
                     <span className="seat-name">
                       <EmoteBubble e={bySeat.get(seat)} />

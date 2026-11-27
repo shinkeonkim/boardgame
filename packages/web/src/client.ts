@@ -1,4 +1,5 @@
 import type { ComponentType, ReactNode } from 'react';
+import type { SoundTheme } from './sound';
 import type { EmoteDef, EmoteEvent, RoomView, OriginalGame } from '@bg/core';
 
 /** 서버 요청 (실패하면 토스트를 띄우고 false) */
@@ -65,6 +66,8 @@ export interface GameClient<V = unknown, C = unknown> {
   guide: GuideDef;
   /** 대표 색 (meta.ts accent) — 표지 바탕 */
   accent?: string;
+  /** 이 게임만의 소리 (내 차례 신호·도구 소리). 없으면 공통 소리 */
+  sounds?: SoundTheme;
   /** 표지(키 아트) 구성: 실제 카드·칩을 크게 배치. /<id>/?cover 로 열면 이것만 보인다 */
   Cover?: ComponentType;
 }

@@ -32,4 +32,5 @@ export const client: GameClient<GameView, GameConfig> = {
   guide,
   accent: meta.accent,
   Cover,
+  sounds: { cue: 'cueLock', turn: 'tick' },
 };

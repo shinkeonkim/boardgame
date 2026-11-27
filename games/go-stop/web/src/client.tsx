@@ -31,4 +31,6 @@ export const client: GameClient<GameView, GameConfig> = {
   guide,
   accent: meta.accent,
   Cover,
+  // 화투는 담요 위에 「딱」 내리치는 맛: 공통 카드 소리를 내리침으로, 내 차례는 화투 탁 + 가야금 세 음
+  sounds: { cue: 'cueHwatu', turn: 'pluck', swap: { card: 'slap', flip: 'slap', shuffle: 'riffle' } },
 };

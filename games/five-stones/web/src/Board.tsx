@@ -52,7 +52,7 @@ export function Board({ size, board, myStone, canPlay, lastMove, winLine, onPlac
               onClick={() => tap(i, touchRef.current)}
             >
               {v !== -1 ? (
-                <span key={`s${v}`} className={`fs-drop ${isLast ? 'last' : ''}`}>
+                <span key={`s${v}`} data-flip={`st${i}`} className={`fs-drop ${isLast ? 'last' : ''}`}>
                   <StoneView stone={v as Stone} size={100} last={isLast} win={win.has(i)} />
                 </span>
               ) : preview === i && myStone !== null ? (
