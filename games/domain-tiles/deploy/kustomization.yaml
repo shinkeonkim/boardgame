@@ -14,4 +14,4 @@ labels:
 images:
 - name: ghcr.io/shinkeonkim/boardgame-domain-tiles
   newName: ghcr.io/shinkeonkim/boardgame-domain-tiles
-  newTag: sha-f796c64
+  newTag: sha-00d6b72
