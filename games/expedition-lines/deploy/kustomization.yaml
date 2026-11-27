@@ -14,4 +14,4 @@ labels:
 images:
 - name: ghcr.io/shinkeonkim/boardgame-expedition-lines
   newName: ghcr.io/shinkeonkim/boardgame-expedition-lines
-  newTag: sha-f796c64
+  newTag: sha-00d6b72
