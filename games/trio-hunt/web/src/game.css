@@ -221,3 +221,14 @@ button.th-card.back:hover {
     grid-column: 1 / -1;
   }
 }
+/* 둘러앉은 자리: 다른 사람 손패 줄은 위에, 내 손패 줄은 아래 */
+.th-ring .sr-top {
+  flex-wrap: wrap;
+}
+.th-ring .sr-seat .th-seat {
+  margin: 0;
+}
+.th-ring .sr-center {
+  justify-content: center;
+  gap: 10px;
+}

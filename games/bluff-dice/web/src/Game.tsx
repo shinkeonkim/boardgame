@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 import type { RoomView } from '@bg/core';
 import { GameConfig, GameView, LogEntry, ga, myeon } from '@bg/bluff-dice-engine';
-import { AlertBanner, SeatDot, seatColor, Icon } from '@bg/ui';
-import { GameScreenProps, ResultSheet, SeatList, TableBanner, TableEmotes, TableLayout, TableTopBar, Ticker, rankOf, usePeek, useTable, useLogSounds, useChangeSound } from '@bg/web';
+import { AlertBanner, EmoteBubble, SeatDot, seatColor, Icon } from '@bg/ui';
+import { GameScreenProps, ResultSheet, SeatList, TableBanner, TableEmotes, TableLayout, TableTopBar, Ticker, rankOf, usePeek, useTable, useLogSounds, useChangeSound, SeatRing, emotesBySeat } from '@bg/web';
 import { Cup, Die } from './theme';
 
 type View = RoomView<GameView, GameConfig>;
@@ -25,11 +25,31 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
   const v = view as View;
   const g = v.game!;
   const c = g.config;
-  const t = useTable(view, notify, { title: 'Bluff Dice', turn: g.turn, playing: g.status === 'playing', stepKey: `${g.hand}-${g.phase}-${g.bids.length}`, mySub: g.phase === 'reveal' ? '주사위를 굴려 다음 판' : '더 높게 걸거나 거짓말!' });
+  const t = useTable(view, notify, {
+    title: 'Bluff Dice',
+    turn: g.turn,
+    playing: g.status === 'playing',
+    stepKey: `${g.hand}-${g.phase}-${g.bids.length}`,
+    mySub: g.phase === 'reveal' ? '주사위를 굴려 다음 판' : '더 높게 걸거나 거짓말!',
+  });
   // 소리: 호가는 칩, 「거짓말!」은 경고 + 컵을 여는 주사위, 탈락은 쿵 / 새로 굴리면 컵 흔들기
-  useLogSounds(g.log, (e) => (e.type === 'bid' ? ['chip', 'wood'] : e.type === 'call' ? ['alert', 'cup'] : e.type === 'out' ? 'thud' : e.type === 'win' ? 'win' : null), { me: t.me, describe: (e) => describe(e, t.names), stamp: (e) => (e.type === 'call' ? { text: e.kind === 'exact' ? '딱 맞춰!' : '거짓말!', tone: 'hot', shake: 1 } : e.type === 'out' ? { text: '탈락', tone: 'bad' } : null) });
+  useLogSounds(g.log, (e) => (e.type === 'bid' ? ['chip', 'wood'] : e.type === 'call' ? ['alert', 'cup'] : e.type === 'out' ? 'thud' : e.type === 'win' ? 'win' : null), {
+    me: t.me,
+    describe: (e) => describe(e, t.names),
+    stamp: (e) =>
+      e.type === 'call'
+        ? {
+            text: e.kind === 'exact' ? '딱 맞춰!' : '거짓말!',
+            tone: 'hot',
+            shake: 1,
+          }
+        : e.type === 'out'
+          ? { text: '탈락', tone: 'bad' }
+          : null,
+  });
   useChangeSound(`${g.round}-${g.hand}`, 'cup', g.status === 'playing');
   const names = t.names;
+  const { bySeat } = emotesBySeat(emotes);
   const me = t.me;
   const myTurn = t.myTurn;
   const [peek, setPeek] = usePeek(`${g.status}-${g.round}`);
@@ -84,6 +104,7 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
 
   return (
     <TableLayout
+      layout="focus"
       mine={myTurn}
       splash={t.splash}
       top={
@@ -92,143 +113,185 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
             <TableEmotes emotes={emotes} onEmote={onEmote} small />
           </TableTopBar>
           {g.status === 'playing' && (
-            <TableBanner
-              t={t}
-              act={act}
-              title={title}
-              hint={hint}
-              icon={<SeatDot seat={g.turn} size={16} />}
-              steps={g.palifico ? <span className="tag results">팔리피코</span> : g.wild ? <span className="tag">1은 와일드</span> : null}
-            />
+            <TableBanner t={t} act={act} title={title} hint={hint} icon={<SeatDot seat={g.turn} size={16} />} steps={g.palifico ? <span className="tag results">팔리피코</span> : g.wild ? <span className="tag">1은 와일드</span> : null} />
           )}
         </>
       }
       main={
         <>
-          <section className="bd-table" aria-label="테이블">
-            <div className="bd-center">
-              {prev ? (
-                <div key={g.bids.length} className="bd-bid" style={{ ['--seat' as string]: seatColor(prev.seat) }}>
-                  <span className="small">{names[prev.seat]}</span>
-                  <b>{prev.count}개</b>
-                  <Die face={prev.face} seat={prev.seat} size={40} />
-                  <span className="small muted">이상</span>
+          <SeatRing
+            players={g.players}
+            me={me}
+            className="bd-ring"
+            seat={(s) => {
+              const n = g.counts[s];
+              const lastBid = [...g.bids].reverse().find((b) => b.seat === s);
+              return (
+                <div className={`bd-opp ${g.turn === s && g.status === 'playing' ? 'acting' : ''} ${n === 0 ? 'out' : ''}`}>
+                  <div className="bd-opp-head small">
+                    <EmoteBubble e={bySeat.get(s)} />
+                    <SeatDot seat={s} size={10} /> <b>{names[s]}</b>
+                  </div>
+                  {n > 0 ? (
+                    <span className="bd-seat-dice">
+                      <Cup seat={s} count={n} size={36} />
+                      <span className="small muted">주사위 {n}개</span>
+                    </span>
+                  ) : (
+                    <span className="tag">탈락</span>
+                  )}
+                  {lastBid && g.phase === 'bid' && (
+                    <span className="bd-chip small" style={{ ['--seat' as string]: seatColor(s) }}>
+                      {lastBid.count}×
+                      <Die face={lastBid.face} seat={s} size={14} />
+                    </span>
+                  )}
                 </div>
-              ) : (
-                <span className="muted">아직 호가 없음</span>
-              )}
-              <div className="small muted">
-                주사위 모두 {g.total}개 · {c.faces}면{g.wild ? ' ·  1은 아무 숫자로나' : ''}
-              </div>
-            </div>
-            <div className="bd-history">
-              {g.bids.map((b, i) => (
-                <span key={i} data-flip={`bid${i}`} className="bd-chip" style={{ ['--seat' as string]: seatColor(b.seat) }}>
-                  {b.count}×<Die face={b.face} seat={b.seat} size={16} />
-                </span>
-              ))}
-            </div>
-            {showAll && (
-              <div className="bd-reveal">
-                {r!.dice.map((ds, seat) =>
-                  ds.length ? (
-                    <div key={seat} className={`bd-reveal-row ${seat === r!.loser ? 'loser' : ''}`}>
-                      <span className="small">
-                        <SeatDot seat={seat} size={12} /> {names[seat]}
-                      </span>
-                      <span className="bd-reveal-dice">
-                        {ds.map((d, i) => (
-                          <Die key={i} face={d} seat={seat} size={28} hit={matches(d)} wild={r!.wild && d === 1} className="reveal-die" style={{ animationDelay: `${(seat * 5 + i) * 45 + 260}ms` }} />
-                        ))}
-                        {/* 컵을 들어 올리며 공개 (실제 컵 놀이처럼) */}
-                        <span className="bd-lift" style={{ animationDelay: `${seat * 140}ms` }} aria-hidden>
-                          <Cup seat={seat} count={ds.length} size={34} />
-                        </span>
+              );
+            }}
+            center={
+              <section className="bd-table" aria-label="테이블">
+                <div className="bd-center">
+                  {prev ? (
+                    <div key={g.bids.length} data-flip={`bidnow${g.bids.length}`} className="bd-bid" style={{ ['--seat' as string]: seatColor(prev.seat) }}>
+                      <span className="small">{names[prev.seat]}</span>
+                      <b>{prev.count}개</b>
+                      <Die face={prev.face} seat={prev.seat} size={40} />
+                      <span className="small muted">이상</span>
+                    </div>
+                  ) : (
+                    <span className="muted">아직 호가 없음</span>
+                  )}
+                  <div className="small muted">
+                    주사위 모두 {g.total}개 · {c.faces}면{g.wild ? ' ·  1은 아무 숫자로나' : ''}
+                  </div>
+                </div>
+                <div className="bd-history">
+                  {g.bids.map((b, i) => (
+                    <span key={i} data-flip={`bid${i}`} className="bd-chip" style={{ ['--seat' as string]: seatColor(b.seat) }}>
+                      {b.count}×<Die face={b.face} seat={b.seat} size={16} />
+                    </span>
+                  ))}
+                </div>
+                {showAll && (
+                  <div className="bd-reveal">
+                    {r!.dice.map((ds, seat) =>
+                      ds.length ? (
+                        <div key={seat} className={`bd-reveal-row ${seat === r!.loser ? 'loser' : ''}`}>
+                          <span className="small">
+                            <SeatDot seat={seat} size={12} /> {names[seat]}
+                          </span>
+                          <span className="bd-reveal-dice">
+                            {ds.map((d, i) => (
+                              <Die
+                                key={i}
+                                face={d}
+                                seat={seat}
+                                size={28}
+                                hit={matches(d)}
+                                wild={r!.wild && d === 1}
+                                className="reveal-die"
+                                style={{
+                                  animationDelay: `${(seat * 5 + i) * 45 + 260}ms`,
+                                }}
+                              />
+                            ))}
+                            {/* 컵을 들어 올리며 공개 (실제 컵 놀이처럼) */}
+                            <span className="bd-lift" style={{ animationDelay: `${seat * 140}ms` }} aria-hidden>
+                              <Cup seat={seat} count={ds.length} size={34} />
+                            </span>
+                          </span>
+                        </div>
+                      ) : null,
+                    )}
+                    <div className="bd-reveal-sum">
+                      {r!.bid.face}
+                      {r!.wild ? ' (+1)' : ''} = <b>{r!.actual}개</b> / 호가 {r!.bid.count}개 → {r!.kind === 'exact' ? (r!.gained ? '딱 맞다 성공!' : '딱 맞지 않았어요') : r!.actual >= r!.bid.count ? '호가가 맞았어요' : '거짓말이었어요!'}
+                    </div>
+                  </div>
+                )}
+              </section>
+            }
+            bottom={
+              me >= 0 && g.status === 'playing' ? (
+                g.counts[me] > 0 ? (
+                  <section className="hand-panel" aria-label="내 주사위">
+                    <div className="hand-panel-head small">
+                      <span>
+                        <SeatDot seat={me} size={14} /> 내 주사위 {g.counts[me]}개 (나만 봐요)
                       </span>
                     </div>
-                  ) : null,
-                )}
-                <div className="bd-reveal-sum">
-                  {r!.bid.face}
-                  {r!.wild ? ' (+1)' : ''} = <b>{r!.actual}개</b> / 호가 {r!.bid.count}개 →{' '}
-                  {r!.kind === 'exact' ? (r!.gained ? '딱 맞다 성공!' : '딱 맞지 않았어요') : r!.actual >= r!.bid.count ? '호가가 맞았어요' : '거짓말이었어요!'}
-                </div>
-              </div>
-            )}
-          </section>
-
-          {me >= 0 && g.counts[me] > 0 && g.status === 'playing' && (
-            <section className="hand-panel" aria-label="내 주사위">
-              <div className="hand-panel-head small">
-                <span>
-                  <SeatDot seat={me} size={14} /> 내 주사위 {g.counts[me]}개 (나만 봐요)
-                </span>
-              </div>
-              <div className="hand-row">
-                {g.myDice.map((d, i) => (
-                  // 주사위가 바뀌면(새로 굴림) 다시 그려 굴러 나오는 움직임
-                  <Die key={`${g.round}-${g.myDice.join('')}-${i}`} face={d} seat={me} size={44} hit={face === d || (g.wild && d === 1 && face !== 1)} className="rolled" style={{ animationDelay: `${i * 60}ms` }} />
-                ))}
-              </div>
-              {g.phase === 'bid' ? (
-                <>
-                  <div className="small muted center bd-faces-head">걸 숫자를 고르세요 · 아래 숫자는 걸 수 있는 가장 적은 개수예요</div>
-                  <div className="bd-faces" role="radiogroup" aria-label="숫자 고르기">
-                    {Array.from({ length: c.faces }, (_, i) => i + 1).map((f) => {
-                      const mc = g.minCounts[f];
-                      return (
-                        <button
-                          key={f}
-                          role="radio"
-                          aria-checked={face === f}
-                          className={`bd-face ${face === f ? 'on' : ''}`}
-                          disabled={mc === null || mc > g.total}
-                          onClick={() => {
-                            setFace(f);
-                            setCount(Math.max(mc ?? 1, f === face ? count : 0));
-                          }}
-                        >
-                          <Die face={f} seat={me} size={28} />
-                          <small>{mc === null ? '—' : `${mc}개부터`}</small>
-                        </button>
-                      );
-                    })}
-                  </div>
-                  <div className="action-row bd-actions">
-                    <span className="bd-count">
-                      <button className="icon-btn" onClick={() => setCount((x) => Math.max(min ?? 1, x - 1))} aria-label="하나 줄이기" disabled={count <= (min ?? 1)}>
-                        −
-                      </button>
-                      <b>{count}개</b>
-                      <button className="icon-btn" onClick={() => setCount((x) => Math.min(g.total, x + 1))} aria-label="하나 늘리기" disabled={count >= g.total}>
-                        +
-                      </button>
-                    </span>
-                    <button className="btn primary" disabled={!bidOk} onClick={bid}>
-                      「{ga(face)} {count}개」 걸기
-                    </button>
-                    <button className="btn danger-btn" disabled={!myTurn || !prev} onClick={() => call('challenge')}>
-                      거짓말!
-                    </button>
-                    {c.exactCall && (
-                      <button className="btn" disabled={!myTurn || !prev} onClick={() => call('exact')}>
-                        딱 맞다!
-                      </button>
+                    <div className="hand-row">
+                      {g.myDice.map((d, i) => (
+                        // 주사위가 바뀌면(새로 굴림) 다시 그려 굴러 나오는 움직임
+                        <Die key={`${g.round}-${g.myDice.join('')}-${i}`} face={d} seat={me} size={44} hit={face === d || (g.wild && d === 1 && face !== 1)} className="rolled" style={{ animationDelay: `${i * 60}ms` }} />
+                      ))}
+                    </div>
+                    {g.phase === 'bid' ? (
+                      <>
+                        <div className="small muted center bd-faces-head">걸 숫자를 고르세요 · 아래 숫자는 걸 수 있는 가장 적은 개수예요</div>
+                        <div className="bd-faces" role="radiogroup" aria-label="숫자 고르기">
+                          {Array.from({ length: c.faces }, (_, i) => i + 1).map((f) => {
+                            const mc = g.minCounts[f];
+                            return (
+                              <button
+                                key={f}
+                                role="radio"
+                                aria-checked={face === f}
+                                className={`bd-face ${face === f ? 'on' : ''}`}
+                                disabled={mc === null || mc > g.total}
+                                onClick={() => {
+                                  setFace(f);
+                                  setCount(Math.max(mc ?? 1, f === face ? count : 0));
+                                }}
+                              >
+                                <Die face={f} seat={me} size={28} />
+                                <small>{mc === null ? '—' : `${mc}개부터`}</small>
+                              </button>
+                            );
+                          })}
+                        </div>
+                        <div className="action-row bd-actions">
+                          <span className="bd-count">
+                            <button className="icon-btn" onClick={() => setCount((x) => Math.max(min ?? 1, x - 1))} aria-label="하나 줄이기" disabled={count <= (min ?? 1)}>
+                              −
+                            </button>
+                            <b>{count}개</b>
+                            <button className="icon-btn" onClick={() => setCount((x) => Math.min(g.total, x + 1))} aria-label="하나 늘리기" disabled={count >= g.total}>
+                              +
+                            </button>
+                          </span>
+                          <button className="btn primary" disabled={!bidOk} onClick={bid}>
+                            「{ga(face)} {count}개」 걸기
+                          </button>
+                          <button className="btn danger-btn" disabled={!myTurn || !prev} onClick={() => call('challenge')}>
+                            거짓말!
+                          </button>
+                          {c.exactCall && (
+                            <button className="btn" disabled={!myTurn || !prev} onClick={() => call('exact')}>
+                              딱 맞다!
+                            </button>
+                          )}
+                        </div>
+                      </>
+                    ) : (
+                      myTurn && (
+                        <div className="action-row">
+                          <button className="btn primary" onClick={() => act('move', { move: { type: 'roll' } })}>
+                            <Icon name="dice" /> 주사위 굴리기
+                          </button>
+                        </div>
+                      )
                     )}
-                  </div>
-                </>
-              ) : (
-                myTurn && (
-                  <div className="action-row">
-                    <button className="btn primary" onClick={() => act('move', { move: { type: 'roll' } })}>
-                      <Icon name="dice" /> 주사위 굴리기
-                    </button>
-                  </div>
+                  </section>
+                ) : (
+                  <p className="muted center">
+                    주사위를 모두 잃었어요. 남은 사람들의 승부를 지켜봐요 <Icon name="eye" />
+                  </p>
                 )
-              )}
-            </section>
-          )}
-          {me >= 0 && g.counts[me] === 0 && g.status === 'playing' && <p className="muted center">주사위를 모두 잃었어요. 남은 사람들의 승부를 지켜봐요 <Icon name="eye" /></p>}
+              ) : null
+            }
+          />
           <Ticker text={describe(g.log[g.log.length - 1], names)} />
         </>
       }
@@ -259,9 +322,7 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
                 ) : undefined,
             }))}
           />
-          <p className="small muted rule-note">
-            모두의 주사위 중 그 숫자가 몇 개 이상인지 걸어요. 다음 사람은 더 높게 걸거나 「거짓말!」. 공개해서 틀린 쪽이 주사위 하나를 잃어요.
-          </p>
+          <p className="small muted rule-note">모두의 주사위 중 그 숫자가 몇 개 이상인지 걸어요. 다음 사람은 더 높게 걸거나 「거짓말!」. 공개해서 틀린 쪽이 주사위 하나를 잃어요.</p>
         </>
       }
       overlay={
@@ -282,7 +343,12 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
             headline={`🏆 ${names[g.winners[g.winners.length - 1]]} 님이 ${matchOver ? '이겼어요!' : `${g.round}게임을 이겼어요`}`}
             sub="마지막까지 주사위를 지킨 사람이 이겨요"
             columns={g.winners.map((_, i) => `${i + 1}게임`)}
-            rows={g.totals.map((total, seat) => ({ seat, rank: ranks[seat], cells: g.winners.map((w) => (w === seat ? '🏆' : '')), total: `${total}승` }))}
+            rows={g.totals.map((total, seat) => ({
+              seat,
+              rank: ranks[seat],
+              cells: g.winners.map((w) => (w === seat ? '🏆' : '')),
+              total: `${total}승`,
+            }))}
           />
         ))
       }

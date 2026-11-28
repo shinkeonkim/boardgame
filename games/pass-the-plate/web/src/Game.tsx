@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 import type { RoomView } from '@bg/core';
 import { DISH, Dish, GROUPS, GameConfig, GameView, Played } from '@bg/pass-the-plate-engine';
-import { AlertBanner, SeatDot, seatColor, Icon, iconize } from '@bg/ui';
-import { GameScreenProps, ResultSheet, SeatList, TableBanner, TableEmotes, TableLayout, TableTopBar, Ticker, rankOf, usePeek, useTable, waitingText, SideNote, useChangeSound, useDealFx } from '@bg/web';
+import { AlertBanner, EmoteBubble, SeatDot, seatColor, Icon, iconize } from '@bg/ui';
+import { GameScreenProps, ResultSheet, SeatList, TableBanner, TableEmotes, TableLayout, TableTopBar, Ticker, rankOf, usePeek, useTable, waitingText, SideNote, useChangeSound, SeatRing, emotesBySeat } from '@bg/web';
 import { DishCard } from './theme';
 
 type View = RoomView<GameView, GameConfig>;
@@ -31,12 +31,19 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
   const v = view as View;
   const g = v.game!;
   const c = g.config;
-  const t = useTable(view, notify, { title: 'Pass the Plate', turn: g.actors[0] ?? 0, playing: g.status === 'playing', simultaneous: true, stepKey: `${g.round}-${g.turn}`, mySub: '한 접시 골라요' });
+  const t = useTable(view, notify, {
+    title: 'Pass the Plate',
+    turn: g.actors[0] ?? 0,
+    playing: g.status === 'playing',
+    simultaneous: true,
+    stepKey: `${g.round}-${g.turn}`,
+    mySub: '한 접시 골라요',
+  });
   // 소리: 모두 고르면 접시를 내려놓는 쨍, 손패가 넘어오면 미끄러짐
   useChangeSound(`${g.round}-${g.turn}`, 'plate', g.status === 'playing');
-  // 새 판마다 카드를 섞고 나눠 주는 연출 (@bg/web deal-fx)
-  useDealFx(`${g.round}`, { per: 3 });
+  useChangeSound(g.round, 'riffle');
   const names = t.names;
+  const { bySeat } = emotesBySeat(emotes);
   const me = t.me;
   const [peek, setPeek] = usePeek(`${g.status}-${g.round}`);
   const [two, setTwo] = useState(false);
@@ -60,7 +67,7 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
     await act('move', { move: { type: 'pick', cardId: id } });
   };
 
-  const myT = me >= 0 ? g.tableaus[me] ?? [] : [];
+  const myT = me >= 0 ? (g.tableaus[me] ?? []) : [];
   const myPreview = me >= 0 ? g.preview[me] : null;
   const picked = new Set(g.myPick ? [g.myPick.cardId, g.myPick.second].filter(Boolean) : []);
   const title = me < 0 ? '모두 접시를 고르는 중' : g.myPick ? '골랐어요!' : two ? (first ? '두 번째 접시를 고르세요' : '젓가락: 첫 접시를 고르세요') : `${g.turn}번째 접시를 고르세요`;
@@ -70,6 +77,8 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
 
   return (
     <TableLayout
+      layout="focus"
+      dealIn={g.turn <= 1 && !g.revealed.length}
       mine={t.myTurn}
       splash={t.splash}
       top={
@@ -77,57 +86,110 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
           <TableTopBar view={view} act={act} round={g.round} rounds={c.rounds} over={matchOver}>
             <TableEmotes emotes={emotes} onEmote={onEmote} small />
           </TableTopBar>
-          {g.status === 'playing' && <TableBanner t={t} act={act} title={title} hint={hint} steps={<span className="small muted nowrap">{g.turn}/{g.handSize}번째 · 넘김 {g.dir === 1 ? '→' : '←'}</span>} />}
+          {g.status === 'playing' && (
+            <TableBanner
+              t={t}
+              act={act}
+              title={title}
+              hint={hint}
+              steps={
+                <span className="small muted nowrap">
+                  {g.turn}/{g.handSize}번째 · 넘김 {g.dir === 1 ? '→' : '←'}
+                </span>
+              }
+            />
+          )}
         </>
       }
       main={
         <>
-          {g.revealed.length > 0 && (
-            <section className="pp-reveal" aria-label="방금 고른 접시">
-              <span className="small muted">방금</span>
-              {g.revealed.map((r) => (
-                <span key={r.seat} className="pp-reveal-item" style={{ ['--seat' as string]: seatColor(r.seat) }}>
-                  <SeatDot seat={r.seat} size={12} /> {names[r.seat]}
-                  {r.cards.map((d, i) => (
-                    <DishCard key={i} dish={d} size="xs" />
+          <SeatRing
+            players={g.players}
+            me={me}
+            className="pp-ring"
+            seat={(s) => (
+              <div className={`pp-opp ${g.picked[s] ? 'ready' : ''}`}>
+                <div className="pp-opp-head small">
+                  <EmoteBubble e={bySeat.get(s)} />
+                  <SeatDot seat={s} size={10} /> <b>{names[s]}</b>
+                  {g.status === 'playing' && <span className={`tag ${g.picked[s] ? 'ready' : ''}`}>{g.picked[s] ? iconize('✓') : '…'}</span>}
+                </div>
+                <span className="pp-opp-hand" aria-label={`접시 ${g.handCounts[s]}장`}>
+                  {Array.from({ length: g.handCounts[s] }, (_, i) => (
+                    <i key={i} />
                   ))}
                 </span>
-              ))}
-            </section>
-          )}
-          {me >= 0 && (
-            <section className="panel pp-mine" aria-label="내 앞 접시">
-              <div className="hand-panel-head small">
-                <span>
-                  <SeatDot seat={me} size={14} /> 내가 먹은 접시
-                </span>
-                {myPreview && (
-                  <span className="pp-preview" title="이번 판 지금까지 (김밥은 현재 순위 기준)">
-                    지금 <b>{myPreview.total}</b>점 · 푸딩 {g.puddings[me] + myT.filter((p) => p.dish === 'pudding').length}
-                  </span>
+                {g.tableaus[s] ? <Tableau t={g.tableaus[s]!} size="xs" /> : <span className="muted small">먹은 접시 비공개</span>}
+              </div>
+            )}
+            center={
+              <section className="pp-center" aria-label="식탁">
+                {g.revealed.length > 0 && (
+                  <section className="pp-reveal" aria-label="방금 고른 접시">
+                    <span className="small muted">방금</span>
+                    {g.revealed.map((r) => (
+                      <span key={r.seat} className="pp-reveal-item" style={{ ['--seat' as string]: seatColor(r.seat) }}>
+                        <SeatDot seat={r.seat} size={12} /> {names[r.seat]}
+                        {r.cards.map((d, i) => (
+                          <DishCard key={i} dish={d} size="xs" />
+                        ))}
+                      </span>
+                    ))}
+                  </section>
                 )}
-              </div>
-              <Tableau t={myT} />
-            </section>
-          )}
-          {me >= 0 && g.status === 'playing' && (
-            <section className="hand-panel" aria-label="내 손패">
-              <div className="hand-panel-head small">
-                <span>돌아온 접시 {g.hand.length}장</span>
-                {g.canChopsticks && !g.myPick && (
-                  <button className={`btn tiny ${two ? 'on' : 'ghost'}`} onClick={() => (setTwo((x) => !x), setFirst(null))}>
-                    <Icon name="chopsticks" /> 젓가락으로 2장{two ? ' (끄기)' : ''}
-                  </button>
-                )}
-              </div>
-              {/* 옆 사람에게서 넘어온 접시: 넘기는 방향의 반대쪽에서 밀려 들어옴 (차례마다 다시 그림) */}
-              <div className={`hand-row pp-incoming ${g.dir === 1 ? 'from-left' : 'from-right'}`} key={`${g.round}-${g.turn}`}>
-                {g.hand.map((h, i) => (
-                  <DishCard key={h.id} flip={`d${h.id}`} noEnter className="pp-in" style={{ animationDelay: `${i * 40}ms` }} dish={h.dish} size="md" selected={picked.has(h.id) || first === h.id} onClick={() => pick(h.id)} badge={first === h.id ? '1' : undefined} />
-                ))}
-              </div>
-            </section>
-          )}
+                {!g.revealed.length && <span className="muted small">모두 동시에 한 접시씩 골라요</span>}
+              </section>
+            }
+            bottom={
+              me >= 0 ? (
+                <>
+                  {me >= 0 && (
+                    <section className="panel pp-mine" aria-label="내 앞 접시">
+                      <div className="hand-panel-head small">
+                        <span>
+                          <SeatDot seat={me} size={14} /> 내가 먹은 접시
+                        </span>
+                        {myPreview && (
+                          <span className="pp-preview" title="이번 판 지금까지 (김밥은 현재 순위 기준)">
+                            지금 <b>{myPreview.total}</b>점 · 푸딩 {g.puddings[me] + myT.filter((p) => p.dish === 'pudding').length}
+                          </span>
+                        )}
+                      </div>
+                      <Tableau t={myT} />
+                    </section>
+                  )}
+                  {me >= 0 && g.status === 'playing' && (
+                    <section className="hand-panel" aria-label="내 손패">
+                      <div className="hand-panel-head small">
+                        <span>돌아온 접시 {g.hand.length}장</span>
+                        {g.canChopsticks && !g.myPick && (
+                          <button className={`btn tiny ${two ? 'on' : 'ghost'}`} onClick={() => (setTwo((x) => !x), setFirst(null))}>
+                            <Icon name="chopsticks" /> 젓가락으로 2장
+                            {two ? ' (끄기)' : ''}
+                          </button>
+                        )}
+                      </div>
+                      {/* 옆 사람에게서 넘어온 접시: 실제로 넘겨준 사람 자리에서 날아옴 (판 처음은 식탁 가운데서 나눠 받음) */}
+                      <div className="hand-row">
+                        {g.hand.map((h) => (
+                          <DishCard
+                            key={h.id}
+                            flip={`d${h.id}`}
+                            flipFrom={g.turn <= 1 ? '.pp-center' : String((me - g.dir + g.players) % g.players)}
+                            dish={h.dish}
+                            size="md"
+                            selected={picked.has(h.id) || first === h.id}
+                            onClick={() => pick(h.id)}
+                            badge={first === h.id ? '1' : undefined}
+                          />
+                        ))}
+                      </div>
+                    </section>
+                  )}
+                </>
+              ) : undefined
+            }
+          />
           <Ticker text={g.revealed.length ? `${g.turn - 1}번째 공개 · 손패가 ${g.dir === 1 ? '왼쪽' : '오른쪽'}으로 넘어갔어요` : '모두 동시에 한 접시씩 골라요'} />
         </>
       }
@@ -149,7 +211,9 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
           />
           <SideNote title="점수" className="pp-ref">
             <div>🍙 김밥 줄 수 1등 6 · 2등 3 · 🍤 튀김 2개 5 · 🐟 회 3개 10</div>
-            <div>🥟 만두 1·3·6·10·15 · <Icon name="plate" /> 초밥 1·2·3 (🌿 겨자 위면 ×3)</div>
+            <div>
+              🥟 만두 1·3·6·10·15 · <Icon name="plate" /> 초밥 1·2·3 (🌿 겨자 위면 ×3)
+            </div>
             <div>🍮 푸딩: 게임 끝에 가장 많으면 +6, 가장 적으면 −6</div>
           </SideNote>
         </>
@@ -169,7 +233,13 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
             matchOver={matchOver}
             round={g.round}
             status={g.status}
-            headline={matchOver ? `${rankOf(g.totals).flatMap((r, i) => (r === 1 ? [names[i]] : [])).join(', ')} 님이 가장 잘 먹었어요!` : `${g.round}판 결과`}
+            headline={
+              matchOver
+                ? `${rankOf(g.totals)
+                    .flatMap((r, i) => (r === 1 ? [names[i]] : []))
+                    .join(', ')} 님이 가장 잘 먹었어요!`
+                : `${g.round}판 결과`
+            }
             sub={matchOver ? '푸딩 점수까지 더했어요' : '먹은 접시는 치우고 새로 나눠요 (푸딩은 남아요)'}
             columns={[...g.roundScores.map((_, i) => `${i + 1}판`), ...(g.puddingScore ? ['푸딩'] : [])]}
             rows={g.totals.map((total, seat) => ({
@@ -181,7 +251,8 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
           >
             {g.roundScores.length > 0 && (
               <p className="small muted">
-                이번 판 {names[me >= 0 ? me : 0]}: {(() => {
+                이번 판 {names[me >= 0 ? me : 0]}:{' '}
+                {(() => {
                   const r = g.roundScores[g.roundScores.length - 1][me >= 0 ? me : 0];
                   return `김밥 ${r.maki} · 튀김 ${r.tempura} · 회 ${r.sashimi} · 만두 ${r.dumpling} · 초밥 ${r.nigiri}`;
                 })()}

@@ -622,3 +622,25 @@ button.ncard.can:focus-visible {
   line-height: 0;
   filter: drop-shadow(0 1px 0 rgb(0 0 0 / 0.25));
 }
+/* 둘러앉은 자리: 다른 사람은 위, 줄은 가운데, 내 카드는 아래 */
+.rs-ring .sr-center {
+  gap: 8px;
+}
+.rs-opp {
+  min-width: 140px;
+  padding: 6px 10px;
+  border-radius: 12px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-top: 4px solid var(--seat);
+  display: grid;
+  gap: 4px;
+}
+.rs-opp.acting {
+  box-shadow: 0 0 0 2px var(--seat);
+}
+.rs-opp-head {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}

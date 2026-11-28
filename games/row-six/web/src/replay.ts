@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import type { LogEntry } from '@bg/row-six-engine';
-import { flyClone } from '@bg/web';
+import { flyClone, seatAnchor } from '@bg/web';
 
 /** 한 장 놓기 연출 시간 (ms): 공개 줄에서 강조 → 줄로 이동 → 다음 카드 */
 const LOOK = 520;
@@ -51,7 +51,7 @@ export function useReplay(rows: number[][], log: LogEntry[]) {
         setTaking(p.row);
         await wait(WARN * pace(queue.current.length));
         const rowEl = document.querySelector(`[data-row="${p.row}"] .row-cards`);
-        const seatEl = document.querySelector(`.seat-row[data-seat="${p.seat}"]`);
+        const seatEl = seatAnchor(p.seat);
         if (pace(queue.current.length)) flyClone(rowEl, seatEl, { like: rowEl?.querySelector('.ncard'), count: p.took.length, duration: FLY * pace(queue.current.length) });
         setShown((rs) => rs.map((r, i) => (i === p.row ? [] : r)));
         setPop({ seat: p.seat, pen: p.penalty, key: p.card });

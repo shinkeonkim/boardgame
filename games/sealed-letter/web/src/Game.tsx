@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import type { RoomView } from '@bg/core';
 import { CARD_DEFS, GameConfig, GameView, Kind, LogEntry, deckSpec } from '@bg/sealed-letter-engine';
 import { AlertBanner, SeatDot, seatColor, Icon, iconize } from '@bg/ui';
-import { GameScreenProps, ResultSheet, SeatList, TableBanner, TableEmotes, TableLayout, TableTopBar, Ticker, rankOf, usePeek, useTable, useLogSounds, useDealFx } from '@bg/web';
+import { GameScreenProps, ResultSheet, SeatList, TableBanner, TableEmotes, TableLayout, TableTopBar, Ticker, rankOf, usePeek, useTable, useLogSounds, useChangeSound, SeatRing } from '@bg/web';
 import { CardBackMini, LetterCard, Seal } from './theme';
 
 type View = RoomView<GameView, GameConfig>;
@@ -28,7 +28,13 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
   const v = view as View;
   const g = v.game!;
   const c = g.config;
-  const t = useTable(view, notify, { title: 'Sealed Letter', turn: g.turn, playing: g.status === 'playing', stepKey: `${g.round}-${g.turn}-${g.log.length ? g.log[g.log.length - 1].n : 0}`, mySub: '2장 중 1장을 내요' });
+  const t = useTable(view, notify, {
+    title: 'Sealed Letter',
+    turn: g.turn,
+    playing: g.status === 'playing',
+    stepKey: `${g.round}-${g.turn}-${g.log.length ? g.log[g.log.length - 1].n : 0}`,
+    mySub: '2장 중 1장을 내요',
+  });
   // 이번 판에서 가장 최근에 낸 카드 (가운데에 크게)
   const lastEvent = [...g.log].reverse().find((e) => e.type === 'play' || e.type === 'round');
   const lastPlay = lastEvent?.type === 'play' ? lastEvent : null;
@@ -36,9 +42,13 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
   const discardIds = new Set(g.discards.flat().map((d) => d.id));
   const pile = g.log.flatMap((e) => (e.type === 'play' && e !== lastPlay && discardIds.has(e.card.id) ? [e] : [])).slice(-4);
   // 소리: 편지(카드)를 내면 종이, 탈락은 쿵, 판이 끝나면 축하
-  useLogSounds(g.log, (e) => (e.type === 'play' ? ['paper', 'stamp'] : e.type === 'out' ? ['tear', 'thud'] : e.type === 'round' ? 'success' : null), { me: t.me, describe: (e) => describe(e, t.names), stamp: (e) => (e.type === 'out' ? { text: '탈락!', tone: 'hot', shake: 1.2 } : e.type === 'round' ? { text: '편지 전달!', tone: 'good' } : null) });
-  // 새 판마다 카드를 섞고 나눠 주는 연출 (@bg/web deal-fx)
-  useDealFx(`${g.round}`, { per: 1, initial: g.log.length <= 2 });
+  useLogSounds(g.log, (e) => (e.type === 'play' ? ['paper', 'stamp'] : e.type === 'out' ? ['tear', 'thud'] : e.type === 'round' ? 'success' : null), {
+    me: t.me,
+    describe: (e) => describe(e, t.names),
+    stamp: (e) => (e.type === 'out' ? { text: '탈락!', tone: 'hot', shake: 1.2 } : e.type === 'round' ? { text: '편지 전달!', tone: 'good' } : null),
+  });
+  // 새 판: 섞는 소리 (나눠 주기는 실제 카드가 더미에서 날아감)
+  useChangeSound(g.round, 'riffle');
   const names = t.names;
   const me = t.me;
   const myTurn = t.myTurn;
@@ -54,7 +64,7 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
 
   const card = g.hand.find((x) => x.id === sel) ?? null;
   const def = card ? CARD_DEFS[card.kind] : null;
-  const options = card ? g.targets[card.id] ?? [] : [];
+  const options = card ? (g.targets[card.id] ?? []) : [];
   const noTarget = !!def?.needsTarget && options.filter((s) => s !== me || def.self).length === 0;
   const ready = !!card && (!def!.needsTarget || noTarget || (target !== null && (card.kind !== 'watch' || !!guess)));
   const spec = deckSpec(c.edition);
@@ -70,7 +80,17 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
   };
   const play = async () => {
     if (!card) return;
-    if (await act('move', { move: { type: 'play', cardId: card.id, target: noTarget ? undefined : target ?? undefined, guess: guess ?? undefined } })) setSel(null);
+    if (
+      await act('move', {
+        move: {
+          type: 'play',
+          cardId: card.id,
+          target: noTarget ? undefined : (target ?? undefined),
+          guess: guess ?? undefined,
+        },
+      })
+    )
+      setSel(null);
   };
 
   // 배너
@@ -92,6 +112,8 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
 
   return (
     <TableLayout
+      layout="focus"
+      dealIn={g.log.length <= 1}
       mine={myTurn}
       splash={t.splash}
       top={
@@ -104,111 +126,168 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
       }
       main={
         <>
-          <section className="sl-center" aria-label="더미">
-            <div className="sl-deck">
-              <span className="sl-deck-stack" aria-hidden>
-                <CardBackMini />
-              </span>
-              <span className="small">
-                더미 <b>{g.deckCount}</b>장
-              </span>
-            </div>
-            {g.burnedOpen.length > 0 && (
-              <div className="sl-burned small">
-                <span className="muted">빼 둔 카드</span>
-                {g.burnedOpen.map((b) => (
-                  <LetterCard key={b.id} kind={b.kind} value={b.value} size="xs" />
-                ))}
-              </div>
-            )}
-            {lastPlay && (
-              <div className="sl-last" key={lastPlay.n} style={{ ['--seat' as string]: seatColor(lastPlay.seat) }}>
-                <span className="sl-pile" aria-label={`버린 카드 ${pile.length + 1}장`}>
-                  {pile.map((e) => (
-                    <span key={e.card.id} className="sl-pile-under" style={{ transform: `translate(${((e.n * 7) % 9) - 4}px, ${((e.n * 5) % 7) - 3}px) rotate(${((e.n * 37) % 15) - 7}deg)` }} aria-hidden>
-                      <LetterCard kind={e.card.kind} value={e.card.value} size="md" />
-                    </span>
-                  ))}
-                  <span className="sl-pile-top">
-                    <LetterCard kind={lastPlay.card.kind} value={lastPlay.card.value} size="md" />
-                  </span>
-                </span>
-                <div className="sl-last-text">
-                  <span className="small muted">방금 낸 카드</span>
-                  <b>
-                    <SeatDot seat={lastPlay.seat} size={12} /> {names[lastPlay.seat]}
-                    {lastPlay.target !== undefined && lastPlay.target !== lastPlay.seat ? ` → ${names[lastPlay.target]}` : ''}
-                  </b>
-                  <span className="small">{describe(lastPlay, names)}</span>
+          <SeatRing
+            players={g.players}
+            me={me}
+            className="sl-ring"
+            seat={(s) => (
+              <div className={`sl-opp ${g.turn === s && g.status === 'playing' ? 'acting' : ''} ${g.alive[s] ? '' : 'out'}`}>
+                <div className="sl-opp-head">
+                  <SeatDot seat={s} size={10} /> <b>{names[s]}</b>
+                  {g.protectedSeats[s] && iconize(' 🛡️')}
+                  <span className="small muted">{'✉'.repeat(g.tokens[s])}</span>
                 </div>
+                <div className="sl-opp-hand" aria-label={`카드 ${g.handCounts[s]}장`}>
+                  {g.alive[s] ? Array.from({ length: g.handCounts[s] }, (_, i) => <CardBackMini key={i} flip={`sb${g.round}-${s}-${i}`} flipFrom=".sl-deck" />) : <span className="small muted">탈락</span>}
+                </div>
+                {g.discards[s].length > 0 && (
+                  <div className="sl-opp-discards" aria-label="낸 카드">
+                    {g.discards[s].map((d) => (
+                      <LetterCard key={d.id} kind={d.kind} value={d.value} size="xs" />
+                    ))}
+                  </div>
+                )}
               </div>
             )}
-            <details className="sl-ref small">
-              <summary>카드 목록 ({spec.reduce((a, s) => a + s.copies, 0)}장)</summary>
-              <ul>
-                {spec.map((s) => (
-                  <li key={s.kind}>
-                    <b>
-                      {s.value} {nm(s.kind)}
-                    </b>{' '}
-                    ×{s.copies} — {CARD_DEFS[s.kind].text}
-                  </li>
-                ))}
-              </ul>
-            </details>
-          </section>
-
-          {me >= 0 && g.alive[me] && g.status === 'playing' && (
-            <section className="hand-panel" aria-label="내 카드">
-              <div className="hand-panel-head small">
-                <span>
-                  <SeatDot seat={me} size={14} /> 내 카드{g.protectedSeats[me] ? iconize(' · 🛡️ 보호 중') : ''}
-                </span>
-              </div>
-              <div className="hand-row">
-                {g.hand.map((h) => (
-                  <LetterCard key={h.id} flip={`l${h.id}`} kind={h.kind} value={h.value} size="lg" selected={sel === h.id} onClick={g.phase === 'scribe' ? () => myTurn && act('move', { move: { type: 'keep', cardId: h.id } }) : () => pickCard(h.id)} />
-                ))}
-              </div>
-              {card && myTurn && g.phase === 'play' && (
-                <div className="sl-steps">
-                  {def!.needsTarget && !noTarget && (
-                    <div className="sl-step">
-                      <span className="small">누구에게?</span>
-                      {options.map((s) => (
-                        <button key={s} className={`chip ${target === s ? 'on' : ''}`} onClick={() => setTarget(s)} style={{ borderColor: seatColor(s) }}>
-                          {s === me ? '나 자신' : names[s]}
-                          {g.known[s] ? ` (${nm(g.known[s]!.kind)})` : ''}
-                        </button>
+            center={
+              <section className="sl-center" aria-label="더미">
+                <div className="sl-deck">
+                  <span className="sl-deck-stack" aria-hidden>
+                    <CardBackMini />
+                  </span>
+                  <span className="small">
+                    더미 <b>{g.deckCount}</b>장
+                  </span>
+                </div>
+                {g.burnedOpen.length > 0 && (
+                  <div className="sl-burned small">
+                    <span className="muted">빼 둔 카드</span>
+                    {g.burnedOpen.map((b) => (
+                      <LetterCard key={b.id} kind={b.kind} value={b.value} size="xs" />
+                    ))}
+                  </div>
+                )}
+                {lastPlay && (
+                  <div className="sl-last" key={lastPlay.n} style={{ ['--seat' as string]: seatColor(lastPlay.seat) }}>
+                    <span className="sl-pile" aria-label={`버린 카드 ${pile.length + 1}장`}>
+                      {pile.map((e) => (
+                        <span
+                          key={e.card.id}
+                          className="sl-pile-under"
+                          style={{
+                            transform: `translate(${((e.n * 7) % 9) - 4}px, ${((e.n * 5) % 7) - 3}px) rotate(${((e.n * 37) % 15) - 7}deg)`,
+                          }}
+                          aria-hidden
+                        >
+                          <LetterCard kind={e.card.kind} value={e.card.value} size="md" />
+                        </span>
+                      ))}
+                      <span className="sl-pile-top">
+                        <LetterCard kind={lastPlay.card.kind} value={lastPlay.card.value} size="md" flip={`l${lastPlay.card.id}`} />
+                      </span>
+                    </span>
+                    <div className="sl-last-text">
+                      <span className="small muted">방금 낸 카드</span>
+                      <b>
+                        <SeatDot seat={lastPlay.seat} size={12} /> {names[lastPlay.seat]}
+                        {lastPlay.target !== undefined && lastPlay.target !== lastPlay.seat ? ` → ${names[lastPlay.target]}` : ''}
+                      </b>
+                      <span className="small">{describe(lastPlay, names)}</span>
+                    </div>
+                  </div>
+                )}
+                <details className="sl-ref small">
+                  <summary>카드 목록 ({spec.reduce((a, s) => a + s.copies, 0)}장)</summary>
+                  <ul>
+                    {spec.map((s) => (
+                      <li key={s.kind}>
+                        <b>
+                          {s.value} {nm(s.kind)}
+                        </b>{' '}
+                        ×{s.copies} — {CARD_DEFS[s.kind].text}
+                      </li>
+                    ))}
+                  </ul>
+                </details>
+              </section>
+            }
+            bottom={
+              me >= 0 && g.status === 'playing' ? (
+                g.alive[me] ? (
+                  <section className="hand-panel" aria-label="내 카드">
+                    <div className="hand-panel-head small">
+                      <span>
+                        <SeatDot seat={me} size={14} /> 내 카드
+                        {g.protectedSeats[me] ? iconize(' · 🛡️ 보호 중') : ''}
+                      </span>
+                    </div>
+                    <div className="hand-row">
+                      {g.hand.map((h) => (
+                        <LetterCard
+                          key={h.id}
+                          flip={`l${h.id}`}
+                          flipFrom=".sl-deck"
+                          kind={h.kind}
+                          value={h.value}
+                          size="lg"
+                          selected={sel === h.id}
+                          onClick={
+                            g.phase === 'scribe'
+                              ? () =>
+                                  myTurn &&
+                                  act('move', {
+                                    move: { type: 'keep', cardId: h.id },
+                                  })
+                              : () => pickCard(h.id)
+                          }
+                        />
                       ))}
                     </div>
-                  )}
-                  {noTarget && <div className="small muted">지목할 수 있는 사람이 없어요. 효과 없이 내요</div>}
-                  {card.kind === 'watch' && target !== null && (
-                    <div className="sl-step">
-                      <span className="small">어떤 카드일까요?</span>
-                      {spec
-                        .filter((s) => !(c.guardNoGuard && s.kind === 'watch'))
-                        .map((s) => (
-                          <button key={s.kind} className={`chip ${guess === s.kind ? 'on' : ''}`} onClick={() => setGuess(s.kind)}>
-                            {s.value} {nm(s.kind)}
+                    {card && myTurn && g.phase === 'play' && (
+                      <div className="sl-steps">
+                        {def!.needsTarget && !noTarget && (
+                          <div className="sl-step">
+                            <span className="small">누구에게?</span>
+                            {options.map((s) => (
+                              <button key={s} className={`chip ${target === s ? 'on' : ''}`} onClick={() => setTarget(s)} style={{ borderColor: seatColor(s) }}>
+                                {s === me ? '나 자신' : names[s]}
+                                {g.known[s] ? ` (${nm(g.known[s]!.kind)})` : ''}
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                        {noTarget && <div className="small muted">지목할 수 있는 사람이 없어요. 효과 없이 내요</div>}
+                        {card.kind === 'watch' && target !== null && (
+                          <div className="sl-step">
+                            <span className="small">어떤 카드일까요?</span>
+                            {spec
+                              .filter((s) => !(c.guardNoGuard && s.kind === 'watch'))
+                              .map((s) => (
+                                <button key={s.kind} className={`chip ${guess === s.kind ? 'on' : ''}`} onClick={() => setGuess(s.kind)}>
+                                  {s.value} {nm(s.kind)}
+                                </button>
+                              ))}
+                          </div>
+                        )}
+                        <div className="action-row">
+                          <button className={`btn ${card.kind === 'queen' ? 'danger-btn' : 'primary'}`} disabled={!ready} onClick={play}>
+                            {card.kind === 'queen' ? '여왕 내기 (탈락)' : `${def!.name} 내기`}
                           </button>
-                        ))}
-                    </div>
-                  )}
-                  <div className="action-row">
-                    <button className={`btn ${card.kind === 'queen' ? 'danger-btn' : 'primary'}`} disabled={!ready} onClick={play}>
-                      {card.kind === 'queen' ? '여왕 내기 (탈락)' : `${def!.name} 내기`}
-                    </button>
-                    <button className="btn ghost" onClick={() => setSel(null)}>
-                      다시 고르기
-                    </button>
-                  </div>
-                </div>
-              )}
-            </section>
-          )}
-          {me >= 0 && !g.alive[me] && g.status === 'playing' && <p className="muted center">이번 판은 탈락했어요. 다음 판을 기다려요 <Icon name="mail" /></p>}
+                          <button className="btn ghost" onClick={() => setSel(null)}>
+                            다시 고르기
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </section>
+                ) : (
+                  <p className="muted center">
+                    이번 판은 탈락했어요. 다음 판을 기다려요 <Icon name="mail" />
+                  </p>
+                )
+              ) : null
+            }
+          />
           <Ticker text={describe(g.log[g.log.length - 1], names)} />
         </>
       }
@@ -230,7 +309,13 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
                   ))}
                 </span>
               ),
-              badge: !alive ? <span className="tag">탈락</span> : g.protectedSeats[seat] ? <span className="tag ready"><Icon name="shield" /> 보호</span> : null,
+              badge: !alive ? (
+                <span className="tag">탈락</span>
+              ) : g.protectedSeats[seat] ? (
+                <span className="tag ready">
+                  <Icon name="shield" /> 보호
+                </span>
+              ) : null,
               children: (
                 <>
                   {g.known[seat] && (
@@ -265,7 +350,14 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
             matchOver={matchOver}
             round={g.round}
             status={g.status}
-            headline={matchOver ? `👑 ${g.tokens.map((x, i) => (x >= g.goal ? names[i] : null)).filter(Boolean).join(', ')} 님 우승!` : `✉️ ${lr?.winners.map((w) => names[w]).join(', ')} 님이 편지를 전했어요`}
+            headline={
+              matchOver
+                ? `👑 ${g.tokens
+                    .map((x, i) => (x >= g.goal ? names[i] : null))
+                    .filter(Boolean)
+                    .join(', ')} 님 우승!`
+                : `✉️ ${lr?.winners.map((w) => names[w]).join(', ')} 님이 편지를 전했어요`
+            }
             sub={lr ? (lr.reason === 'last' ? '마지막까지 남았어요' : '더미가 비어 가장 높은 카드를 든 사람이 이겼어요') + (lr.spy !== null ? ` · 첩자 보너스 ${names[lr.spy]}` : '') : undefined}
             columns={['마지막 카드']}
             rows={g.tokens.map((tk, seat) => ({

@@ -2,12 +2,14 @@ import { useEffect, useRef, useState } from 'react';
 import type { RoomView } from '@bg/core';
 import { Card, GameConfig, GameView, LogEntry, isQueenOfSpades } from '@bg/hearts-engine';
 import { CardBack, EmoteBubble, PlayingCard, SeatDot, cardName, seatColor } from '@bg/ui';
-import { GameScreenProps, ResultSheet, SeatList, SideNote, TableBanner, TableEmotes, TableLayout, TableTopBar, Ticker, emotesBySeat, flyClone, rankOf, useLogSounds, usePeek, useTable } from '@bg/web';
+import { GameScreenProps, ResultSheet, SeatList, SideNote, TableBanner, TableEmotes, TableLayout, TableTopBar, Ticker, emotesBySeat, rankOf, useLogSounds, usePeek, useTable, useStagedView, stageTrickEnd, SeatRing } from '@bg/web';
 import { DIR_TEXT, TakenBadge } from './theme';
 
 type View = RoomView<GameView, GameConfig>;
 
-export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreenProps<GameView, GameConfig>) {
+export function Game({ view: raw, act, onLeave, notify, emotes, onEmote }: GameScreenProps<GameView, GameConfig>) {
+  // 트릭이 끝나면: 네 장이 가운데 다 놓인 모습 → 이긴 사람 쪽으로 쓸려 감 (실제 순서대로)
+  const view = useStagedView(raw, (a: GameView, b: GameView) => stageTrickEnd(a, b));
   const v = view as View;
   const g = v.game!;
   const c = g.config;
@@ -20,7 +22,18 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
     stepKey: `${g.round}-${g.phase}-${g.trickNo}-${g.trick.length}`,
     mySub: passing ? '건넬 카드 3장을 골라요' : '카드를 1장 내요',
   });
-  useLogSounds(g.log, (e) => (e.type === 'play' ? 'cardSnap' : e.type === 'trick' ? (e.points > 0 ? ['sweep', 'thud'] : 'sweep') : e.type === 'pass' ? 'riffle' : e.type === 'broken' ? ['alert', 'heartbeat'] : e.type === 'end' ? 'win' : null), { me: t.me, describe: (e) => describe(e), stamp: (e) => (e.type === 'broken' ? { text: '하트 깨짐!', tone: 'hot', shake: 0.6 } : e.type === 'trick' && e.cards.some(isQueenOfSpades) ? { text: '스페이드 퀸!', tone: 'bad', shake: 1 } : e.type === 'hand' && e.moon !== null ? { text: '달 쏘기!', tone: 'good', shake: 1.4 } : null) });
+  useLogSounds(g.log, (e) => (e.type === 'play' ? 'cardSnap' : e.type === 'trick' ? (e.points > 0 ? ['sweep', 'thud'] : 'sweep') : e.type === 'pass' ? 'riffle' : e.type === 'broken' ? ['alert', 'heartbeat'] : e.type === 'end' ? 'win' : null), {
+    me: t.me,
+    describe: (e) => describe(e),
+    stamp: (e) =>
+      e.type === 'broken'
+        ? { text: '하트 깨짐!', tone: 'hot', shake: 0.6 }
+        : e.type === 'trick' && e.cards.some(isQueenOfSpades)
+          ? { text: '스페이드 퀸!', tone: 'bad', shake: 1 }
+          : e.type === 'hand' && e.moon !== null
+            ? { text: '달 쏘기!', tone: 'good', shake: 1.4 }
+            : null,
+  });
   const names = t.names;
   const me = t.me;
   const myTurn = t.myTurn;
@@ -37,17 +50,16 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
   // 가운데: 지금 트릭, 방금 끝난 트릭은 다음 카드가 나올 때까지 그대로 (이긴 사람 표시)
   const lastLog = g.log[g.log.length - 1];
   const lastTrick = lastLog?.type === 'trick' ? lastLog : null;
-  const shown = g.trick.length ? g.trick : (g.lastTrick?.plays ?? []);
-  // 트릭을 가져가면 카드가 그 사람 자리로 날아감
-  const trickN = lastTrick?.n ?? 0;
-  useEffect(() => {
-    if (!lastTrick) return;
-    const from = document.querySelector('.hr-center');
-    const to = document.querySelector(`[data-hr-seat="${lastTrick.seat}"]`) ?? document.querySelector('.hand-panel');
-    const tm = setTimeout(() => flyClone(from, to, { count: Math.min(4, g.players), duration: 650, like: document.querySelector('.hr-center .oc-card') }), 900);
-    return () => clearTimeout(tm);
-  }, [trickN]); // eslint-disable-line react-hooks/exhaustive-deps
-
+  const shown = g.trick;
+  // 방금 가져간 트릭: 이긴 사람 자리에 작게 쌓여 있음 (가운데에서 그리로 날아감)
+  const wonPile = (s: number) =>
+    g.lastTrick && g.lastTrick.winner === s ? (
+      <span className="hr-won" aria-label="방금 가져간 트릭">
+        {g.lastTrick.plays.map((p) => (
+          <PlayingCard key={p.card.id} card={p.card} size="sm" flip={`h${g.round}-${p.card.id}`} />
+        ))}
+      </span>
+    ) : null;
   const order = me >= 0 ? Array.from({ length: g.players - 1 }, (_, k) => (me + 1 + k) % g.players) : Array.from({ length: g.players }, (_, k) => k);
   const legal = new Set(g.legal);
   const play = (card: Card) => {
@@ -90,6 +102,8 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
 
   return (
     <TableLayout
+      layout="focus"
+      dealIn={g.log.length <= 1}
       mine={myTurn}
       splash={t.splash}
       top={
@@ -102,65 +116,87 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
       }
       main={
         <>
-          <section className="hr-opps" aria-label="다른 사람">
-            {order.map((s) => (
-              <div key={s} data-hr-seat={s} className={`hr-opp ${g.turn === s && !passing ? 'acting' : ''}`} style={{ ['--seat' as string]: seatColor(s) }}>
+          <SeatRing
+            players={g.players}
+            me={me}
+            className="hr-ring"
+            seat={(s) => (
+              <div data-hr-seat={s} className={`hr-opp ${g.turn === s && !passing ? 'acting' : ''}`}>
                 <div className="hr-opp-head">
                   <SeatDot seat={s} size={10} /> <b>{names[s]}</b>
                   <EmoteBubble e={bySeat.get(s)} />
                 </div>
                 <div className="hr-opp-cards" aria-label={`카드 ${g.handCounts[s]}장`}>
                   {Array.from({ length: Math.min(g.handCounts[s], 13) }, (_, i) => (
-                    <CardBack key={i} size="sm" />
+                    <CardBack key={i} size="sm" flip={`hb${g.round}-${s}-${i}`} flipFrom=".hr-felt" />
                   ))}
                 </div>
                 <div className="hr-opp-foot">
                   <TakenBadge cards={g.taken[s]} jackBonus={c.jackBonus} />
                   {passing && <span className={`tag ${g.passed[s] ? 'ready' : ''}`}>{g.passed[s] ? '건넸어요' : '고르는 중…'}</span>}
+                  {wonPile(s)}
                 </div>
               </div>
-            ))}
-          </section>
-
-          <section className="hr-felt" aria-label="트릭">
-            <div className="hr-center" aria-live="polite">
-              {shown.length === 0 && <span className="hr-empty small">{passing ? '모두 건넬 카드를 고르는 중' : `${names[g.turn]} 님이 시작해요`}</span>}
-              {shown.map((p, i) => (
-                <div key={p.card.id} className={`hr-play ${g.lastTrick && !g.trick.length && p.seat === g.lastTrick.winner ? 'won' : ''}`} style={{ ['--i' as string]: i }}>
-                  <PlayingCard card={p.card} size="md" className="flip-reveal" flip={`h${p.card.id}`} />
-                  <span className="hr-play-name small">
-                    <SeatDot seat={p.seat} size={8} /> {p.seat === me ? '나' : names[p.seat]}
-                  </span>
+            )}
+            center={
+              <section className="hr-felt" aria-label="트릭">
+                <div className="hr-center" aria-live="polite">
+                  {shown.length === 0 && <span className="hr-empty small">{passing ? '모두 건넬 카드를 고르는 중' : `${names[g.turn]} 님이 시작해요`}</span>}
+                  {shown.map((p, i) => (
+                    <div key={p.card.id} className={`hr-play ${g.lastTrick && !g.trick.length && p.seat === g.lastTrick.winner ? 'won' : ''}`} style={{ ['--i' as string]: i }}>
+                      <PlayingCard card={p.card} size="md" flip={`h${g.round}-${p.card.id}`} />
+                      <span className="hr-play-name small">
+                        <SeatDot seat={p.seat} size={8} /> {p.seat === me ? '나' : names[p.seat]}
+                      </span>
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
-          </section>
-
-          {me >= 0 && g.status === 'playing' && (
-            <section className="hand-panel hr-hand-panel" data-hr-seat={me} aria-label="내 카드">
-              <div className="hand-panel-head small">
-                <span>
-                  <SeatDot seat={me} size={14} /> 내 카드 {g.hand.length}장 · 이번 판 <b>{g.handPoints[me]}점</b>
-                </span>
-                {passing && !myPassed && (
-                  <button className="btn primary tiny" disabled={picks.length !== 3} onClick={sendPass}>
-                    {g.passTo !== null ? `${names[g.passTo]} 님에게 ` : ''}3장 건네기
-                  </button>
-                )}
-              </div>
-              <div className="hr-hand" onPointerDown={(e) => (touch.current = e.pointerType !== 'mouse')}>
-                {g.hand.map((card, i) => {
-                  const can = passing ? !myPassed : myTurn && legal.has(card.id);
-                  const picked = picks.includes(card.id) || armed === card.id;
-                  return (
-                    <span key={card.id} className={`hr-slot ${picked ? 'picked' : ''} ${g.received.includes(card.id) ? 'got' : ''}`} style={{ ['--i' as string]: i, ['--n' as string]: g.hand.length }}>
-                      <PlayingCard card={card} size="md" playable={can && !passing} className={`${!can && !passing ? 'dim' : ''} ${picks.includes(card.id) ? 'selected' : ''}`} onClick={() => play(card)} flip={`h${card.id}`} />
+              </section>
+            }
+            bottom={
+              me >= 0 && g.status === 'playing' ? (
+                <section className="hand-panel hr-hand-panel" data-hr-seat={me} aria-label="내 카드">
+                  <div className="hand-panel-head small">
+                    <span>
+                      <SeatDot seat={me} size={14} /> 내 카드 {g.hand.length}장 · 이번 판 <b>{g.handPoints[me]}점</b> {wonPile(me)}
                     </span>
-                  );
-                })}
-              </div>
-            </section>
-          )}
+                    {passing && !myPassed && (
+                      <button className="btn primary tiny" disabled={picks.length !== 3} onClick={sendPass}>
+                        {g.passTo !== null ? `${names[g.passTo]} 님에게 ` : ''}
+                        3장 건네기
+                      </button>
+                    )}
+                  </div>
+                  <div className="hr-hand" onPointerDown={(e) => (touch.current = e.pointerType !== 'mouse')}>
+                    {g.hand.map((card, i) => {
+                      const can = passing ? !myPassed : myTurn && legal.has(card.id);
+                      const picked = picks.includes(card.id) || armed === card.id;
+                      return (
+                        <span
+                          key={card.id}
+                          className={`hr-slot ${picked ? 'picked' : ''} ${g.received.includes(card.id) ? 'got' : ''}`}
+                          style={{
+                            ['--i' as string]: i,
+                            ['--n' as string]: g.hand.length,
+                          }}
+                        >
+                          <PlayingCard
+                            card={card}
+                            size="md"
+                            playable={can && !passing}
+                            className={`${!can && !passing ? 'dim' : ''} ${picks.includes(card.id) ? 'selected' : ''}`}
+                            onClick={() => play(card)}
+                            flip={`h${g.round}-${card.id}`}
+                            flipFrom=".hr-felt"
+                          />
+                        </span>
+                      );
+                    })}
+                  </div>
+                </section>
+              ) : null
+            }
+          />
           <Ticker text={describe(lastLog)} />
         </>
       }
@@ -211,7 +247,12 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
             headline={matchOver && endLog ? `🏆 ${endLog.winners.map((w) => names[w]).join(', ')} 님 승리!` : lastHand?.moon !== null && lastHand?.moon !== undefined ? `🌕 ${names[lastHand.moon]} 님이 문을 쐈어요!` : `${g.round}판 끝`}
             sub={matchOver ? `누군가 ${c.target}점에 닿았어요 · 점수가 가장 낮은 사람이 이겨요` : `${c.target}점에 닿을 때까지 계속해요`}
             columns={g.handScores.map((_, i) => `${i + 1}판`)}
-            rows={g.totals.map((total, seat) => ({ seat, rank: ranks[seat], cells: g.handScores.map((r) => r[seat]), total: `${total}점` }))}
+            rows={g.totals.map((total, seat) => ({
+              seat,
+              rank: ranks[seat],
+              cells: g.handScores.map((r) => r[seat]),
+              total: `${total}점`,
+            }))}
           />
         ))
       }

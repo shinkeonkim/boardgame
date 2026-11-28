@@ -322,3 +322,36 @@ button.lcard:hover {
 .lcard.sm .lcard-art {
   margin-top: 0;
 }
+/* 둘러앉은 자리 */
+.sl-ring .sl-center {
+  flex: 1;
+}
+.sl-opp {
+  width: 170px;
+  padding: 6px 10px;
+  border-radius: 12px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-top: 4px solid var(--seat);
+  display: grid;
+  gap: 4px;
+  justify-items: center;
+}
+.sl-opp.acting {
+  box-shadow: 0 0 0 2px var(--seat);
+}
+.sl-opp.out {
+  opacity: 0.5;
+}
+.sl-opp-head {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+.sl-opp-hand,
+.sl-opp-discards {
+  display: flex;
+  gap: 3px;
+  flex-wrap: wrap;
+  justify-content: center;
+}

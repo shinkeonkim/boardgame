@@ -1,7 +1,7 @@
 import type { RoomView } from '@bg/core';
 import { Flip, GameConfig, GameView, LogEntry, Move } from '@bg/trio-hunt-engine';
 import { EmoteBubble, SeatDot, seatColor, Icon, iconize } from '@bg/ui';
-import { GameScreenProps, ResultSheet, SideNote, TableBanner, TableEmotes, TableLayout, TableTopBar, Ticker, emotesBySeat, rankOf, useLogSounds, usePeek, useTable, useDealFx } from '@bg/web';
+import { GameScreenProps, ResultSheet, SideNote, TableBanner, TableEmotes, TableLayout, TableTopBar, Ticker, emotesBySeat, rankOf, useLogSounds, usePeek, useTable, useDealFx, SeatRing } from '@bg/web';
 import { TrioCard } from './theme';
 
 type View = RoomView<GameView, GameConfig>;
@@ -13,11 +13,27 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
   const v = view as View;
   const g = v.game!;
   const c = g.config;
-  const t = useTable(view, notify, { title: 'Trio Hunt', turn: g.turn, playing: g.status === 'playing', mySub: '같은 숫자 세 장을 찾아요' });
+  const t = useTable(view, notify, {
+    title: 'Trio Hunt',
+    turn: g.turn,
+    playing: g.status === 'playing',
+    mySub: '같은 숫자 세 장을 찾아요',
+  });
   // 소리: 뒤집으면 카드 뒤집기, 세트는 축하, 틀리면 실패음
-  useLogSounds(g.log, (e) => (e.type === 'flip' ? 'flip' : e.type === 'trio' ? ['sweep', 'success'] : e.type === 'miss' ? ['buzzer', 'deal'] : e.type === 'win' ? 'win' : null), { me: t.me, describe: (e) => describe(e), stamp: (e) => (e.type === 'trio' ? { text: `${e.value} 트리오!`, tone: 'good', shake: 0.6 } : e.type === 'miss' ? { text: '꽝', tone: 'bad' } : null) });
+  useLogSounds(g.log, (e) => (e.type === 'flip' ? 'flip' : e.type === 'trio' ? ['sweep', 'success'] : e.type === 'miss' ? ['buzzer', 'deal'] : e.type === 'win' ? 'win' : null), {
+    me: t.me,
+    describe: (e) => describe(e),
+    stamp: (e) => (e.type === 'trio' ? { text: `${e.value} 트리오!`, tone: 'good', shake: 0.6 } : e.type === 'miss' ? { text: '꽝', tone: 'bad' } : null),
+  });
   // 새 판마다 카드를 섞고 나눠 주는 연출 (@bg/web deal-fx)
-  useDealFx(`${g.round}`, { per: 3, seats: '.th-seat', hand: null, origin: '.th-middle', initial: g.flips.length === 0 && g.log.length === 0 });
+  useDealFx(`${g.round}`, {
+    per: 3,
+    seats: '.th-seat',
+    hand: null,
+    cards: '.sr-bottom .th-hand .pc',
+    origin: '.th-middle',
+    initial: g.flips.length === 0 && g.log.length === 0,
+  });
   const names = t.names;
   const me = t.me;
   const myTurn = t.myTurn;
@@ -54,7 +70,7 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
     const mine = s === me;
     const cards = mine ? g.hand : Array.from({ length: h.count }, () => null);
     return (
-      <div key={s} data-seat={s} className={`th-seat ${g.turn === s ? 'acting' : ''} ${mine ? 'mine' : ''}`} style={{ ['--seat' as string]: seatColor(s) }}>
+      <div key={s} className={`th-seat ${g.turn === s ? 'acting' : ''} ${mine ? 'mine' : ''}`} style={{ ['--seat' as string]: seatColor(s) }}>
         <div className="th-seat-head small">
           <span className="seat-name">
             <EmoteBubble e={bySeat.get(s)} />
@@ -67,7 +83,9 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
                 <TrioCard n={n} size="sm" />
               </span>
             ))}
-            <span className="muted">{g.trios[s].length}/{c.goal}</span>
+            <span className="muted">
+              {g.trios[s].length}/{c.goal}
+            </span>
           </span>
         </div>
         <div className="th-hand">
@@ -78,7 +96,7 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
           )}
           {cards.map((card, i) => {
             const id = mine ? card!.id : null;
-            const open = id ? flipped.get(id) ?? missShown.get(id) : null;
+            const open = id ? (flipped.get(id) ?? missShown.get(id)) : null;
             // 남의 패: 이번 차례에 뒤집힌 카드는 그 자리(끝)에 앞면으로
             const otherOpen = !mine ? g.flips.filter((f) => f.from === s) : [];
             const lowOpen = otherOpen.filter((f) => f.end === 'low');
@@ -106,6 +124,7 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
 
   return (
     <TableLayout
+      layout="focus"
       mine={myTurn}
       splash={t.splash}
       top={
@@ -118,31 +137,39 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
       }
       main={
         <>
-          <section className="th-tray" aria-label="이번에 뒤집은 카드">
-            {g.flips.length ? (
-              g.flips.map((f) => <TrioCard key={f.id} n={f.n} size="lg" glow />)
-            ) : g.lastMiss.length ? (
+          <SeatRing
+            players={g.players}
+            me={me}
+            edges="top"
+            className="th-ring"
+            seat={(s) => handRow(s)}
+            center={
               <>
-                <span className="small th-miss-label">방금 공개:</span>
-                {g.lastMiss.map((f) => (
-                  <TrioCard key={f.id} n={f.n} size="md" />
-                ))}
+                <section className="th-tray" aria-label="이번에 뒤집은 카드">
+                  {g.flips.length ? (
+                    g.flips.map((f) => <TrioCard key={f.id} n={f.n} size="lg" glow flip={`tf${f.id}`} flipFrom={f.from < 0 ? '.th-middle' : String(f.from)} />)
+                  ) : g.lastMiss.length ? (
+                    <>
+                      <span className="small th-miss-label">방금 공개:</span>
+                      {g.lastMiss.map((f) => (
+                        <TrioCard key={f.id} n={f.n} size="md" />
+                      ))}
+                    </>
+                  ) : (
+                    <span className="muted small">같은 숫자 세 장을 이어 뒤집으면 세트!</span>
+                  )}
+                </section>
+                <section className="th-middle" aria-label="가운데 카드">
+                  {g.middle.map((id, idx) => {
+                    if (!id) return <span key={idx} className="th-gap" />;
+                    const f = flipped.get(id) ?? missShown.get(id);
+                    return <TrioCard key={id} n={f?.n ?? null} faceDown={!f} size="md" glow={!!f && flipped.has(id)} onClick={myTurn && !flipped.has(id) ? () => reveal({ type: 'reveal', seat: -1, idx }) : undefined} />;
+                  })}
+                </section>
               </>
-            ) : (
-              <span className="muted small">같은 숫자 세 장을 이어 뒤집으면 세트!</span>
-            )}
-          </section>
-          <section className="th-middle" aria-label="가운데 카드">
-            {g.middle.map((id, idx) => {
-              if (!id) return <span key={idx} className="th-gap" />;
-              const f = flipped.get(id) ?? missShown.get(id);
-              return <TrioCard key={id} n={f?.n ?? null} faceDown={!f} size="md" glow={!!f && flipped.has(id)} onClick={myTurn && !flipped.has(id) ? () => reveal({ type: 'reveal', seat: -1, idx }) : undefined} />;
-            })}
-          </section>
-          <section className="th-seats" aria-label="손패">
-            {/* 내 손패를 맨 위에 (폰에서 스크롤하지 않아도 보이게), 그다음 내 왼쪽부터 */}
-            {Array.from({ length: g.players }, (_, k) => (me >= 0 ? (me + k) % g.players : k)).map(handRow)}
-          </section>
+            }
+            bottom={me >= 0 ? handRow(me) : undefined}
+          />
           <Ticker text={describe(g.log[g.log.length - 1])} />
         </>
       }
@@ -177,7 +204,12 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
             headline={`🃏 ${names[g.winners[g.winners.length - 1]]} 님 승리!`}
             sub="이긴 사람 +3 · 모은 세트마다 +1"
             columns={g.roundScores.map((_, i) => `${i + 1}판`)}
-            rows={g.totals.map((total, seat) => ({ seat, rank: ranks[seat], cells: g.roundScores.map((r) => r[seat]), total }))}
+            rows={g.totals.map((total, seat) => ({
+              seat,
+              rank: ranks[seat],
+              cells: g.roundScores.map((r) => r[seat]),
+              total,
+            }))}
           />
         ))
       }

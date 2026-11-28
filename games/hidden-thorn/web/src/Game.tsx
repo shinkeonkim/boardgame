@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import type { RoomView } from '@bg/core';
 import { Disc, GameConfig, GameView, LogEntry } from '@bg/hidden-thorn-engine';
 import { AlertBanner, EmoteBubble, SeatDot, seatColor, Icon, iconize } from '@bg/ui';
-import { GameScreenProps, ResultSheet, TableBanner, TableEmotes, TableLayout, TableTopBar, Ticker, emotesBySeat, rankOf, usePeek, useTable, waitingText, SideNote, useLogSounds, useChangeSound } from '@bg/web';
+import { GameScreenProps, ResultSheet, TableBanner, TableEmotes, TableLayout, TableTopBar, Ticker, emotesBySeat, rankOf, usePeek, useTable, waitingText, SideNote, useLogSounds, useChangeSound, SeatRing } from '@bg/web';
 import { DiscView } from './theme';
 
 type View = RoomView<GameView, GameConfig>;
@@ -40,8 +40,35 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
     mySub: g.phase === 'flip' ? '뒤집을 원판을 골라요' : g.phase === 'bidding' ? '더 부르거나 포기' : '원판을 놓거나 도전',
   });
   // 소리: 원판(칩) 놓기·호가는 딸깍, 뒤집어 장미면 뒤집기, 가시면 쿵, 성공은 축하
-  useLogSounds(g.log, (e) => (e.type === 'bid' ? 'chipStack' : e.type === 'pass' ? 'tick' : e.type === 'flip' ? (e.disc === 'thorn' ? ['flip', 'heartbeat', 'thud'] : ['flip', 'pluck']) : e.type === 'success' ? 'success' : e.type === 'fail' ? 'fail' : e.type === 'win' ? 'win' : null), { me: t.me, describe: (e) => describe(e, t.names), stamp: (e) => (e.type === 'flip' && e.disc === 'thorn' ? { text: '가시!', tone: 'hot', shake: 1.3 } : e.type === 'success' ? { text: '도전 성공!', tone: 'good' } : e.type === 'out' ? { text: '탈락', tone: 'bad' } : null) });
-  useChangeSound(g.matCounts.reduce((a, b) => a + b, 0), 'chip', g.status === 'playing');
+  useLogSounds(
+    g.log,
+    (e) =>
+      e.type === 'bid'
+        ? 'chipStack'
+        : e.type === 'pass'
+          ? 'tick'
+          : e.type === 'flip'
+            ? e.disc === 'thorn'
+              ? ['flip', 'heartbeat', 'thud']
+              : ['flip', 'pluck']
+            : e.type === 'success'
+              ? 'success'
+              : e.type === 'fail'
+                ? 'fail'
+                : e.type === 'win'
+                  ? 'win'
+                  : null,
+    {
+      me: t.me,
+      describe: (e) => describe(e, t.names),
+      stamp: (e) => (e.type === 'flip' && e.disc === 'thorn' ? { text: '가시!', tone: 'hot', shake: 1.3 } : e.type === 'success' ? { text: '도전 성공!', tone: 'good' } : e.type === 'out' ? { text: '탈락', tone: 'bad' } : null),
+    },
+  );
+  useChangeSound(
+    g.matCounts.reduce((a, b) => a + b, 0),
+    'chip',
+    g.status === 'playing',
+  );
   const names = t.names;
   const me = t.me;
   const myTurn = t.myTurn;
@@ -79,9 +106,54 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
 
   const matchOver = g.status === 'match-over';
   const order = Array.from({ length: g.players }, (_, i) => (me >= 0 ? (me + i) % g.players : i));
+  // 한 사람의 매트 (쌓인 원판). 다른 사람은 둘러앉은 자리에, 내 것은 아래에
+  const mat = (s: number) => {
+    const out = g.ownedCounts[s] === 0;
+    const m = view.members.find((x) => x.seat === s);
+    const canFlip = g.phase === 'flip' && myTurn && s !== me && g.flippedDiscs[s].length < g.matCounts[s];
+    return (
+      <div key={s} className={`ht-mat ${out ? 'out' : ''} ${g.actors.includes(s) ? 'acting' : ''} ${canFlip ? 'can-flip' : ''} ${s === me ? 'mine' : ''}`} style={{ ['--seat' as string]: seatColor(s) }} onClick={canFlip ? () => flip(s) : undefined}>
+        <div className="ht-mat-head small">
+          <span className="seat-name">
+            <EmoteBubble e={bySeat.get(s)} />
+            <b>{names[s]}</b>
+            {m?.bot && (
+              <span className={`tag bot ${m.bot}`}>
+                <Icon name="bot" />
+              </span>
+            )}
+            {g.passed.includes(s) && g.phase === 'bidding' && <span className="tag">포기</span>}
+          </span>
+          <span className="ht-points" title="성공 횟수">
+            {Array.from({ length: c.winPoints }, (_, i) => (
+              <i key={i} className={i < g.points[s] ? 'on' : ''} />
+            ))}
+          </span>
+        </div>
+        <div className="ht-stack">
+          {Array.from({ length: g.matCounts[s] }, (_, i) => {
+            // 위에서부터 i번째 (0 = 맨 위)
+            const fromTop = g.matCounts[s] - 1 - i;
+            const flipped = g.flippedDiscs[s][fromTop];
+            const own = s === me ? g.myMat[i] : null;
+            return (
+              // 뒤집히면 key가 바뀌어 뒤집히는 움직임이 한 번 나온다
+              <span key={`${i}-${flipped ?? 'x'}`} data-flip={`ht${s}-${i}`} className={`ht-slot ${own && !flipped ? 'peek' : ''} ${flipped ? 'flipped flip-reveal' : ''}`} style={{ ['--i' as string]: i }}>
+                <DiscView disc={flipped ?? (own && g.status !== 'playing' ? own : (flipped ?? null))} seat={s} size={44} />
+                {own && !flipped && <span className="ht-peek">{own === 'rose' ? iconize('🌹') : iconize('🌵')}</span>}
+              </span>
+            );
+          })}
+          {g.matCounts[s] === 0 && <span className="muted small">{out ? '탈락' : '비어 있음'}</span>}
+        </div>
+        <div className="small muted">원판 {g.ownedCounts[s]}개</div>
+      </div>
+    );
+  };
 
   return (
     <TableLayout
+      layout="focus"
       mine={myTurn}
       splash={t.splash}
       top={
@@ -94,103 +166,102 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
       }
       main={
         <>
-          <section className={`ht-table ${g.phase === 'flip' && myTurn ? 'flipping' : ''}`} aria-label="테이블">
-            {order.map((s) => {
-              const out = g.ownedCounts[s] === 0;
-              const m = view.members.find((x) => x.seat === s);
-              const canFlip = g.phase === 'flip' && myTurn && s !== me && g.flippedDiscs[s].length < g.matCounts[s];
-              return (
-                <div key={s} data-seat={s} className={`ht-mat ${out ? 'out' : ''} ${g.actors.includes(s) ? 'acting' : ''} ${canFlip ? 'can-flip' : ''} ${s === me ? 'mine' : ''}`} style={{ ['--seat' as string]: seatColor(s) }} onClick={canFlip ? () => flip(s) : undefined}>
-                  <div className="ht-mat-head small">
-                    <span className="seat-name">
-                      <EmoteBubble e={bySeat.get(s)} />
-                      <b>{names[s]}</b>
-                      {m?.bot && <span className={`tag bot ${m.bot}`}><Icon name="bot" /></span>}
-                      {g.passed.includes(s) && g.phase === 'bidding' && <span className="tag">포기</span>}
-                    </span>
-                    <span className="ht-points" title="성공 횟수">
-                      {Array.from({ length: c.winPoints }, (_, i) => (
-                        <i key={i} className={i < g.points[s] ? 'on' : ''} />
-                      ))}
-                    </span>
+          <SeatRing
+            players={g.players}
+            me={me}
+            className={`ht-ring ${g.phase === 'flip' && myTurn ? 'flipping' : ''}`}
+            seat={(s) => mat(s)}
+            center={
+              <section className="ht-table" aria-label="테이블">
+                {g.bid ? (
+                  <div key={`${g.bid.seat}-${g.bid.count}`} data-flip={`htbid${g.bid.seat}-${g.bid.count}`} className="ht-bidnow" style={{ ['--seat' as string]: seatColor(g.bid.seat) }}>
+                    <SeatDot seat={g.bid.seat} size={12} /> <b>{names[g.bid.seat]}</b>
+                    <span>「장미 {g.bid.count}장 뒤집을게」</span>
                   </div>
-                  <div className="ht-stack">
-                    {Array.from({ length: g.matCounts[s] }, (_, i) => {
-                      // 위에서부터 i번째 (0 = 맨 위)
-                      const fromTop = g.matCounts[s] - 1 - i;
-                      const flipped = g.flippedDiscs[s][fromTop];
-                      const own = s === me ? g.myMat[i] : null;
-                      return (
-                        // 뒤집히면 key가 바뀌어 뒤집히는 움직임이 한 번 나온다
-                        <span key={`${i}-${flipped ?? 'x'}`} data-flip={`ht${s}-${i}`} className={`ht-slot ${own && !flipped ? 'peek' : ''} ${flipped ? 'flipped' : ''}`} style={{ ['--i' as string]: i }}>
-                          <DiscView disc={flipped ?? (own && g.status !== 'playing' ? own : flipped ?? null)} seat={s} size={44} />
-                          {own && !flipped && <span className="ht-peek">{own === 'rose' ? iconize('🌹') : iconize('🌵')}</span>}
-                        </span>
-                      );
-                    })}
-                    {g.matCounts[s] === 0 && <span className="muted small">{out ? '탈락' : '비어 있음'}</span>}
-                  </div>
-                  <div className="small muted">원판 {g.ownedCounts[s]}개</div>
-                </div>
-              );
-            })}
-          </section>
-
-          {me >= 0 && g.status === 'playing' && g.ownedCounts[me] > 0 && (
-            <section className="hand-panel" aria-label="내 원판">
-              <div className="hand-panel-head small">
-                <span>
-                  <SeatDot seat={me} size={14} /> 내 손의 원판 {g.hand.length}개 · 가진 원판 {g.myOwned.map((d, i) => (d === 'rose' ? <Icon key={i} name="rose" color="#c0392b" /> : <Icon key={i} name="cactus" color="#2e8b57" />))}
-                </span>
-              </div>
-              {(g.phase === 'open' || g.phase === 'turn') && (
-                <div className="hand-row">
-                  {(['rose', 'thorn'] as Disc[]).map((d) => {
-                    const n = g.hand.filter((x) => x === d).length;
-                    return (
-                      <button key={d} className="ht-choice" disabled={!myTurn || n === 0} onClick={() => place(d)}>
-                        <DiscView disc={d} size={52} />
+                ) : (
+                  <span className="muted small">{g.phase === 'open' ? '모두 첫 원판을 몰래 놓아요' : '원판을 더 놓거나 도전해요'}</span>
+                )}
+                <span className="small muted">놓인 원판 모두 {g.total}개</span>
+              </section>
+            }
+            bottom={
+              me >= 0 ? (
+                <>
+                  {mat(me)}
+                  {me >= 0 && g.status === 'playing' && g.ownedCounts[me] > 0 && (
+                    <section className="hand-panel" aria-label="내 원판">
+                      <div className="hand-panel-head small">
                         <span>
-                          {d === 'rose' ? '장미' : '가시'} 놓기 ({n})
+                          <SeatDot seat={me} size={14} /> 내 손의 원판 {g.hand.length}개 · 가진 원판 {g.myOwned.map((d, i) => (d === 'rose' ? <Icon key={i} name="rose" color="#c0392b" /> : <Icon key={i} name="cactus" color="#2e8b57" />))}
                         </span>
-                      </button>
-                    );
-                  })}
-                </div>
-              )}
-              {g.phase === 'lose' && myTurn && (
-                <div className="hand-row">
-                  {[...new Set(g.myOwned)].map((d) => (
-                    <button key={d} className="ht-choice" onClick={() => act('move', { move: { type: 'lose', disc: d } })}>
-                      <DiscView disc={d} size={52} />
-                      <span>{d === 'rose' ? '장미' : '가시'} 잃기</span>
-                    </button>
-                  ))}
-                </div>
-              )}
-              {((g.phase === 'turn' && myTurn && g.total > 0) || (g.phase === 'bidding' && myTurn)) && (
-                <div className="action-row ht-bid">
-                  <span className="bd-count">
-                    <button className="icon-btn" onClick={() => setBid((b) => Math.max((g.bid?.count ?? 0) + 1, b - 1))} aria-label="하나 줄이기">
-                      −
-                    </button>
-                    <b>{bid}장</b>
-                    <button className="icon-btn" onClick={() => setBid((b) => Math.min(g.total, b + 1))} aria-label="하나 늘리기">
-                      +
-                    </button>
-                  </span>
-                  <button className="btn primary" onClick={() => act('move', { move: { type: 'bid', count: bid } })}>
-                    「장미 {bid}장 뒤집을게」
-                  </button>
-                  {g.phase === 'bidding' && (
-                    <button className="btn" onClick={() => act('move', { move: { type: 'pass' } })}>
-                      포기
-                    </button>
+                      </div>
+                      {(g.phase === 'open' || g.phase === 'turn') && (
+                        <div className="hand-row">
+                          {(['rose', 'thorn'] as Disc[]).map((d) => {
+                            const n = g.hand.filter((x) => x === d).length;
+                            return (
+                              <button key={d} className="ht-choice" disabled={!myTurn || n === 0} onClick={() => place(d)}>
+                                <DiscView disc={d} size={52} />
+                                <span>
+                                  {d === 'rose' ? '장미' : '가시'} 놓기 ({n})
+                                </span>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      )}
+                      {g.phase === 'lose' && myTurn && (
+                        <div className="hand-row">
+                          {[...new Set(g.myOwned)].map((d) => (
+                            <button
+                              key={d}
+                              className="ht-choice"
+                              onClick={() =>
+                                act('move', {
+                                  move: { type: 'lose', disc: d },
+                                })
+                              }
+                            >
+                              <DiscView disc={d} size={52} />
+                              <span>{d === 'rose' ? '장미' : '가시'} 잃기</span>
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                      {((g.phase === 'turn' && myTurn && g.total > 0) || (g.phase === 'bidding' && myTurn)) && (
+                        <div className="action-row ht-bid">
+                          <span className="bd-count">
+                            <button className="icon-btn" onClick={() => setBid((b) => Math.max((g.bid?.count ?? 0) + 1, b - 1))} aria-label="하나 줄이기">
+                              −
+                            </button>
+                            <b>{bid}장</b>
+                            <button className="icon-btn" onClick={() => setBid((b) => Math.min(g.total, b + 1))} aria-label="하나 늘리기">
+                              +
+                            </button>
+                          </span>
+                          <button
+                            className="btn primary"
+                            onClick={() =>
+                              act('move', {
+                                move: { type: 'bid', count: bid },
+                              })
+                            }
+                          >
+                            「장미 {bid}장 뒤집을게」
+                          </button>
+                          {g.phase === 'bidding' && (
+                            <button className="btn" onClick={() => act('move', { move: { type: 'pass' } })}>
+                              포기
+                            </button>
+                          )}
+                        </div>
+                      )}
+                    </section>
                   )}
-                </div>
-              )}
-            </section>
-          )}
+                </>
+              ) : undefined
+            }
+          />
           <Ticker text={describe(g.log[g.log.length - 1], names)} />
         </>
       }
@@ -233,7 +304,12 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
             headline={`🏆 ${names[g.winners[g.winners.length - 1]]} 님 우승!`}
             sub={g.log.some((e) => e.type === 'win' && e.why === 'last') ? '마지막까지 원판을 지켰어요' : `도전에 ${c.winPoints}번 성공했어요`}
             columns={g.winners.map((_, i) => `${i + 1}게임`)}
-            rows={g.totals.map((total, seat) => ({ seat, rank: rankOf(g.totals)[seat], cells: g.winners.map((w) => (w === seat ? '🏆' : '')), total: `${total}승` }))}
+            rows={g.totals.map((total, seat) => ({
+              seat,
+              rank: rankOf(g.totals)[seat],
+              cells: g.winners.map((w) => (w === seat ? '🏆' : '')),
+              total: `${total}승`,
+            }))}
           />
         ))
       }

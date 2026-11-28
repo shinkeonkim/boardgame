@@ -2,12 +2,14 @@ import { useEffect, useRef, useState } from 'react';
 import type { RoomView } from '@bg/core';
 import { Card, GameConfig, GameView, LogEntry } from '@bg/orbit-tasks-engine';
 import { EmoteBubble, Icon, SeatDot, seatColor } from '@bg/ui';
-import { GameScreenProps, ResultSheet, SeatList, SideNote, TableBanner, TableEmotes, TableLayout, TableTopBar, Ticker, emotesBySeat, flyClone, useLogSounds, usePeek, useTable } from '@bg/web';
+import { GameScreenProps, ResultSheet, SeatList, SideNote, TableBanner, TableEmotes, TableLayout, TableTopBar, Ticker, emotesBySeat, useLogSounds, usePeek, useTable, useStagedView, stageTrickEnd, SeatRing } from '@bg/web';
 import { SIGNAL_TEXT, SignalMark, SpaceCard, cardName } from './theme';
 
 type View = RoomView<GameView, GameConfig>;
 
-export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreenProps<GameView, GameConfig>) {
+export function Game({ view: raw, act, onLeave, notify, emotes, onEmote }: GameScreenProps<GameView, GameConfig>) {
+  // 트릭이 끝나면: 모두의 카드가 가운데 놓인 모습 → 이긴 사람 쪽으로 쓸려 감
+  const view = useStagedView(raw, (a: GameView, b: GameView) => stageTrickEnd(a, b));
   const v = view as View;
   const g = v.game!;
   const c = g.config;
@@ -19,7 +21,41 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
     stepKey: `${g.round}-${g.phase}-${g.trickNo}-${g.trick.length}-${g.tasks.filter((x) => x.owner !== null).length}`,
     mySub: draft ? '맡을 과제를 골라요' : '카드를 1장 내요',
   });
-  useLogSounds(g.log, (e) => (e.type === 'play' ? 'cardSnap' : e.type === 'take' ? 'pageTurn' : e.type === 'signal' ? ['beep', 'static'] : e.type === 'trick' ? (e.done.length ? ['sweep', 'ding'] : 'sweep') : e.type === 'result' ? (e.success ? 'win' : 'fail') : e.type === 'mission' ? 'riffle' : null), { me: t.me, describe: (e) => describe(e), stamp: (e) => (e.type === 'result' ? { text: e.success ? '임무 성공!' : '임무 실패', tone: e.success ? 'good' : 'bad', shake: e.success ? 0.5 : 1 } : e.type === 'signal' ? { text: '신호!', tone: 'info', othersOnly: true } : null) });
+  useLogSounds(
+    g.log,
+    (e) =>
+      e.type === 'play'
+        ? 'cardSnap'
+        : e.type === 'take'
+          ? 'pageTurn'
+          : e.type === 'signal'
+            ? ['beep', 'static']
+            : e.type === 'trick'
+              ? e.done.length
+                ? ['sweep', 'ding']
+                : 'sweep'
+              : e.type === 'result'
+                ? e.success
+                  ? 'win'
+                  : 'fail'
+                : e.type === 'mission'
+                  ? 'riffle'
+                  : null,
+    {
+      me: t.me,
+      describe: (e) => describe(e),
+      stamp: (e) =>
+        e.type === 'result'
+          ? {
+              text: e.success ? '임무 성공!' : '임무 실패',
+              tone: e.success ? 'good' : 'bad',
+              shake: e.success ? 0.5 : 1,
+            }
+          : e.type === 'signal'
+            ? { text: '신호!', tone: 'info', othersOnly: true }
+            : null,
+    },
+  );
   const names = t.names;
   const me = t.me;
   const myTurn = t.myTurn;
@@ -33,16 +69,17 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
   }, [g.round, g.phase, g.trickNo]);
   const { bySeat } = emotesBySeat(emotes);
 
-  const shown = g.trick.length ? g.trick : (g.lastTrick?.plays ?? []);
+  const shown = g.trick;
+  // 방금 가져간 트릭: 이긴 사람 자리에 작게 쌓임 (가운데에서 그리로 날아감)
+  const wonPile = (s: number) =>
+    g.lastTrick && g.lastTrick.winner === s ? (
+      <span className="ot-won" aria-label="방금 가져간 트릭">
+        {g.lastTrick.plays.map((p) => (
+          <SpaceCard key={p.card.id} card={p.card} size="xs" flip={`h${g.round}-${p.card.id}`} />
+        ))}
+      </span>
+    ) : null;
   const lastLog = g.log[g.log.length - 1];
-  const trickLog = [...g.log].reverse().find((e) => e.type === 'trick') as Extract<LogEntry, { type: 'trick' }> | undefined;
-  const trickN = trickLog?.n ?? 0;
-  useEffect(() => {
-    if (!trickLog) return;
-    const tm = setTimeout(() => flyClone(document.querySelector('.ot-center'), document.querySelector(`[data-ot-seat="${trickLog.seat}"]`), { count: Math.min(4, g.players), duration: 650, like: document.querySelector('.ot-center .ot-card') }), 900);
-    return () => clearTimeout(tm);
-  }, [trickN]); // eslint-disable-line react-hooks/exhaustive-deps
-
   const order = me >= 0 ? Array.from({ length: g.players - 1 }, (_, k) => (me + 1 + k) % g.players) : Array.from({ length: g.players }, (_, k) => k);
   const legal = new Set(g.legal);
   const signalable = new Set(g.signalable);
@@ -83,7 +120,17 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
         return `항해 끝 · 가장 큰 성공: 과제 ${e.best}개`;
     }
   };
-  const title = draft ? (myTurn ? '맡을 과제를 골라요' : `${names[g.turn]} 님이 과제를 고르는 중`) : signalMode ? '알릴 카드를 골라요' : myTurn ? (g.trick.length ? '같은 색을 내요 (없으면 아무거나)' : '카드를 1장 내서 시작해요') : `${names[g.turn]} 님 차례`;
+  const title = draft
+    ? myTurn
+      ? '맡을 과제를 골라요'
+      : `${names[g.turn]} 님이 과제를 고르는 중`
+    : signalMode
+      ? '알릴 카드를 골라요'
+      : myTurn
+        ? g.trick.length
+          ? '같은 색을 내요 (없으면 아무거나)'
+          : '카드를 1장 내서 시작해요'
+        : `${names[g.turn]} 님 차례`;
   const hint = draft ? `과제 ${g.tasks.filter((x) => x.owner !== null).length}/${g.tasks.length}개 맡음 · 대장 ${names[g.captain]}` : `임무 ${g.round} · 과제 ${g.tasks.filter((x) => x.done).length}/${g.tasks.length} · 로켓은 으뜸`;
   const matchOver = g.status === 'match-over';
   const resultLog = [...g.log].reverse().find((e) => e.type === 'result') as Extract<LogEntry, { type: 'result' }> | undefined;
@@ -91,6 +138,8 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
 
   return (
     <TableLayout
+      layout="focus"
+      dealIn={g.log.length <= 1}
       mine={myTurn}
       splash={t.splash}
       top={
@@ -98,14 +147,34 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
           <TableTopBar view={view} act={act} round={g.round} rounds={c.attempts} over={matchOver}>
             <TableEmotes emotes={emotes} onEmote={onEmote} small />
           </TableTopBar>
-          {g.status === 'playing' && <TableBanner t={t} act={act} title={title} hint={hint} icon={<SeatDot seat={g.turn} size={16} />} steps={<span className="small muted nowrap">임무 {g.round}/{c.attempts}</span>} />}
+          {g.status === 'playing' && (
+            <TableBanner
+              t={t}
+              act={act}
+              title={title}
+              hint={hint}
+              icon={<SeatDot seat={g.turn} size={16} />}
+              steps={
+                <span className="small muted nowrap">
+                  임무 {g.round}/{c.attempts}
+                </span>
+              }
+            />
+          )}
         </>
       }
       main={
         <>
           <section className="ot-tasks" aria-label="과제">
             {g.tasks.map((task) => (
-              <button key={task.card.id} type="button" className={`ot-task ${task.done ? 'done' : ''} ${task.owner === null ? 'open' : ''}`} onClick={() => task.owner === null && take(task.card.id)} disabled={task.owner !== null || !(draft && myTurn)} aria-label={`과제 ${cardName(task.card)}${task.owner !== null ? `, ${names[task.owner]} 님 맡음` : ''}${task.order ? `, 순서 ${task.order}` : ''}`}>
+              <button
+                key={task.card.id}
+                type="button"
+                className={`ot-task ${task.done ? 'done' : ''} ${task.owner === null ? 'open' : ''}`}
+                onClick={() => task.owner === null && take(task.card.id)}
+                disabled={task.owner !== null || !(draft && myTurn)}
+                aria-label={`과제 ${cardName(task.card)}${task.owner !== null ? `, ${names[task.owner]} 님 맡음` : ''}${task.order ? `, 순서 ${task.order}` : ''}`}
+              >
                 {task.order !== null && <span className={`ot-order ${task.order < g.nextOrder ? 'past' : ''}`}>{task.order}</span>}
                 <SpaceCard card={task.card} size="sm" />
                 <span className="ot-task-owner small">
@@ -125,14 +194,22 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
             ))}
           </section>
 
-          <section className="ot-opps" aria-label="다른 대원">
-            {order.map((s) => (
-              <div key={s} data-ot-seat={s} className={`ot-opp ${g.turn === s ? 'acting' : ''}`} style={{ ['--seat' as string]: seatColor(s) }}>
+          <SeatRing
+            players={g.players}
+            me={me}
+            className="ot-ring"
+            seat={(s) => (
+              <div data-ot-seat={s} className={`ot-opp ${g.turn === s ? 'acting' : ''}`}>
                 <div className="ot-opp-head">
                   <SeatDot seat={s} size={10} /> <b>{names[s]}</b>
                   {g.captain === s && <span className="tag">대장</span>}
                   <EmoteBubble e={bySeat.get(s)} />
                 </div>
+                <span className="ot-opp-backs" aria-label={`카드 ${g.handCounts[s]}장`}>
+                  {Array.from({ length: Math.min(g.handCounts[s], 13) }, (_, i) => (
+                    <span key={i} className="ot-back" data-flip={`ob${g.round}-${s}-${i}`} data-flip-from=".ot-felt" />
+                  ))}
+                </span>
                 <span className="small muted">카드 {g.handCounts[s]}장</span>
                 {g.signals[s] && (
                   <span className="ot-opp-signal">
@@ -140,56 +217,72 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
                     <SignalMark kind={g.signals[s]!.kind} />
                   </span>
                 )}
+                {wonPile(s)}
               </div>
-            ))}
-          </section>
-
-          <section className="ot-felt" aria-label="트릭">
-            <div className="ot-center" aria-live="polite">
-              {shown.length === 0 && <span className="ot-empty small">{draft ? '과제를 고르는 중' : `${names[g.turn]} 님이 시작해요`}</span>}
-              {shown.map((p, i) => (
-                <div key={p.card.id} className={`ot-play ${g.lastTrick && !g.trick.length && p.seat === g.lastTrick.winner ? 'won' : ''}`} style={{ ['--i' as string]: i }}>
-                  <SpaceCard card={p.card} size="md" className="flip-reveal" />
-                  <span className="ot-play-name small">
-                    <SeatDot seat={p.seat} size={8} /> {p.seat === me ? '나' : names[p.seat]}
-                  </span>
+            )}
+            center={
+              <section className="ot-felt" aria-label="트릭">
+                <div className="ot-center" aria-live="polite">
+                  {shown.length === 0 && <span className="ot-empty small">{draft ? '과제를 고르는 중' : `${names[g.turn]} 님이 시작해요`}</span>}
+                  {shown.map((p, i) => (
+                    <div key={p.card.id} className={`ot-play ${g.lastTrick && !g.trick.length && p.seat === g.lastTrick.winner ? 'won' : ''}`} style={{ ['--i' as string]: i }}>
+                      <SpaceCard card={p.card} size="md" flip={`h${g.round}-${p.card.id}`} />
+                      <span className="ot-play-name small">
+                        <SeatDot seat={p.seat} size={8} /> {p.seat === me ? '나' : names[p.seat]}
+                      </span>
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
-          </section>
-
-          {me >= 0 && g.status === 'playing' && (
-            <section className="hand-panel ot-hand-panel" data-ot-seat={me} aria-label="내 카드">
-              <div className="hand-panel-head small">
-                <span>
-                  <SeatDot seat={me} size={14} /> 내 카드 {g.hand.length}장{g.captain === me ? ' · 대장' : ''}
-                </span>
-                {g.signals[me] ? (
-                  <span className="ot-my-signal">
-                    보낸 신호: {cardName(g.signals[me]!.card)} <SignalMark kind={g.signals[me]!.kind} />
-                  </span>
-                ) : (
-                  c.signals &&
-                  !draft && (
-                    <button type="button" className={`btn tiny ${signalMode ? 'primary' : ''}`} disabled={!canSignal && !signalMode} onClick={() => setSignalMode((x) => !x)} title={canSignal ? '손패 한 장을 「가장 높음·낮음·하나뿐」으로 알려요 (트릭 사이에만)' : '트릭 사이에만 보낼 수 있어요'}>
-                      <Icon name="bell" /> {signalMode ? '그만두기' : '신호 보내기'}
-                    </button>
-                  )
-                )}
-              </div>
-              <div className="ot-hand" onPointerDown={(e) => (touch.current = e.pointerType !== 'mouse')}>
-                {g.hand.map((card, i) => {
-                  const can = signalMode ? signalable.has(card.id) : !draft && myTurn && legal.has(card.id);
-                  const isTask = g.tasks.find((x) => x.card.id === card.id && !x.done);
-                  return (
-                    <span key={card.id} className={`ot-slot ${armed === card.id ? 'picked' : ''}`} style={{ ['--i' as string]: i, ['--n' as string]: g.hand.length }}>
-                      <SpaceCard card={card} size="md" playable={can} dim={!can && (signalMode || (myTurn && !draft))} onClick={() => tapCard(card)} flip={`h${card.id}`} className={isTask ? 'task' : ''} />
+              </section>
+            }
+            bottom={
+              me >= 0 && g.status === 'playing' ? (
+                <section className="hand-panel ot-hand-panel" data-ot-seat={me} aria-label="내 카드">
+                  <div className="hand-panel-head small">
+                    <span>
+                      <SeatDot seat={me} size={14} /> 내 카드 {g.hand.length}장{g.captain === me ? ' · 대장' : ''} {wonPile(me)}
                     </span>
-                  );
-                })}
-              </div>
-            </section>
-          )}
+                    {g.signals[me] ? (
+                      <span className="ot-my-signal">
+                        보낸 신호: {cardName(g.signals[me]!.card)} <SignalMark kind={g.signals[me]!.kind} />
+                      </span>
+                    ) : (
+                      c.signals &&
+                      !draft && (
+                        <button
+                          type="button"
+                          className={`btn tiny ${signalMode ? 'primary' : ''}`}
+                          disabled={!canSignal && !signalMode}
+                          onClick={() => setSignalMode((x) => !x)}
+                          title={canSignal ? '손패 한 장을 「가장 높음·낮음·하나뿐」으로 알려요 (트릭 사이에만)' : '트릭 사이에만 보낼 수 있어요'}
+                        >
+                          <Icon name="bell" /> {signalMode ? '그만두기' : '신호 보내기'}
+                        </button>
+                      )
+                    )}
+                  </div>
+                  <div className="ot-hand" onPointerDown={(e) => (touch.current = e.pointerType !== 'mouse')}>
+                    {g.hand.map((card, i) => {
+                      const can = signalMode ? signalable.has(card.id) : !draft && myTurn && legal.has(card.id);
+                      const isTask = g.tasks.find((x) => x.card.id === card.id && !x.done);
+                      return (
+                        <span
+                          key={card.id}
+                          className={`ot-slot ${armed === card.id ? 'picked' : ''}`}
+                          style={{
+                            ['--i' as string]: i,
+                            ['--n' as string]: g.hand.length,
+                          }}
+                        >
+                          <SpaceCard card={card} size="md" playable={can} dim={!can && (signalMode || (myTurn && !draft))} onClick={() => tapCard(card)} flip={`h${g.round}-${card.id}`} flipFrom=".ot-felt" className={isTask ? 'task' : ''} />
+                        </span>
+                      );
+                    })}
+                  </div>
+                </section>
+              ) : null
+            }
+          />
           <Ticker text={describe(lastLog)} />
         </>
       }
@@ -246,7 +339,12 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
             headline={matchOver ? `항해 끝! 가장 큰 성공: 과제 ${g.best}개` : resultLog?.success ? '🚀 임무 성공!' : '임무 실패'}
             sub={matchOver ? `${g.results.filter((r) => r.success).length}/${g.results.length}번 성공했어요` : resultLog?.success ? (c.climb ? `다음 임무는 과제 ${g.level + 1}개` : '같은 과제 수로 한 번 더') : (resultLog?.why ?? '')}
             columns={g.results.map((_, i) => `임무 ${i + 1}`)}
-            rows={g.totals.map((total, seat) => ({ seat, rank: 1, cells: g.results.map((r) => (r.success ? `✔ ${r.level}` : '✖')), total: `${total}점` }))}
+            rows={g.totals.map((total, seat) => ({
+              seat,
+              rank: 1,
+              cells: g.results.map((r) => (r.success ? `✔ ${r.level}` : '✖')),
+              total: `${total}점`,
+            }))}
           />
         ))
       }

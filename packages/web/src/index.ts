@@ -22,7 +22,7 @@ export * from './pwa';
 export * from './rules-link';
 export * from './stats';
 export { useReplay } from './replay';
-export { useStagedView } from './staged';
+export { useStagedView, stageTrickEnd } from './staged';
 export { SeatRing, ringPositions } from './seat-ring';
 export type { SeatPos } from './seat-ring';
 export type { Step } from './staged';

@@ -402,3 +402,23 @@ button.rcard:hover {
 .ci-grave-count.all {
   text-decoration: line-through;
 }
+/* 둘러앉은 자리 */
+.ci-ring .sr-center {
+  justify-content: center;
+  gap: 10px;
+}
+.ci-ring .ci-seat {
+  width: 190px;
+}
+.ci-table {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 28px;
+  padding: 10px;
+}
+.ci-treasury {
+  display: grid;
+  justify-items: center;
+  gap: 2px;
+}

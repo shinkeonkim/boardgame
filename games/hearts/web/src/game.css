@@ -198,3 +198,28 @@
     --hw: 54px;
   }
 }
+/* 둘러앉은 자리 */
+.hr-ring .hr-felt {
+  flex: 1;
+}
+.hr-ring .hr-opp {
+  width: 170px;
+}
+.hr-ring .hr-opp-cards {
+  max-width: 150px;
+  overflow: hidden;
+}
+/* 방금 가져간 트릭: 자리 옆에 작게 겹쳐 쌓음 */
+.hr-won {
+  display: inline-flex;
+  vertical-align: middle;
+}
+.hr-won .oc-card {
+  --w: 22px;
+  width: 22px;
+  height: 31px;
+  font-size: 7px;
+}
+.hr-won .oc-card + .oc-card {
+  margin-left: -14px;
+}

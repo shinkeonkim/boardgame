@@ -2,15 +2,15 @@
 export const TONES = ['#c0392b', '#d35400', '#d4a017', '#7a9a1a', '#2e8b57', '#16a085', '#1f6fb0', '#3a4ab0', '#6a3fb0', '#9b3a8a', '#b03a5a', '#5a4a3a'];
 const STICKER = ['●', '▲', '■', '◆', '★', '♥', '☀', '☾', '✿', '♣', '♠', '♦'];
 
-export function TrioCard({ n, size = 'md', faceDown, onClick, glow, flip }: { n: number | null; size?: 'sm' | 'md' | 'lg'; faceDown?: boolean; onClick?: () => void; glow?: boolean; flip?: string }) {
+export function TrioCard({ n, size = 'md', faceDown, onClick, glow, flip, flipFrom }: { n: number | null; size?: 'sm' | 'md' | 'lg'; faceDown?: boolean; onClick?: () => void; glow?: boolean; flip?: string; flipFrom?: string }) {
   const Tag = onClick ? 'button' : 'span';
   if (faceDown || n === null)
     return (
-      <Tag data-flip={flip} className={`th-card pc back ${size} ${glow ? 'glow' : ''}`} onClick={onClick} aria-label="뒤집힌 카드" />
+      <Tag data-flip={flip} data-flip-from={flipFrom} className={`th-card pc back ${size} ${glow ? 'glow' : ''}`} onClick={onClick} aria-label="뒤집힌 카드" />
     );
   const tone = TONES[n - 1];
   return (
-    <Tag data-flip={flip} className={`th-card pc light ${size} ${glow ? 'glow' : ''}`} onClick={onClick} style={{ ['--tone' as string]: tone }} aria-label={`${n}`}>
+    <Tag data-flip={flip} data-flip-from={flipFrom} className={`th-card pc light ${size} ${glow ? 'glow' : ''}`} onClick={onClick} style={{ ['--tone' as string]: tone }} aria-label={`${n}`}>
       <b className="th-num pc-num">{n}</b>
       <i className="th-sticker" aria-hidden>
         {STICKER[n - 1]}

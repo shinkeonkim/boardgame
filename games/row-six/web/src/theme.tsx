@@ -49,9 +49,12 @@ export function NumberCard({
   disabled,
   ariaLabel,
   flip,
+  flipFrom,
 }: {
   /** 움직임 추적 id (TableLayout의 FLIP) */
   flip?: string;
+  /** 처음 나타날 때 어디서 날아오는지 (자리 번호나 선택자) */
+  flipFrom?: string;
   n: number;
   flat?: boolean;
   size?: 'xs' | 'sm' | 'md' | 'lg';
@@ -68,6 +71,7 @@ export function NumberCard({
     <Tag
       className={`ncard pc light ${size} ${PENALTY_TONE[p] ?? 'p1'} ${className}`}
       data-flip={flip}
+      data-flip-from={flipFrom}
       style={style}
       onClick={onClick}
       title={title}

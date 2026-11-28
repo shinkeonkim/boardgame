@@ -85,3 +85,30 @@ export function useStagedView<G, C>(view: RoomView<G, C>, stage: (prev: G, next:
   // 방 정보(사람·연결·남은 시간)는 최신으로
   return shown === view ? view : { ...shown, members: view.members };
 }
+
+/** 트릭 게임(하트·궤도 임무)의 공통 모양 */
+interface TrickView {
+  round: number;
+  me: number;
+  hand: { id: string }[];
+  handCounts: number[];
+  trick: { seat: number; card: { id: string } }[];
+  lastTrick: { plays: { seat: number; card: { id: string } }[]; winner: number } | null;
+  log: { n: number; type: string }[];
+}
+
+/**
+ * 트릭이 끝나는 순간: 서버는 「트릭 끝·가운데 비움」을 한 번에 보낸다.
+ * 중간 장면으로 마지막 카드까지 가운데에 놓인 모습을 잠깐 보여 준 뒤, 최종 장면에서 이긴 사람 쪽으로 쓸려 간다.
+ */
+export function stageTrickEnd<G extends TrickView>(prev: G, next: G, ms = 1100): Step<G>[] | null {
+  if (prev.round !== next.round || !next.lastTrick) return null;
+  const lastN = prev.log.length ? prev.log[prev.log.length - 1].n : -1;
+  const end = next.log.find((e) => e.n > lastN && e.type === 'trick');
+  if (!end) return null;
+  const plays = next.lastTrick.plays;
+  const fresh = plays.filter((p) => !prev.trick.some((q) => q.card.id === p.card.id));
+  const hand = prev.hand.filter((c) => !fresh.some((p) => p.seat === prev.me && p.card.id === c.id));
+  const handCounts = prev.handCounts.map((n, s) => n - fresh.filter((p) => p.seat === s).length);
+  return [{ game: { ...prev, trick: plays, lastTrick: prev.lastTrick, hand, handCounts, log: next.log.filter((e) => e.n < end.n) }, ms }];
+}

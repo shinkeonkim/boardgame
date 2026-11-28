@@ -259,3 +259,39 @@ button.dcard:hover {
   width: calc(var(--w) * 0.8);
   height: calc(var(--w) * 0.8);
 }
+/* 둘러앉은 자리 */
+.pp-ring .pp-center {
+  flex: 1;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 8px;
+}
+.pp-opp {
+  width: 190px;
+  padding: 6px 10px;
+  border-radius: 12px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-top: 4px solid var(--seat);
+  display: grid;
+  gap: 4px;
+}
+.pp-opp-head {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.pp-opp-hand {
+  display: flex;
+}
+.pp-opp-hand i {
+  width: 12px;
+  height: 18px;
+  border-radius: 3px;
+  background: var(--accent, #c0612a);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+}
+.pp-opp-hand i + i {
+  margin-left: -5px;
+}

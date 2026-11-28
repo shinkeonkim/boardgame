@@ -316,3 +316,29 @@
     display: none;
   }
 }
+/* 둘러앉은 자리 */
+.bd-ring .bd-table {
+  flex: 1;
+}
+.bd-opp {
+  width: 150px;
+  padding: 6px 10px;
+  border-radius: 12px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-top: 4px solid var(--seat);
+  display: grid;
+  justify-items: center;
+  gap: 4px;
+}
+.bd-opp.acting {
+  box-shadow: 0 0 0 2px var(--seat);
+}
+.bd-opp.out {
+  opacity: 0.5;
+}
+.bd-opp-head {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}

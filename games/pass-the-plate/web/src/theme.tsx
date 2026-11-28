@@ -12,11 +12,11 @@ export const GROUP_COLOR: Record<Group, string> = {
   pudding: '#d0478f',
 };
 
-export function DishCard({ dish, size = 'md', selected, onClick, className = '', badge, dim, flip, noEnter, style }: { dish: Dish; size?: 'xs' | 'sm' | 'md'; selected?: boolean; onClick?: () => void; className?: string; badge?: string; dim?: boolean; flip?: string; /** FLIP의 「나타남」 효과 끄기 (손패는 옆에서 밀려 들어오는 효과를 따로 씀) */ noEnter?: boolean; style?: React.CSSProperties }) {
+export function DishCard({ dish, size = 'md', selected, onClick, className = '', badge, dim, flip, flipFrom, noEnter, style }: { dish: Dish; size?: 'xs' | 'sm' | 'md'; selected?: boolean; onClick?: () => void; className?: string; badge?: string; dim?: boolean; flip?: string; /** 처음 나타날 때 어디서 오는지 (자리 번호나 선택자) */ flipFrom?: string; /** FLIP의 「나타남」 효과 끄기 (손패는 옆에서 밀려 들어오는 효과를 따로 씀) */ noEnter?: boolean; style?: React.CSSProperties }) {
   const d = DISH[dish];
   const Tag = onClick ? 'button' : 'div';
   return (
-    <Tag data-flip={flip} data-flip-enter={noEnter ? 'none' : undefined} className={`dcard pc light ${size} ${selected ? 'selected' : ''} ${dim ? 'dim' : ''} ${className}`} style={{ ['--tone' as string]: GROUP_COLOR[d.group], ...style }} onClick={onClick} title={`${d.name}: ${d.hint}`} aria-label={d.name}>
+    <Tag data-flip={flip} data-flip-from={flipFrom} data-flip-enter={noEnter ? 'none' : undefined} className={`dcard pc light ${size} ${selected ? 'selected' : ''} ${dim ? 'dim' : ''} ${className}`} style={{ ['--tone' as string]: GROUP_COLOR[d.group], ...style }} onClick={onClick} title={`${d.name}: ${d.hint}`} aria-label={d.name}>
       <span className="dcard-icon" aria-hidden>
         <DishArt dish={dish} />
       </span>

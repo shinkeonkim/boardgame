@@ -32,13 +32,14 @@ function Emblem({ suit }: { suit: number }) {
 }
 
 /** 우주 카드: 색 바탕 + 큰 숫자 + 행성 무늬. 로켓은 짙은 남색에 금빛 로켓 */
-export function SpaceCard({ card, size = 'md', onClick, playable, dim, selected, className = '', flip }: { card: Card; size?: 'xs' | 'sm' | 'md'; onClick?: () => void; playable?: boolean; dim?: boolean; selected?: boolean; className?: string; flip?: string }) {
+export function SpaceCard({ card, size = 'md', onClick, playable, dim, selected, className = '', flip, flipFrom }: { card: Card; size?: 'xs' | 'sm' | 'md'; onClick?: () => void; playable?: boolean; dim?: boolean; selected?: boolean; className?: string; flip?: string; flipFrom?: string }) {
   const s = SUIT[card.suit];
   const Tag = onClick ? 'button' : 'div';
   return (
     <Tag
       type={onClick ? 'button' : undefined}
       data-flip={flip}
+      data-flip-from={flipFrom}
       data-cbl={s.short}
       className={`ot-card pc ${size} ${card.suit === 4 ? 'rocket' : ''} ${playable ? 'playable' : ''} ${dim ? 'dim' : ''} ${selected ? 'selected' : ''} ${className}`}
       style={{ ['--suit' as string]: s.fill, ['--ink' as string]: s.ink }}

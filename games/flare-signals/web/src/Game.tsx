@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState, useLayoutEffect, useRef } from 'react';
 import type { RoomView } from '@bg/core';
 import { Card, GameConfig, GameView, LogEntry, copiesOf, hintColors, possibilities, touchesColor } from '@bg/flare-signals-engine';
 import { AlertBanner, EmoteBubble, SeatDot, Icon } from '@bg/ui';
-import { GameScreenProps, ResultSheet, TableBanner, TableEmotes, TableLayout, TableTopBar, Ticker, emotesBySeat, usePeek, useTable, flyClone, useLogSounds, useDealFx } from '@bg/web';
+import { GameScreenProps, ResultSheet, TableBanner, TableEmotes, TableLayout, TableTopBar, Ticker, emotesBySeat, usePeek, useTable, flyClone, useLogSounds, useChangeSound, SeatRing } from '@bg/web';
 import { COLORS, ClueMarks, FlareCard, MysteryCard, RATING, colorName, colorStyle } from './theme';
 
 type View = RoomView<GameView, GameConfig>;
@@ -27,7 +27,12 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
   const v = view as View;
   const g = v.game!;
   const c = g.config;
-  const t = useTable(view, notify, { title: 'Flare Signals', turn: g.turn, playing: g.status === 'playing', mySub: '힌트 · 내기 · 버리기 중 하나' });
+  const t = useTable(view, notify, {
+    title: 'Flare Signals',
+    turn: g.turn,
+    playing: g.status === 'playing',
+    mySub: '힌트 · 내기 · 버리기 중 하나',
+  });
 
   // 카드를 내거나 버리면: 그 카드가 있던 자리 → 불꽃 더미(또는 버린 카드 칸)로 날아감
   const cardRects = useRef(new Map<string, DOMRect>());
@@ -47,9 +52,14 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
     cardRects.current = m;
   });
   // 소리: 힌트는 토큰 딸깍, 성공하면 불꽃 쉭-펑, 실패는 불발, 버리기는 카드, 뽑기는 미끄러짐
-  useLogSounds(g.log, (e) => (e.type === 'hint' ? ['whoosh', 'pop'] : e.type === 'play' ? (e.ok ? 'firework' : 'fizzle') : e.type === 'discard' ? 'pageTurn' : e.type === 'draw' ? 'deal' : null), { me: t.me, describe: (e) => describe(e, g.config, t.names), stamp: (e) => (e.type === 'play' ? (e.ok ? (e.bonus ? { text: '불꽃 완성!', tone: 'good', shake: 0.5 } : null) : { text: '불발!', tone: 'bad', shake: 0.8 }) : null) });
+  useLogSounds(g.log, (e) => (e.type === 'hint' ? ['whoosh', 'pop'] : e.type === 'play' ? (e.ok ? 'firework' : 'fizzle') : e.type === 'discard' ? 'pageTurn' : e.type === 'draw' ? 'deal' : null), {
+    me: t.me,
+    describe: (e) => describe(e, g.config, t.names),
+    stamp: (e) => (e.type === 'play' ? (e.ok ? (e.bonus ? { text: '불꽃 완성!', tone: 'good', shake: 0.5 } : null) : { text: '불발!', tone: 'bad', shake: 0.8 }) : null),
+  });
   // 새 판마다 카드를 섞고 나눠 주는 연출 (@bg/web deal-fx)
-  useDealFx(`${g.round}`, { per: 2, seats: '.hand-panel:not(.mine)', hand: '.hand-panel.mine', initial: g.log.length <= 1 });
+  // 새 판: 섞는 소리 (카드는 실제로 덱에서 한 장씩 날아감 — data-flip-from)
+  useChangeSound(g.round, 'riffle');
   const names = t.names;
   const me = t.me;
   const myTurn = t.myTurn;
@@ -103,7 +113,13 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
     setSel(null);
     if (hintTo !== seat) setHintTo(seat);
     // 같은 카드를 다시 누르면 색 ↔ 숫자
-    setHint((h) => (h && hintTo === seat && 'color' in h && h.color === card.color ? { value: card.value! } : { color: card.color! === 5 && c.sixth === 'rainbow' ? 0 : card.color! }));
+    setHint((h) =>
+      h && hintTo === seat && 'color' in h && h.color === card.color
+        ? { value: card.value! }
+        : {
+            color: card.color! === 5 && c.sixth === 'rainbow' ? 0 : card.color!,
+          },
+    );
   };
 
   // 배너
@@ -144,7 +160,12 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
                 const gone = g.discard.filter((d) => d.color === color && d.value === value).length;
                 const played = g.piles[color] >= value;
                 return (
-                  <td key={value} data-dg={`${color}-${value}`} className={`${gone >= total && !played ? 'lost' : ''} ${played ? 'played' : ''} ${gone === total - 1 && !played ? 'last' : ''}`} title={`${colorName(c, color)} ${value}: ${total}장 중 ${gone}장 버림`}>
+                  <td
+                    key={value}
+                    data-dg={`${color}-${value}`}
+                    className={`${gone >= total && !played ? 'lost' : ''} ${played ? 'played' : ''} ${gone === total - 1 && !played ? 'last' : ''}`}
+                    title={`${colorName(c, color)} ${value}: ${total}장 중 ${gone}장 버림`}
+                  >
                     {value}
                     {gone > 0 && <sub>{'×'.repeat(gone)}</sub>}
                   </td>
@@ -159,6 +180,8 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
 
   return (
     <TableLayout
+      layout="focus"
+      dealIn={g.log.length <= 1}
       mine={myTurn}
       splash={t.splash}
       top={
@@ -176,32 +199,27 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
       }
       main={
         <>
-          <section className="sky" aria-label="쏘아 올린 불꽃">
-            {g.piles.map((top, color) => (
-              <div key={color} data-pile={color} className={`pile ${top === 5 ? 'done' : ''}`} style={colorStyle(c, color)}>
-                {top > 0 ? <FlareCard c={c} color={color} value={top} size="sm" /> : <span className="pile-empty">{colorName(c, color)}</span>}
-                <span className="pile-dots" aria-hidden>
-                  {[1, 2, 3, 4, 5].map((k) => (
-                    <i key={k} className={k <= top ? 'on' : ''} />
-                  ))}
-                </span>
-              </div>
-            ))}
-          </section>
-
-          <section className="others" aria-label="다른 사람 카드">
-            {order.map((seat) => {
+          <SeatRing
+            players={g.players}
+            me={me}
+            edges="top"
+            className="fs-ring"
+            seat={(seat) => {
               const hand = g.hands[seat];
               const active = g.turn === seat && g.status === 'playing';
               const choosing = hintTo === seat;
               const m = view.members.find((x) => x.seat === seat);
               return (
-                <div key={seat} data-seat={seat} className={`other ${active ? 'active' : ''} ${choosing ? 'choosing' : ''}`}>
+                <div className={`other ${active ? 'active' : ''} ${choosing ? 'choosing' : ''}`}>
                   <div className="other-head small">
                     <span className="seat-name">
                       <EmoteBubble e={bySeat.get(seat)} />
                       <SeatDot seat={seat} size={14} /> <b>{names[seat]}</b>
-                      {m?.bot && <span className={`tag bot ${m.bot}`}><Icon name="bot" /></span>}
+                      {m?.bot && (
+                        <span className={`tag bot ${m.bot}`}>
+                          <Icon name="bot" />
+                        </span>
+                      )}
                       {m && !m.connected && <span className="tag away-tag">연결 끊김</span>}
                     </span>
                     {me >= 0 && g.status === 'playing' && (
@@ -212,7 +230,7 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
                   </div>
                   <div className="other-cards">
                     {hand.map((card, i) => (
-                      <div key={card.id} data-flip={`f${card.id}`} className={`ocard ${touched.has(card.id) && choosing ? 'touch' : ''} ${i === g.chops[seat] ? 'chop' : ''}`}>
+                      <div key={card.id} data-flip={`f${card.id}`} data-flip-from=".fs-deck" className={`ocard ${touched.has(card.id) && choosing ? 'touch' : ''} ${i === g.chops[seat] ? 'chop' : ''}`}>
                         <FlareCard c={c} color={card.color!} value={card.value!} size="md" onClick={() => pickOtherCard(seat, card)} title="눌러서 이 카드의 색·숫자로 힌트" />
                         {c.showClues && <ClueMarks c={c} clue={card.clue} />}
                       </div>
@@ -237,58 +255,80 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
                   )}
                 </div>
               );
-            })}
-          </section>
-
-          {me >= 0 && g.status === 'playing' && (
-            <section className="hand-panel mine" aria-label="내 카드">
-              <div className="hand-panel-head small">
-                <span>
-                  <SeatDot seat={me} size={14} /> 내 카드 (나만 못 봐요)
-                </span>
-                <span className="muted">왼쪽이 오래된 카드 · 점선 = 버릴 차례</span>
-              </div>
-              <div className="hand-row">
-                {myHand.map((card, i) => {
-                  const ps = showPoss ? possibilities(g, me, card.clue) : [];
-                  return (
-                    <div key={card.id} data-flip={`f${card.id}`} className={`mycard ${i === g.chops[me] ? 'chop' : ''}`}>
-                      <MysteryCard
-                        c={c}
-                        clue={card.clue}
-                        show={c.showClues}
-                        selected={sel === card.id}
-                        onClick={() => {
-                          setHint(null);
-                          setHintTo(null);
-                          setSel((s) => (s === card.id ? null : card.id));
-                        }}
-                        label={`내 ${i + 1}번째 카드`}
-                      />
-                      {showPoss && (
-                        <span className="poss" title="될 수 있는 카드 (남은 장수)">
-                          {ps.slice(0, 8).map((p) => (
-                            <i key={`${p.color}-${p.value}`} style={colorStyle(c, p.color)}>
-                              {p.value}
-                            </i>
-                          ))}
-                          {ps.length > 8 && <em>+{ps.length - 8}</em>}
-                        </span>
-                      )}
+            }}
+            center={
+              <>
+                <section className="sky" aria-label="쏘아 올린 불꽃">
+                  {g.piles.map((top, color) => (
+                    <div key={color} data-pile={color} className={`pile ${top === 5 ? 'done' : ''}`} style={colorStyle(c, color)}>
+                      {top > 0 ? <FlareCard c={c} color={color} value={top} size="sm" /> : <span className="pile-empty">{colorName(c, color)}</span>}
+                      <span className="pile-dots" aria-hidden>
+                        {[1, 2, 3, 4, 5].map((k) => (
+                          <i key={k} className={k <= top ? 'on' : ''} />
+                        ))}
+                      </span>
                     </div>
-                  );
-                })}
-              </div>
-              <div className="action-row">
-                <button className="btn primary" disabled={!selCard || !myTurn} onClick={play}>
-                  <Icon name="firework" /> 쏘아 올리기
-                </button>
-                <button className="btn" disabled={!selCard || !myTurn || g.hints >= c.hints} onClick={discard}>
-                  버리기 (힌트 +1)
-                </button>
-              </div>
-            </section>
-          )}
+                  ))}
+                </section>
+
+                <div className="fs-deck" aria-label={`덱 ${g.deckCount}장`}>
+                  <span className="fs-deck-back" aria-hidden />
+                  <span className="small">덱 {g.deckCount}장</span>
+                </div>
+              </>
+            }
+            bottom={
+              me >= 0 && g.status === 'playing' ? (
+                <section className="hand-panel mine" aria-label="내 카드">
+                  <div className="hand-panel-head small">
+                    <span>
+                      <SeatDot seat={me} size={14} /> 내 카드 (나만 못 봐요)
+                    </span>
+                    <span className="muted">왼쪽이 오래된 카드 · 점선 = 버릴 차례</span>
+                  </div>
+                  <div className="hand-row">
+                    {myHand.map((card, i) => {
+                      const ps = showPoss ? possibilities(g, me, card.clue) : [];
+                      return (
+                        <div key={card.id} data-flip={`f${card.id}`} data-flip-from=".fs-deck" className={`mycard ${i === g.chops[me] ? 'chop' : ''}`}>
+                          <MysteryCard
+                            c={c}
+                            clue={card.clue}
+                            show={c.showClues}
+                            selected={sel === card.id}
+                            onClick={() => {
+                              setHint(null);
+                              setHintTo(null);
+                              setSel((s) => (s === card.id ? null : card.id));
+                            }}
+                            label={`내 ${i + 1}번째 카드`}
+                          />
+                          {showPoss && (
+                            <span className="poss" title="될 수 있는 카드 (남은 장수)">
+                              {ps.slice(0, 8).map((p) => (
+                                <i key={`${p.color}-${p.value}`} style={colorStyle(c, p.color)}>
+                                  {p.value}
+                                </i>
+                              ))}
+                              {ps.length > 8 && <em>+{ps.length - 8}</em>}
+                            </span>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                  <div className="action-row">
+                    <button className="btn primary" disabled={!selCard || !myTurn} onClick={play}>
+                      <Icon name="firework" /> 쏘아 올리기
+                    </button>
+                    <button className="btn" disabled={!selCard || !myTurn || g.hints >= c.hints} onClick={discard}>
+                      버리기 (힌트 +1)
+                    </button>
+                  </div>
+                </section>
+              ) : null
+            }
+          />
           <Ticker text={describe(g.log[g.log.length - 1], c, names)} />
         </>
       }
@@ -329,14 +369,14 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
           </section>
           {discardGrid}
           {g.log.length > 0 && (
-          <section className="panel log-list small" aria-label="기록">
-            {[...g.log]
-              .reverse()
-              .slice(0, 10)
-              .map((e) => (
-                <div key={e.n}>{describe(e, c, names)}</div>
-              ))}
-          </section>
+            <section className="panel log-list small" aria-label="기록">
+              {[...g.log]
+                .reverse()
+                .slice(0, 10)
+                .map((e) => (
+                  <div key={e.n}>{describe(e, c, names)}</div>
+                ))}
+            </section>
           )}
         </>
       }
@@ -364,7 +404,12 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
                   : '덱을 모두 썼어요 · ' + RATING(g.roundScores[g.roundScores.length - 1] ?? 0, g.maxScore)
             }
             columns={g.roundScores.map((_, i) => `${i + 1}판`)}
-            rows={g.totals.map((total, seat) => ({ seat, rank: 1, cells: g.roundScores, total }))}
+            rows={g.totals.map((total, seat) => ({
+              seat,
+              rank: 1,
+              cells: g.roundScores,
+              total,
+            }))}
             note="협력 게임이라 모두 같은 점수예요"
           />
         ))

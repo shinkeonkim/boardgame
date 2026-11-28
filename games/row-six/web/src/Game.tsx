@@ -2,20 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import type { RoomView } from '@bg/core';
 import { GameConfig, GameView, LogEntry } from '@bg/row-six-engine';
 import { AlertBanner, SeatDot, seatColor, Icon, iconize } from '@bg/ui';
-import {
-  GameScreenProps,
-  ResultSheet,
-  SeatList,
-  TableBanner,
-  TableEmotes,
-  TableLayout,
-  TableTopBar,
-  Ticker,
-  rankOf,
-  usePeek,
-  useTable,
-  waitingText,
-  useLogSounds, useDealFx } from '@bg/web';
+import { GameScreenProps, ResultSheet, SeatList, TableBanner, TableEmotes, TableLayout, TableTopBar, Ticker, rankOf, usePeek, useTable, waitingText, useLogSounds, useChangeSound, SeatRing } from '@bg/web';
 import { useReplay } from './replay';
 import { CardBack, NumberCard, Penalty } from './theme';
 
@@ -48,9 +35,13 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
     mySub: g.phase === 'take' ? '가져갈 줄을 골라 주세요' : '모두 고르면 한꺼번에 공개돼요',
   });
   // 소리: 공개는 카드를 한꺼번에 뒤집고, 놓을 때마다 탁, 줄을 가져가면 쓸어 모음
-  useLogSounds(g.log, (e) => (e.type === 'reveal' ? ['riffle', 'flip'] : e.type === 'place' ? (e.took.length ? ['cardSnap', 'sweep', 'thud'] : 'cardSnap') : e.type === 'round' ? 'riffle' : null), { me: t.me, describe: (e) => describe(e, t.names), stamp: (e) => (e.type === 'place' && e.took.length >= 3 ? { text: `${e.took.length}장 먹음!`, tone: 'bad', shake: 0.8 } : null) });
-  // 새 판마다 카드를 섞고 나눠 주는 연출 (@bg/web deal-fx)
-  useDealFx(`${g.round}`, { per: 3, initial: g.turn === 1 && g.log.length <= 2 });
+  useLogSounds(g.log, (e) => (e.type === 'reveal' ? ['riffle', 'flip'] : e.type === 'place' ? (e.took.length ? ['cardSnap', 'sweep', 'thud'] : 'cardSnap') : e.type === 'round' ? 'riffle' : null), {
+    me: t.me,
+    describe: (e) => describe(e, t.names),
+    stamp: (e) => (e.type === 'place' && e.took.length >= 3 ? { text: `${e.took.length}장 먹음!`, tone: 'bad', shake: 0.8 } : null),
+  });
+  // 새 판: 섞는 소리 (카드는 실제로 줄 쪽 더미에서 한 장씩 날아감)
+  useChangeSound(g.round, 'riffle');
   const names = t.names;
   const me = t.me;
   const [peek, setPeek] = usePeek(`${g.status}-${g.round}`);
@@ -117,13 +108,21 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
   }
 
   // 판 끝 경고: 목표 벌점 근처
-  const danger = c.endMode === 'target' ? g.totals.map((x, i) => ({ seat: i, left: c.target - x })).filter((x) => x.left <= 12).sort((a, b) => a.left - b.left) : [];
+  const danger =
+    c.endMode === 'target'
+      ? g.totals
+          .map((x, i) => ({ seat: i, left: c.target - x }))
+          .filter((x) => x.left <= 12)
+          .sort((a, b) => a.left - b.left)
+      : [];
 
   const matchOver = g.status === 'match-over';
   const ranks = rankOf(g.totals, true);
 
   return (
     <TableLayout
+      layout="focus"
+      dealIn={g.turn === 1 && g.log.length <= 2}
       mine={t.myTurn}
       splash={t.splash}
       top={
@@ -148,107 +147,145 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
       }
       main={
         <>
-          <section className={`rows ${choosing ? 'choosing' : ''}`} style={{ ['--limit' as string]: c.rowLimit }} aria-label="줄">
-            {rp.shown.map((row, i) => {
-              const target = focus !== null && focusPreview?.row === i && !rp.replaying;
-              const willTake = target && focusPreview?.take;
-              return (
-                <div
-                  key={i}
-                  data-row={i}
-                  className={`row-line ${target ? 'target' : ''} ${willTake ? 'will-take' : ''} ${choosing ? 'pickable' : ''} ${rp.taking === i ? 'taking' : ''}`}
-                  onClick={choosing ? () => take(i) : undefined}
-                  role={choosing ? 'button' : undefined}
-                  aria-label={`${i + 1}번 줄, 벌점 ${g.rowPenalties[i]}${choosing ? ', 눌러서 가져가기' : ''}`}
-                >
-                  <span className="row-label">
-                    <b>{i + 1}</b>
-                    <Penalty v={g.rowPenalties[i]} />
-                  </span>
-                  <div className="row-cards">
-                    {Array.from({ length: c.rowLimit }, (_, k) => {
-                      const n = row[k];
-                      if (n === undefined) return <span key={`e${k}`} className="slot" />;
-                      const by = placedBy.get(n);
+          <SeatRing
+            players={g.players}
+            me={me}
+            edges="top"
+            className="rs-ring"
+            seat={(s) => (
+              <div className={`rs-opp ${g.chooser === s ? 'acting' : ''}`}>
+                <div className="rs-opp-head small">
+                  <SeatDot seat={s} size={10} /> <b>{names[s]}</b>
+                  {g.status === 'playing' && g.phase === 'pick' && <span className={`tag ${g.picked[s] ? 'ready' : ''}`}>{g.picked[s] ? iconize('✓') : '…'}</span>}
+                  {g.chooser === s && <span className="tag results">줄 고르는 중</span>}
+                </div>
+                <span className="mini-hand" aria-label={`카드 ${g.handCounts[s]}장`}>
+                  {Array.from({ length: Math.min(g.handCounts[s], 12) }, (_, i) => (
+                    <CardBack key={i} size="xs" />
+                  ))}
+                </span>
+                <span className="pen-line">
+                  <PenaltyPile n={g.takenCounts[s] - rp.cardLag(s)} />
+                </span>
+              </div>
+            )}
+            center={
+              <>
+                <section className={`rows ${choosing ? 'choosing' : ''}`} style={{ ['--limit' as string]: c.rowLimit }} aria-label="줄">
+                  {rp.shown.map((row, i) => {
+                    const target = focus !== null && focusPreview?.row === i && !rp.replaying;
+                    const willTake = target && focusPreview?.take;
+                    return (
+                      <div
+                        key={i}
+                        data-row={i}
+                        className={`row-line ${target ? 'target' : ''} ${willTake ? 'will-take' : ''} ${choosing ? 'pickable' : ''} ${rp.taking === i ? 'taking' : ''}`}
+                        onClick={choosing ? () => take(i) : undefined}
+                        role={choosing ? 'button' : undefined}
+                        aria-label={`${i + 1}번 줄, 벌점 ${g.rowPenalties[i]}${choosing ? ', 눌러서 가져가기' : ''}`}
+                      >
+                        <span className="row-label">
+                          <b>{i + 1}</b>
+                          <Penalty v={g.rowPenalties[i]} />
+                        </span>
+                        <div className="row-cards">
+                          {Array.from({ length: c.rowLimit }, (_, k) => {
+                            const n = row[k];
+                            if (n === undefined) return <span key={`e${k}`} className="slot" />;
+                            const by = placedBy.get(n);
+                            return <NumberCard key={n} n={n} flip={`c${n}`} flat={flat} size="md" className={fresh.has(n) ? 'fresh' : ''} style={by !== undefined ? { ['--by' as string]: seatColor(by) } : undefined} />;
+                          })}
+                          <span className="slot danger" title={`${c.rowLimit + 1}번째 카드는 줄을 가져가요`}>
+                            {willTake && focus !== null ? (
+                              <NumberCard n={focus} flat={flat} size="md" className="ghost" />
+                            ) : (
+                              <span>
+                                <Icon name="hand" />
+                              </span>
+                            )}
+                          </span>
+                        </div>
+                        {choosing && <span className="take-hint">이 줄 가져가기 · 벌점 {g.rowPenalties[i]}</span>}
+                      </div>
+                    );
+                  })}
+                </section>
+
+                {(g.queue.length > 0 || g.placed.length > 0) && (
+                  <section className="reveal" aria-label="공개된 카드">
+                    <span className="small muted">이번 공개</span>
+                    {[
+                      ...g.placed.map((p) => ({
+                        seat: p.seat,
+                        card: p.card,
+                        done: true,
+                        took: p.took.length > 0,
+                        pen: p.penalty,
+                      })),
+                      ...g.queue.map((q) => ({
+                        ...q,
+                        done: false,
+                        took: false,
+                        pen: 0,
+                      })),
+                    ]
+                      .sort((a, b) => a.card - b.card)
+                      .map((x) => (
+                        <span key={x.card} className={`reveal-item ${isDone(x) ? 'done' : 'waiting'} ${x.took && isDone(x) ? 'took' : ''} ${rp.active === x.card ? 'active' : ''}`}>
+                          <NumberCard n={x.card} flat={flat} size="sm" flip={isDone(x) ? undefined : `c${x.card}`} flipFrom={String(x.seat)} />
+                          <span className="reveal-who">
+                            <SeatDot seat={x.seat} size={12} /> {names[x.seat]}
+                            {x.took && isDone(x) && <b className="took-pen"> +{x.pen}</b>}
+                          </span>
+                        </span>
+                      ))}
+                  </section>
+                )}
+              </>
+            }
+            bottom={
+              me >= 0 && g.status === 'playing' ? (
+                <section className="hand-panel" aria-label="내 카드">
+                  <div className="hand-panel-head small">
+                    <span>
+                      <SeatDot seat={me} size={14} /> 내 카드 {g.hand.length}장
+                    </span>
+                    {focus !== null && focusPreview && (
+                      <span className={`preview-note ${focusPreview.take ? 'bad' : 'ok'}`}>
+                        {focusPreview.row < 0
+                          ? `${focus}: 가장 작아요 → 줄 하나를 가져가요 (가장 가벼운 줄 벌점 ${focusPreview.penalty})`
+                          : focusPreview.take
+                            ? `${focus}: ${focusPreview.row + 1}번 줄이 꽉 차 있어 벌점 ${focusPreview.penalty}`
+                            : `${focus}: 지금은 ${focusPreview.row + 1}번 줄로 가요 (다른 카드가 먼저 들어오면 바뀔 수 있어요)`}
+                      </span>
+                    )}
+                  </div>
+                  <div className="hand-row">
+                    {g.hand.map((n) => {
+                      const pv = g.preview[n];
                       return (
                         <NumberCard
                           key={n}
                           n={n}
                           flip={`c${n}`}
+                          flipFrom=".rows"
                           flat={flat}
-                          size="md"
-                          className={fresh.has(n) ? 'fresh' : ''}
-                          style={by !== undefined ? { ['--by' as string]: seatColor(by) } : undefined}
+                          size="lg"
+                          className={`${g.myPick === n ? 'picked' : ''} ${pv?.take ? 'risky' : ''} ${canPick ? 'can' : ''}`}
+                          onClick={() => pick(n)}
+                          title={pv?.take ? (pv.row < 0 ? '가장 작은 카드라 줄을 가져가요' : `${pv.row + 1}번 줄을 가져가요`) : undefined}
+                          ariaLabel={`${n} 내기`}
+                          disabled={!picking}
                         />
                       );
                     })}
-                    <span className="slot danger" title={`${c.rowLimit + 1}번째 카드는 줄을 가져가요`}>
-                      {willTake && focus !== null ? <NumberCard n={focus} flat={flat} size="md" className="ghost" /> : <span><Icon name="hand" /></span>}
-                    </span>
                   </div>
-                  {choosing && <span className="take-hint">이 줄 가져가기 · 벌점 {g.rowPenalties[i]}</span>}
-                </div>
-              );
-            })}
-          </section>
-
-          {(g.queue.length > 0 || g.placed.length > 0) && (
-            <section className="reveal" aria-label="공개된 카드">
-              <span className="small muted">이번 공개</span>
-              {[...g.placed.map((p) => ({ seat: p.seat, card: p.card, done: true, took: p.took.length > 0, pen: p.penalty })), ...g.queue.map((q) => ({ ...q, done: false, took: false, pen: 0 }))]
-                .sort((a, b) => a.card - b.card)
-                .map((x) => (
-                  <span key={x.card} className={`reveal-item ${isDone(x) ? 'done' : 'waiting'} ${x.took && isDone(x) ? 'took' : ''} ${rp.active === x.card ? 'active' : ''}`}>
-                    <NumberCard n={x.card} flat={flat} size="sm" flip={isDone(x) ? undefined : `c${x.card}`} />
-                    <span className="reveal-who">
-                      <SeatDot seat={x.seat} size={12} /> {names[x.seat]}
-                      {x.took && isDone(x) && <b className="took-pen"> +{x.pen}</b>}
-                    </span>
-                  </span>
-                ))}
-            </section>
-          )}
+                  <div className="small muted center">{g.phase === 'take' ? '줄을 고르는 동안 잠깐 기다려요' : g.myPick === null ? '카드를 누르면 바로 골라져요' : c.allowChange ? '다른 카드를 누르면 바꿀 수 있어요' : '공개를 기다리는 중'}</div>
+                </section>
+              ) : undefined
+            }
+          />
           <Ticker text={describe(rp.cur ?? g.log[g.log.length - 1], names)} />
-          {me >= 0 && g.status === 'playing' && (
-            <section className="hand-panel" aria-label="내 카드">
-              <div className="hand-panel-head small">
-                <span>
-                  <SeatDot seat={me} size={14} /> 내 카드 {g.hand.length}장
-                </span>
-                {focus !== null && focusPreview && (
-                  <span className={`preview-note ${focusPreview.take ? 'bad' : 'ok'}`}>
-                    {focusPreview.row < 0
-                      ? `${focus}: 가장 작아요 → 줄 하나를 가져가요 (가장 가벼운 줄 벌점 ${focusPreview.penalty})`
-                      : focusPreview.take
-                        ? `${focus}: ${focusPreview.row + 1}번 줄이 꽉 차 있어 벌점 ${focusPreview.penalty}`
-                        : `${focus}: 지금은 ${focusPreview.row + 1}번 줄로 가요 (다른 카드가 먼저 들어오면 바뀔 수 있어요)`}
-                  </span>
-                )}
-              </div>
-              <div className="hand-row">
-                {g.hand.map((n) => {
-                  const pv = g.preview[n];
-                  return (
-                    <NumberCard
-                      key={n}
-                      n={n}
-                      flip={`c${n}`}
-                      flat={flat}
-                      size="lg"
-                      className={`${g.myPick === n ? 'picked' : ''} ${pv?.take ? 'risky' : ''} ${canPick ? 'can' : ''}`}
-                      onClick={() => pick(n)}
-                      title={pv?.take ? (pv.row < 0 ? '가장 작은 카드라 줄을 가져가요' : `${pv.row + 1}번 줄을 가져가요`) : undefined}
-                      ariaLabel={`${n} 내기`}
-                      disabled={!picking}
-                    />
-                  );
-                })}
-              </div>
-              <div className="small muted center">
-                {g.phase === 'take' ? '줄을 고르는 동안 잠깐 기다려요' : g.myPick === null ? '카드를 누르면 바로 골라져요' : c.allowChange ? '다른 카드를 누르면 바꿀 수 있어요' : '공개를 기다리는 중'}
-              </div>
-            </section>
-          )}
         </>
       }
       side={
@@ -269,7 +306,7 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
             rows={g.picked.map((pk, seat) => ({
               seat,
               accent: seatColor(seat),
-              score: <Penalty v={g.totals[seat] + (g.status === 'playing' ? g.penalties[seat] ?? 0 : 0) - (g.penalties[seat] === null ? 0 : rp.penLag(seat))} />,
+              score: <Penalty v={g.totals[seat] + (g.status === 'playing' ? (g.penalties[seat] ?? 0) : 0) - (g.penalties[seat] === null ? 0 : rp.penLag(seat))} />,
               scoreLabel: '누적 벌점 (이번 판 포함)',
               badge:
                 rp.pop?.seat === seat ? (
@@ -322,13 +359,7 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
             matchOver={matchOver}
             round={g.round}
             status={g.status}
-            headline={
-              matchOver
-                ? ranks.filter((r) => r === 1).length === g.players
-                  ? '비겼어요!'
-                  : `${ranks.flatMap((r, i) => (r === 1 ? [names[i]] : [])).join(', ')} 님이 이겼어요!`
-                : `${g.round}판 결과`
-            }
+            headline={matchOver ? (ranks.filter((r) => r === 1).length === g.players ? '비겼어요!' : `${ranks.flatMap((r, i) => (r === 1 ? [names[i]] : [])).join(', ')} 님이 이겼어요!`) : `${g.round}판 결과`}
             sub={
               matchOver
                 ? c.endMode === 'target' && g.totals.some((x) => x >= c.target)
@@ -358,11 +389,17 @@ function PenaltyPile({ n }: { n: number }) {
   return (
     <span className="pen-pile" aria-hidden style={{ height: 22 + shown * 2 }}>
       {Array.from({ length: shown }, (_, i) => (
-        <span key={i} className="pen-pile-card" style={{ bottom: i * 2, transform: `rotate(${((i * 37) % 13) - 6}deg)` }}>
+        <span
+          key={i}
+          className="pen-pile-card"
+          style={{
+            bottom: i * 2,
+            transform: `rotate(${((i * 37) % 13) - 6}deg)`,
+          }}
+        >
           <CardBack size="xs" />
         </span>
       ))}
     </span>
   );
 }
-

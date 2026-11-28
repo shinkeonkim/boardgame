@@ -24,8 +24,11 @@ export function LetterCard({
   disabled,
   title,
   flip,
+  flipFrom,
 }: {
   flip?: string;
+  /** 처음 나타날 때 어디서 날아오는지 (예: '.sl-deck') */
+  flipFrom?: string;
   kind: Kind;
   value: number;
   size?: 'xs' | 'sm' | 'md' | 'lg';
@@ -38,7 +41,7 @@ export function LetterCard({
   const d = CARD_DEFS[kind];
   const Tag = onClick ? 'button' : 'div';
   return (
-    <Tag data-flip={flip} className={`lcard pc light ${size} ${selected ? 'selected' : ''} ${className}`} style={{ ['--tone' as string]: TONE[kind] }} onClick={onClick} disabled={onClick ? disabled : undefined} title={title ?? `${value} ${d.name}: ${d.text}`} aria-label={`${value} ${d.name}`}>
+    <Tag data-flip={flip} data-flip-from={flipFrom} className={`lcard pc light ${size} ${selected ? 'selected' : ''} ${className}`} style={{ ['--tone' as string]: TONE[kind] }} onClick={onClick} disabled={onClick ? disabled : undefined} title={title ?? `${value} ${d.name}: ${d.text}`} aria-label={`${value} ${d.name}`}>
       <span className="lcard-val pc-num">{value}</span>
       {size === 'xs' ? (
         <span className="lcard-icon" aria-hidden>
@@ -53,8 +56,8 @@ export function LetterCard({
   );
 }
 
-export function CardBackMini() {
-  return <span className="lcard pc back xs" aria-hidden />;
+export function CardBackMini({ flip, flipFrom }: { flip?: string; flipFrom?: string } = {}) {
+  return <span className="lcard pc back xs" data-flip={flip} data-flip-from={flipFrom} aria-hidden />;
 }
 
 export function Seal({ on }: { on: boolean }) {

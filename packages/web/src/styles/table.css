@@ -706,3 +706,14 @@
 .table-main-in > .seat-ring {
   flex: 1 1 auto;
 }
+/* 낮은 가로 화면: 옆자리 상자를 작게 */
+@media (max-height: 559px) and (min-width: 760px) {
+  .sr-left,
+  .sr-right {
+    gap: 4px;
+    max-width: 150px;
+  }
+  .sr-seat {
+    font-size: 0.85em;
+  }
+}

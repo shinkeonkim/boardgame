@@ -264,3 +264,33 @@ button.ot-card.playable {
     --hw: 52px;
   }
 }
+/* 둘러앉은 자리 */
+.ot-ring .ot-felt {
+  flex: 1;
+}
+.ot-ring .ot-opp {
+  width: 160px;
+}
+.ot-opp-backs {
+  display: flex;
+  max-width: 140px;
+  overflow: hidden;
+}
+.ot-back {
+  width: 16px;
+  height: 24px;
+  border-radius: 3px;
+  background: linear-gradient(135deg, #2b3c74, #151d3d);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  flex: none;
+}
+.ot-back + .ot-back {
+  margin-left: -9px;
+}
+.ot-won {
+  display: inline-flex;
+  vertical-align: middle;
+}
+.ot-won > * + * {
+  margin-left: -12px;
+}

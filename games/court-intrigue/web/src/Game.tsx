@@ -1,8 +1,8 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { RoomView } from '@bg/core';
 import { ACTION_DEFS, ActionKind, GameConfig, GameView, LogEntry, ROLE_DEFS, ROLES, Role } from '@bg/court-intrigue-engine';
 import { AlertBanner, EmoteBubble, SeatDot, seatColor, Icon, iconize } from '@bg/ui';
-import { GameScreenProps, ResultSheet, TableBanner, TableEmotes, TableLayout, TableTopBar, Ticker, emotesBySeat, rankOf, usePeek, useTable, SideNote, useLogSounds, useDealFx } from '@bg/web';
+import { GameScreenProps, ResultSheet, TableBanner, TableEmotes, TableLayout, TableTopBar, Ticker, emotesBySeat, rankOf, usePeek, useTable, SideNote, useLogSounds, useChangeSound, flyClone, SeatRing } from '@bg/web';
 import { Coins, RoleCard } from './theme';
 
 type View = RoomView<GameView, GameConfig>;
@@ -39,7 +39,7 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
   const reaction = g.phase === 'challenge' || g.phase === 'block' || g.phase === 'blockChallenge';
   const t = useTable(view, notify, {
     title: 'Court Intrigue',
-    turn: g.phase === 'lose' ? g.loss?.seat ?? g.turn : g.turn,
+    turn: g.phase === 'lose' ? (g.loss?.seat ?? g.turn) : g.turn,
     playing: g.status === 'playing',
     simultaneous: reaction,
     quiet: reaction,
@@ -47,26 +47,90 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
     mySub: reaction ? '도전하거나 통과해요' : g.phase === 'lose' ? '잃을 카드를 골라요' : '행동을 골라요',
   });
   // 소리: 소득·원조·세금·약탈은 동전, 도전은 경고, 막기는 방패(나무), 영향력을 잃으면 뒤집기, 암살·쿠데타는 쿵
-  useLogSounds(g.log, (e) =>
-    e.type === 'act'
-      ? e.action === 'coup' || e.action === 'assassinate'
-        ? 'thud'
-        : e.action === 'exchange'
-          ? 'shuffle'
-          : 'coins'
-      : e.type === 'challenge'
-        ? ['alert', e.ok ? 'success' : 'fail']
-        : e.type === 'block'
-          ? 'wood'
-          : e.type === 'lose'
-            ? 'flip'
-            : e.type === 'out'
-              ? 'thud'
-              : e.type === 'win'
-                ? 'win'
-                : null, { me: t.me, describe: (e) => describe(e, t.names), stamp: (e) => (e.type === 'challenge' ? { text: e.ok ? '의심 성공!' : '의심 실패', tone: e.ok ? 'hot' : 'bad', shake: e.ok ? 1 : 0 } : e.type === 'block' ? { text: '막기!', tone: 'info' } : e.type === 'act' && (e.action === 'coup' || e.action === 'assassinate') ? { text: e.action === 'coup' ? '쿠데타!' : '암살!', tone: 'hot', shake: 1.4 } : e.type === 'out' ? { text: '탈락', tone: 'bad' } : null) });
+  useLogSounds(
+    g.log,
+    (e) =>
+      e.type === 'act'
+        ? e.action === 'coup' || e.action === 'assassinate'
+          ? 'thud'
+          : e.action === 'exchange'
+            ? 'shuffle'
+            : 'coins'
+        : e.type === 'challenge'
+          ? ['alert', e.ok ? 'success' : 'fail']
+          : e.type === 'block'
+            ? 'wood'
+            : e.type === 'lose'
+              ? 'flip'
+              : e.type === 'out'
+                ? 'thud'
+                : e.type === 'win'
+                  ? 'win'
+                  : null,
+    {
+      me: t.me,
+      describe: (e) => describe(e, t.names),
+      stamp: (e) =>
+        e.type === 'challenge'
+          ? {
+              text: e.ok ? '의심 성공!' : '의심 실패',
+              tone: e.ok ? 'hot' : 'bad',
+              shake: e.ok ? 1 : 0,
+            }
+          : e.type === 'block'
+            ? { text: '막기!', tone: 'info' }
+            : e.type === 'act' && (e.action === 'coup' || e.action === 'assassinate')
+              ? {
+                  text: e.action === 'coup' ? '쿠데타!' : '암살!',
+                  tone: 'hot',
+                  shake: 1.4,
+                }
+              : e.type === 'out'
+                ? { text: '탈락', tone: 'bad' }
+                : null,
+    },
+  );
   // 새 판마다 카드를 섞고 나눠 주는 연출 (@bg/web deal-fx)
-  useDealFx(`${g.round}`, { per: 2, seats: '.ci-seat', initial: g.log.length <= 1 });
+  // 새 판: 섞는 소리 (카드는 실제로 가운데 국고 옆 더미에서 한 장씩 날아감)
+  useChangeSound(g.round, 'riffle');
+  // 금화가 실제로 오감: 소득·원조·세금은 국고 → 그 사람, 갈취는 대상 → 그 사람, 쿠데타·암살은 그 사람 → 국고
+  const resN = g.log.length ? g.log[g.log.length - 1].n : 0;
+  const seenRes = useRef<number | null>(null);
+  useEffect(() => {
+    const prev = seenRes.current;
+    seenRes.current = resN;
+    if (prev === null) return;
+    const coinsOf = (s: number) => document.querySelector(`[data-seat="${s}"] .coins`);
+    const bank = document.querySelector('.ci-treasury');
+    const like = document.querySelector('.ci-treasury .coin-stack i');
+    g.log
+      .filter((e) => e.n > prev && e.type === 'resolve')
+      .forEach((e, i) => {
+        if (e.type !== 'resolve') return;
+        const d = i * 160;
+        if (e.action === 'income' || e.action === 'aid' || e.action === 'tax')
+          flyClone(bank, coinsOf(e.seat), {
+            count: e.action === 'income' ? 1 : e.action === 'aid' ? 2 : 3,
+            duration: 520,
+            delay: d,
+            like,
+          });
+        else if (e.action === 'steal' && e.target !== null)
+          flyClone(coinsOf(e.target), coinsOf(e.seat), {
+            count: 2,
+            duration: 520,
+            delay: d,
+            like,
+          });
+        else if (e.action === 'coup' || e.action === 'assassinate')
+          flyClone(coinsOf(e.seat), bank, {
+            count: e.action === 'coup' ? 4 : 3,
+            duration: 520,
+            delay: d,
+            like,
+          });
+      });
+  }, [resN]); // eslint-disable-line react-hooks/exhaustive-deps
   const names = t.names;
   const me = t.me;
   const myTurn = t.myTurn;
@@ -114,6 +178,8 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
 
   return (
     <TableLayout
+      layout="focus"
+      dealIn={g.log.length <= 1}
       mine={myTurn}
       splash={t.splash}
       top={
@@ -126,167 +192,232 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
       }
       main={
         <>
-          <section className="ci-court" aria-label="궁정">
-            {Array.from({ length: g.players }, (_, s) => s)
-              .filter((s) => s !== me)
-              .map((s) => {
-                const m = view.members.find((x) => x.seat === s);
-                const out = g.influence[s] === 0;
-                const acting = g.actors.includes(s);
-                return (
-                  <div key={s} data-seat={s} className={`ci-seat ${out ? 'out' : ''} ${acting ? 'acting' : ''} ${pend?.target === s ? 'targeted' : ''}`} style={{ ['--seat' as string]: seatColor(s) }}>
-                    <div className="ci-seat-head small">
-                      <span className="seat-name">
-                        <EmoteBubble e={bySeat.get(s)} />
-                        <b>{names[s]}</b>
-                        {m?.bot && <span className={`tag bot ${m.bot}`}><Icon name="bot" /></span>}
-                        {m && !m.connected && <span className="tag away-tag">끊김</span>}
-                      </span>
-                      <Coins n={g.coins[s]} />
-                    </div>
-                    <div className="ci-cards">
-                      {g.hands[s].map((h) => (
-                        <RoleCard key={h.id} flip={`r${h.id}`} role={h.role} lost={h.lost} size="sm" />
-                      ))}
-                    </div>
-                    {reaction && g.passed.includes(s) && <span className="ci-pass">통과 <Icon name="check" /></span>}
-                  </div>
-                );
-              })}
-          </section>
-
-          {revealed.length > 0 && (
-            // 가운데 드러난 카드 더미: 잃은 영향력이 비뚤게 쌓이고, 역할마다 몇 장이 나왔는지 (추리용)
-            <section className="ci-graveyard" aria-label={`드러난 카드 ${revealed.length}장`}>
-              <span className="ci-grave-pile" aria-hidden>
-                {revealed.slice(-5).map((h, i) => (
-                  <span key={h.id} style={{ transform: `translate(${(i * 7) % 9 - 4}px, ${(i * 5) % 7 - 3}px) rotate(${((i * 37 + 11) % 17) - 8}deg)` }}>
-                    <RoleCard role={h.role} size="sm" />
-                  </span>
-                ))}
-              </span>
-              <div className="ci-grave-counts small">
-                <span className="muted">드러난 카드</span>
-                {ROLES.map((r) => {
-                  const n = revealed.filter((h) => h.role === r).length;
-                  return (
-                    <span key={r} className={`ci-grave-count ${n ? '' : 'none'} ${n >= c.copies ? 'all' : ''}`} style={{ ['--role' as string]: ROLE_DEFS[r].color }}>
-                      {ROLE_DEFS[r].name} <b>{n}</b>/{c.copies}
+          <SeatRing
+            players={g.players}
+            me={me}
+            className="ci-ring"
+            seat={(s) => {
+              const m = view.members.find((x) => x.seat === s);
+              const out = g.influence[s] === 0;
+              const acting = g.actors.includes(s);
+              return (
+                <div className={`ci-seat ${out ? 'out' : ''} ${acting ? 'acting' : ''} ${pend?.target === s ? 'targeted' : ''}`}>
+                  <div className="ci-seat-head small">
+                    <span className="seat-name">
+                      <EmoteBubble e={bySeat.get(s)} />
+                      <b>{names[s]}</b>
+                      {m?.bot && (
+                        <span className={`tag bot ${m.bot}`}>
+                          <Icon name="bot" />
+                        </span>
+                      )}
+                      {m && !m.connected && <span className="tag away-tag">끊김</span>}
                     </span>
-                  );
-                })}
-              </div>
-            </section>
-          )}
-
-          {pend && g.status === 'playing' && (
-            // 지금 걸린 선언: 누가 · 무슨 역할로 · 무엇을 · 누구에게 (+ 막기)
-            <section className="ci-claim" key={`${pend.actor}-${pend.action}-${pend.target}-${pend.blocker}`} aria-live="polite">
-              <span className="ci-claim-who" style={{ ['--seat' as string]: seatColor(pend.actor) }}>
-                <SeatDot seat={pend.actor} size={12} /> <b>{names[pend.actor]}</b>
-              </span>
-              {ACTION_DEFS[pend.action].role && <span className="ci-claim-role">{iconize(ROLE_DEFS[ACTION_DEFS[pend.action].role!].icon)} {rn(ACTION_DEFS[pend.action].role!)} 주장</span>}
-              <span className="ci-claim-act">{ACTION_DEFS[pend.action].name}</span>
-              {pend.target !== null && (
-                <>
-                  <span aria-hidden>→</span>
-                  <span className="ci-claim-who" style={{ ['--seat' as string]: seatColor(pend.target) }}>
-                    <SeatDot seat={pend.target} size={12} /> <b>{names[pend.target]}</b>
-                  </span>
-                </>
-              )}
-              {pend.blocker !== null && pend.blockRole && (
-                <span className="ci-claim-block">
-                  <Icon name="ban" /> {names[pend.blocker]} · {iconize(ROLE_DEFS[pend.blockRole].icon)} {rn(pend.blockRole)}로 막기
-                </span>
-              )}
-              {reaction && <span className="small muted ci-claim-wait">통과 {g.passed.length}명</span>}
-            </section>
-          )}
-
-          {me >= 0 && g.status === 'playing' && g.influence[me] > 0 && (
-            <section className="hand-panel" aria-label="내 영향력">
-              <div className="hand-panel-head small">
-                <span>
-                  <SeatDot seat={me} size={14} /> 내 카드 (나만 봐요)
-                </span>
-                <Coins n={g.coins[me]} />
-              </div>
-              <div className="hand-row">
-                {g.phase === 'exchange' && myTurn
-                  ? pool.map((p) => (
-                      <RoleCard key={p.id} role={p.role} size="md" selected={keep.includes(p.id)} onClick={() => setKeep((k) => (k.includes(p.id) ? k.filter((x) => x !== p.id) : k.length < myLive.length ? [...k, p.id] : k))} />
-                    ))
-                  : g.hands[me].map((h) => (
-                      <RoleCard key={h.id} flip={`r${h.id}`} role={h.role} lost={h.lost} size="md" onClick={g.phase === 'lose' && g.loss?.seat === me && !h.lost ? () => act('move', { move: { type: 'lose', cardId: h.id } }) : undefined} />
-                    ))}
-              </div>
-              {g.phase === 'exchange' && myTurn && (
-                <div className="action-row">
-                  <button className="btn primary" disabled={keep.length !== myLive.length} onClick={() => act('move', { move: { type: 'keep', cardIds: keep } })}>
-                    {keep.length}/{myLive.length}장 남기기
-                  </button>
-                </div>
-              )}
-              {g.phase === 'action' && myTurn && (
-                <>
-                  <div className="ci-actions">
-                    {(Object.keys(ACTION_DEFS) as ActionKind[]).map((a) => {
-                      const d = ACTION_DEFS[a];
-                      const bluff = !!d.role && !myLive.some((h) => h.role === d.role);
-                      return (
-                        <button
-                          key={a}
-                          className={`ci-act ${action === a ? 'on' : ''} ${bluff ? 'bluff' : ''}`}
-                          disabled={!legal.has(a)}
-                          onClick={() => (d.target ? setAction(a) : doAct(a))}
-                          title={d.text}
-                        >
-                          <b>{d.name}</b>
-                          <small>{d.role ? iconize(`${ROLE_DEFS[d.role].icon} ${rn(d.role)}${bluff ? ' (허풍)' : ''}`) : a === 'coup' ? `금화 ${c.coupCost}` : a === 'income' ? '+1' : '+2'}</small>
-                        </button>
-                      );
-                    })}
+                    <Coins n={g.coins[s]} />
                   </div>
-                  {action && (
-                    <div className="sl-step action-row">
-                      <span className="small">{ACTION_DEFS[action].name} 대상:</span>
-                      {opps
-                        .filter((s) => action !== 'steal' || g.coins[s] > 0)
-                        .map((s) => (
-                          <button key={s} className="chip" style={{ borderColor: seatColor(s) }} onClick={() => doAct(action, s)}>
-                            {names[s]} <Coins n={g.coins[s]} />
-                          </button>
-                        ))}
-                      <button className="btn ghost small-btn" onClick={() => setAction(null)}>
-                        취소
-                      </button>
-                    </div>
-                  )}
-                </>
-              )}
-              {reaction && myTurn && (
-                <div className="action-row ci-react">
-                  {g.phase !== 'block' && (
-                    <button className="btn danger-btn" onClick={() => act('move', { move: { type: 'challenge' } })}>
-                      <Icon name="zap" /> 도전! 「거짓말이야」
-                    </button>
-                  )}
-                  {g.phase === 'block' &&
-                    pend &&
-                    ACTION_DEFS[pend.action].blockers.map((r) => (
-                      <button key={r} className={`btn ${myLive.some((h) => h.role === r) ? 'primary' : ''}`} onClick={() => act('move', { move: { type: 'block', role: r } })}>
-                        <Icon name="ban" /> {rn(r)}로 막기{myLive.some((h) => h.role === r) ? '' : ' (허풍)'}
-                      </button>
+                  <div className="ci-cards">
+                    {g.hands[s].map((h) => (
+                      <RoleCard key={h.id} flip={`r${g.round}-${h.id}`} flipFrom=".ci-deck" role={h.role} lost={h.lost} size="sm" />
                     ))}
-                  <button className="btn" onClick={() => act('move', { move: { type: 'pass' } })}>
-                    통과
-                  </button>
+                  </div>
+                  {reaction && g.passed.includes(s) && (
+                    <span className="ci-pass">
+                      통과 <Icon name="check" />
+                    </span>
+                  )}
                 </div>
-              )}
-            </section>
-          )}
-          {me >= 0 && g.influence[me] === 0 && g.status === 'playing' && <p className="muted center">궁정에서 쫓겨났어요. 남은 사람들의 음모를 지켜봐요 <Icon name="eye" /></p>}
+              );
+            }}
+            center={
+              <>
+                <section className="ci-table" aria-label="국고와 더미">
+                  <span className="ci-deck" aria-label="궁정 더미">
+                    <RoleCard role={null} size="sm" />
+                  </span>
+                  <span className="ci-treasury" aria-label="국고">
+                    <Coins n={10} />
+                    <span className="small muted">국고</span>
+                  </span>
+                </section>
+                {revealed.length > 0 && (
+                  // 가운데 드러난 카드 더미: 잃은 영향력이 비뚤게 쌓이고, 역할마다 몇 장이 나왔는지 (추리용)
+                  <section className="ci-graveyard" aria-label={`드러난 카드 ${revealed.length}장`}>
+                    <span className="ci-grave-pile" aria-hidden>
+                      {revealed.slice(-5).map((h, i) => (
+                        <span
+                          key={h.id}
+                          style={{
+                            transform: `translate(${((i * 7) % 9) - 4}px, ${((i * 5) % 7) - 3}px) rotate(${((i * 37 + 11) % 17) - 8}deg)`,
+                          }}
+                        >
+                          <RoleCard role={h.role} size="sm" />
+                        </span>
+                      ))}
+                    </span>
+                    <div className="ci-grave-counts small">
+                      <span className="muted">드러난 카드</span>
+                      {ROLES.map((r) => {
+                        const n = revealed.filter((h) => h.role === r).length;
+                        return (
+                          <span key={r} className={`ci-grave-count ${n ? '' : 'none'} ${n >= c.copies ? 'all' : ''}`} style={{ ['--role' as string]: ROLE_DEFS[r].color }}>
+                            {ROLE_DEFS[r].name} <b>{n}</b>/{c.copies}
+                          </span>
+                        );
+                      })}
+                    </div>
+                  </section>
+                )}
+
+                {pend && g.status === 'playing' && (
+                  // 지금 걸린 선언: 누가 · 무슨 역할로 · 무엇을 · 누구에게 (+ 막기)
+                  <section className="ci-claim" key={`${pend.actor}-${pend.action}-${pend.target}-${pend.blocker}`} aria-live="polite">
+                    <span className="ci-claim-who" style={{ ['--seat' as string]: seatColor(pend.actor) }}>
+                      <SeatDot seat={pend.actor} size={12} /> <b>{names[pend.actor]}</b>
+                    </span>
+                    {ACTION_DEFS[pend.action].role && (
+                      <span className="ci-claim-role">
+                        {iconize(ROLE_DEFS[ACTION_DEFS[pend.action].role!].icon)} {rn(ACTION_DEFS[pend.action].role!)} 주장
+                      </span>
+                    )}
+                    <span className="ci-claim-act">{ACTION_DEFS[pend.action].name}</span>
+                    {pend.target !== null && (
+                      <>
+                        <span aria-hidden>→</span>
+                        <span
+                          className="ci-claim-who"
+                          style={{
+                            ['--seat' as string]: seatColor(pend.target),
+                          }}
+                        >
+                          <SeatDot seat={pend.target} size={12} /> <b>{names[pend.target]}</b>
+                        </span>
+                      </>
+                    )}
+                    {pend.blocker !== null && pend.blockRole && (
+                      <span className="ci-claim-block">
+                        <Icon name="ban" /> {names[pend.blocker]} · {iconize(ROLE_DEFS[pend.blockRole].icon)} {rn(pend.blockRole)}로 막기
+                      </span>
+                    )}
+                    {reaction && <span className="small muted ci-claim-wait">통과 {g.passed.length}명</span>}
+                  </section>
+                )}
+              </>
+            }
+            bottom={
+              me >= 0 && g.status === 'playing' ? (
+                g.influence[me] > 0 ? (
+                  <section className="hand-panel" aria-label="내 영향력">
+                    <div className="hand-panel-head small">
+                      <span>
+                        <SeatDot seat={me} size={14} /> 내 카드 (나만 봐요)
+                      </span>
+                      <Coins n={g.coins[me]} />
+                    </div>
+                    <div className="hand-row">
+                      {g.phase === 'exchange' && myTurn
+                        ? pool.map((p) => <RoleCard key={p.id} role={p.role} size="md" selected={keep.includes(p.id)} onClick={() => setKeep((k) => (k.includes(p.id) ? k.filter((x) => x !== p.id) : k.length < myLive.length ? [...k, p.id] : k))} />)
+                        : g.hands[me].map((h) => (
+                            <RoleCard
+                              key={h.id}
+                              flip={`r${g.round}-${h.id}`}
+                              flipFrom=".ci-deck"
+                              role={h.role}
+                              lost={h.lost}
+                              size="md"
+                              onClick={
+                                g.phase === 'lose' && g.loss?.seat === me && !h.lost
+                                  ? () =>
+                                      act('move', {
+                                        move: { type: 'lose', cardId: h.id },
+                                      })
+                                  : undefined
+                              }
+                            />
+                          ))}
+                    </div>
+                    {g.phase === 'exchange' && myTurn && (
+                      <div className="action-row">
+                        <button
+                          className="btn primary"
+                          disabled={keep.length !== myLive.length}
+                          onClick={() =>
+                            act('move', {
+                              move: { type: 'keep', cardIds: keep },
+                            })
+                          }
+                        >
+                          {keep.length}/{myLive.length}장 남기기
+                        </button>
+                      </div>
+                    )}
+                    {g.phase === 'action' && myTurn && (
+                      <>
+                        <div className="ci-actions">
+                          {(Object.keys(ACTION_DEFS) as ActionKind[]).map((a) => {
+                            const d = ACTION_DEFS[a];
+                            const bluff = !!d.role && !myLive.some((h) => h.role === d.role);
+                            return (
+                              <button key={a} className={`ci-act ${action === a ? 'on' : ''} ${bluff ? 'bluff' : ''}`} disabled={!legal.has(a)} onClick={() => (d.target ? setAction(a) : doAct(a))} title={d.text}>
+                                <b>{d.name}</b>
+                                <small>{d.role ? iconize(`${ROLE_DEFS[d.role].icon} ${rn(d.role)}${bluff ? ' (허풍)' : ''}`) : a === 'coup' ? `금화 ${c.coupCost}` : a === 'income' ? '+1' : '+2'}</small>
+                              </button>
+                            );
+                          })}
+                        </div>
+                        {action && (
+                          <div className="sl-step action-row">
+                            <span className="small">{ACTION_DEFS[action].name} 대상:</span>
+                            {opps
+                              .filter((s) => action !== 'steal' || g.coins[s] > 0)
+                              .map((s) => (
+                                <button key={s} className="chip" style={{ borderColor: seatColor(s) }} onClick={() => doAct(action, s)}>
+                                  {names[s]} <Coins n={g.coins[s]} />
+                                </button>
+                              ))}
+                            <button className="btn ghost small-btn" onClick={() => setAction(null)}>
+                              취소
+                            </button>
+                          </div>
+                        )}
+                      </>
+                    )}
+                    {reaction && myTurn && (
+                      <div className="action-row ci-react">
+                        {g.phase !== 'block' && (
+                          <button className="btn danger-btn" onClick={() => act('move', { move: { type: 'challenge' } })}>
+                            <Icon name="zap" /> 도전! 「거짓말이야」
+                          </button>
+                        )}
+                        {g.phase === 'block' &&
+                          pend &&
+                          ACTION_DEFS[pend.action].blockers.map((r) => (
+                            <button
+                              key={r}
+                              className={`btn ${myLive.some((h) => h.role === r) ? 'primary' : ''}`}
+                              onClick={() =>
+                                act('move', {
+                                  move: { type: 'block', role: r },
+                                })
+                              }
+                            >
+                              <Icon name="ban" /> {rn(r)}로 막기
+                              {myLive.some((h) => h.role === r) ? '' : ' (허풍)'}
+                            </button>
+                          ))}
+                        <button className="btn" onClick={() => act('move', { move: { type: 'pass' } })}>
+                          통과
+                        </button>
+                      </div>
+                    )}
+                  </section>
+                ) : (
+                  <p className="muted center">
+                    궁정에서 쫓겨났어요. 남은 사람들의 음모를 지켜봐요 <Icon name="eye" />
+                  </p>
+                )
+              ) : null
+            }
+          />
           <Ticker text={describe(g.log[g.log.length - 1], names)} />
         </>
       }
@@ -339,7 +470,12 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
             headline={`👑 ${names[g.winners[g.winners.length - 1]]} 님이 궁정을 차지했어요!`}
             sub={g.outOrder.length ? `쫓겨난 순서: ${g.outOrder.map((s) => names[s]).join(' → ')}` : undefined}
             columns={g.winners.map((_, i) => `${i + 1}판`)}
-            rows={g.totals.map((total, seat) => ({ seat, rank: rankOf(g.totals)[seat], cells: g.winners.map((w) => (w === seat ? '👑' : '')), total: `${total}승` }))}
+            rows={g.totals.map((total, seat) => ({
+              seat,
+              rank: rankOf(g.totals)[seat],
+              cells: g.winners.map((w) => (w === seat ? '👑' : '')),
+              total: `${total}승`,
+            }))}
           />
         ))
       }

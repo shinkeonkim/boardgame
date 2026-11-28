@@ -546,3 +546,22 @@ button.fcard:hover {
 .fcard.pc:not(.mystery) {
   border-color: color-mix(in srgb, var(--fc) 45%, #f7efe0) !important;
 }
+/* 둘러앉은 자리: 다른 사람 카드 줄은 위, 내 카드는 아래, 가운데 하늘과 덱 */
+.fs-ring .sr-center {
+  justify-content: center;
+  gap: 10px;
+}
+.fs-deck {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+.fs-deck-back {
+  width: 30px;
+  height: 42px;
+  border-radius: 5px;
+  background: linear-gradient(135deg, #3b2a6b, #16102e);
+  border: 1.5px solid rgba(255, 255, 255, 0.4);
+  box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.25);
+}

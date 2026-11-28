@@ -8,14 +8,16 @@
  * 좁은 화면(휴대폰 세로)은 다른 사람을 모두 위 한 줄에 둔다.
  * 각 자리 상자에는 data-seat가 붙어 말풍선·자리 반짝·날아오기의 기준이 된다.
  */
-import type { CSSProperties, ReactNode } from 'react';
+import { useEffect, useState, type CSSProperties, type ReactNode } from 'react';
 import { seatColor } from '@bg/ui';
 import { useNarrow } from './narrow';
 
 export type SeatPos = 'left' | 'top' | 'right';
 
 /** 다른 사람 k명을 가장자리에 나눔 (시계 방향 순서) */
-export function ringPositions(k: number, narrow = false): SeatPos[] {
+export function ringPositions(k: number, narrow = false, short = false): SeatPos[] {
+  // 낮은 가로 화면(휴대폰 눕힘): 위에 앉히면 판이 눌리므로 왼쪽·오른쪽에만 (반반)
+  if (short && !narrow && k >= 1) return Array.from({ length: k }, (_, i) => (i < Math.ceil(k / 2) ? 'left' : 'right'));
   if (narrow || k <= 1) return Array(k).fill('top');
   const side = k >= 6 ? 2 : 1;
   const top = k - side * 2;
@@ -29,6 +31,7 @@ export function SeatRing({
   center,
   bottom,
   className = '',
+  edges = 'all',
 }: {
   players: number;
   /** 내 자리 (관전이면 -1 → 0번 자리를 아래로) */
@@ -37,12 +40,15 @@ export function SeatRing({
   center: ReactNode;
   bottom?: ReactNode;
   className?: string;
+  /** 'top': 다른 사람을 모두 위쪽에 (자리 표시가 가로로 긴 게임 — 손패 줄을 펼쳐 보이는 경우) */
+  edges?: 'all' | 'top';
 }) {
   const narrow = useNarrow();
+  const short = useShort();
   const base = me >= 0 ? me : 0;
   const others = Array.from({ length: players - 1 }, (_, i) => (base + 1 + i) % players).filter((s) => s !== me);
   if (me < 0) others.unshift(0);
-  const pos = ringPositions(others.length, narrow);
+  const pos = short ? ringPositions(others.length, narrow, true) : ringPositions(others.length, narrow || edges === 'top');
   const at = (p: SeatPos) => others.filter((_, i) => pos[i] === p);
   const box = (s: number, p: SeatPos) => (
     <div key={s} className="sr-seat" data-seat={s} data-pos={p} style={{ ['--seat' as string]: seatColor(s) } as CSSProperties}>
@@ -63,4 +69,16 @@ export function SeatRing({
       )}
     </div>
   );
+}
+
+/** 높이가 낮은 화면인지 (휴대폰 가로) */
+function useShort(): boolean {
+  const read = () => typeof window !== 'undefined' && window.innerHeight < 560 && window.innerWidth >= 760;
+  const [v, setV] = useState(read);
+  useEffect(() => {
+    const on = () => setV(read());
+    addEventListener('resize', on);
+    return () => removeEventListener('resize', on);
+  }, []);
+  return v;
 }
