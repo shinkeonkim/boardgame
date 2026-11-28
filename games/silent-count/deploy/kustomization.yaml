@@ -14,4 +14,4 @@ labels:
 images:
 - name: ghcr.io/shinkeonkim/boardgame-silent-count
   newName: ghcr.io/shinkeonkim/boardgame-silent-count
-  newTag: sha-919866a
+  newTag: sha-e0e9835
