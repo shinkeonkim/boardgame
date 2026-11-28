@@ -175,3 +175,10 @@
     animation: none;
   }
 }
+/* 둘러앉은 자리: 가운데 더미가 남는 공간을 채움 */
+.sc-ring .sc-felt {
+  flex: 1;
+}
+.sc-ring .sr-seat .sc-opp {
+  min-width: 120px;
+}

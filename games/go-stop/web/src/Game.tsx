@@ -3,13 +3,33 @@ import { useViewport } from './viewport';
 import type { RoomView } from '@bg/core';
 import { GameConfig, GameView, HCard, LogEntry, MONTH_NAMES } from '@bg/go-stop-engine';
 import { SeatDot, seatColor } from '@bg/ui';
-import { GameScreenProps, ResultSheet, SeatList, SideNote, TableBanner, TableEmotes, TableLayout, TableTopBar, Ticker, rankOf, useLogSounds, useNarrow, usePeek, useTable } from '@bg/web';
+import { GameScreenProps, ResultSheet, SeatList, SideNote, TableBanner, TableEmotes, TableLayout, TableTopBar, Ticker, rankOf, useLogSounds, useNarrow, usePeek, useTable, useStagedView } from '@bg/web';
 import { Captured, type Stage } from './Captured';
 import { HwatuBack, HwatuCard } from './theme';
 
 type View = RoomView<GameView, GameConfig>;
 
-export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreenProps<GameView, GameConfig>) {
+/**
+ * 한 번의 「치기」를 실제 순서대로 보여 줄 중간 장면 (useStagedView):
+ *  ① 낸 카드가 바닥(같은 달 옆)에 놓임 → ② 더미 맨 위 카드가 뒤집혀 놓임 → 최종: 먹은 카드를 쓸어 감·점수 반영
+ */
+function stagePlay(prev: GameView, next: GameView) {
+  if (prev.round !== next.round) return null;
+  const lastN = prev.log.length ? prev.log[prev.log.length - 1].n : -1;
+  const play = next.log.find((e) => e.n > lastN && e.type === 'play');
+  if (!play || play.type !== 'play') return null;
+  const byMonth = (a: HCard, b: HCard) => a.month - b.month;
+  const base: GameView = { ...prev, log: next.log.filter((e) => e.n <= play.n), actors: [] };
+  const hand = play.seat === prev.me ? prev.hand.filter((c) => c.id !== play.card.id) : prev.hand;
+  const handCounts = prev.handCounts.map((n, i) => (i === play.seat ? Math.max(0, n - 1) : n));
+  const t1 = [...prev.table.filter((c) => c.id !== play.card.id), play.card].sort(byMonth);
+  const steps = [{ game: { ...base, hand, handCounts, table: t1 }, ms: 560 }];
+  if (play.flip) steps.push({ game: { ...base, hand, handCounts, table: [...t1, play.flip].sort(byMonth), pileCount: Math.max(0, prev.pileCount - 1) }, ms: 560 });
+  return steps;
+}
+
+export function Game({ view: raw, act, onLeave, notify, emotes, onEmote }: GameScreenProps<GameView, GameConfig>) {
+  const view = useStagedView(raw, stagePlay);
   const v = view as View;
   const g = v.game!;
   const c = g.config;
@@ -25,7 +45,7 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
     (e) =>
       e.type === 'play'
         ? // 카드 소리를 손놀림 순서에 맞춘다: 낸 카드 탁 → 뒤집은 카드 탁 → 쓸어 감
-          [e.special.length ? 'slapHard' : 'slap', ...(e.flip ? ([['slap', 0.42]] as const) : []), ...(e.took.length ? ([['sweep', e.flip ? 0.86 : 0.55]] as const) : []), ...(e.stolen ? ([['pop', 1.1]] as const) : [])]
+          [e.special.length ? 'slapHard' : 'slap', ...(e.flip ? ([['slap', 0.58]] as const) : []), ...(e.took.length ? ([['sweep', e.flip ? 1.14 : 0.58]] as const) : []), ...(e.stolen ? ([['pop', e.flip ? 1.4 : 0.9]] as const) : [])]
         : e.type === 'go'
           ? 'gong'
           : e.type === 'stop'
@@ -107,12 +127,8 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
   const stage = useMemo<Stage>(() => {
     const e = lastPlay;
     if (e?.type !== 'play') return {};
-    const out: Stage = {};
-    const took = new Set(e.took.map((x) => x.id));
-    const mate = (c: HCard) => e.took.find((x) => x.month === c.month && x.id !== c.id && x.id !== e.flip?.id && x.id !== e.card.id)?.id ?? e.took.find((x) => x.month === c.month && x.id !== c.id)?.id;
-    out[e.card.id] = took.has(e.card.id) ? { via: mate(e.card), land: 'slap' } : { land: 'slap' };
-    if (e.flip) out[e.flip.id] = { from: '.gs-pile', delay: 380, land: 'slap', via: took.has(e.flip.id) ? mate(e.flip) : undefined };
-    for (const x of e.took) if (x.id !== e.card.id && x.id !== e.flip?.id) out[x.id] = { delay: e.flip ? 820 : 520 };
+    const out: Stage = { [e.card.id]: { land: 'slap' } };
+    if (e.flip) out[e.flip.id] = { land: 'slap', from: '.gs-pile' };
     return out;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [lastPlay?.n]);

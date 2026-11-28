@@ -1,7 +1,7 @@
 import type { RoomView } from '@bg/core';
 import { GameConfig, GameView, LogEntry } from '@bg/silent-count-engine';
 import { CardBack, EmoteBubble, Icon, SeatDot, seatColor } from '@bg/ui';
-import { GameScreenProps, ResultSheet, SeatList, SideNote, TableBanner, TableEmotes, TableLayout, TableTopBar, Ticker, emotesBySeat, useLogSounds, usePeek, useTable } from '@bg/web';
+import { GameScreenProps, ResultSheet, SeatList, SideNote, TableBanner, TableEmotes, TableLayout, TableTopBar, Ticker, emotesBySeat, useLogSounds, usePeek, useTable, SeatRing } from '@bg/web';
 import { Lives, NumCard, Stars } from './theme';
 
 type View = RoomView<GameView, GameConfig>;
@@ -51,6 +51,7 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
 
   return (
     <TableLayout
+      layout="focus"
       mine={false}
       splash={t.splash}
       top={
@@ -76,64 +77,72 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
       }
       main={
         <>
-          <section className="sc-opps" aria-label="다른 사람">
-            {g.handCounts.map((n, s) =>
-              s === me ? null : (
-                <div key={s} className="sc-opp" style={{ ['--seat' as string]: seatColor(s) }}>
-                  <div className="sc-opp-head">
-                    <SeatDot seat={s} size={10} /> <b>{names[s]}</b>
-                    <EmoteBubble e={bySeat.get(s)} />
-                  </div>
-                  <div className="sc-opp-cards" aria-label={`카드 ${n}장`}>
-                    {Array.from({ length: Math.min(n, 12) }, (_, i) => (
-                      <CardBack key={i} size="sm" />
-                    ))}
-                    {n === 0 && <span className="muted small">다 냈어요</span>}
-                  </div>
-                  {g.starVotes[s] && <span className="tag">수리검 쓰자</span>}
+          <SeatRing
+            players={g.players}
+            me={me}
+            className="sc-ring"
+            seat={(s) => (
+              <div className="sc-opp">
+                <div className="sc-opp-head">
+                  <SeatDot seat={s} size={10} /> <b>{names[s]}</b>
+                  <EmoteBubble e={bySeat.get(s)} />
                 </div>
-              ),
-            )}
-          </section>
-
-          <section className={`sc-felt ${miss ? 'missed' : ''}`} aria-label="가운데 더미" key={miss?.n ?? 'ok'}>
-            <div className="sc-pile">
-              {g.pile.slice(-4, -1).map((n, i) => (
-                <NumCard key={`${n}-${i}`} n={n} size="sm" className="sc-under" />
-              ))}
-              {g.top ? <NumCard key={g.top} n={g.top} size="lg" className="sc-top" flip={`h${g.top}`} /> : <span className="sc-empty">첫 카드를 기다려요</span>}
-            </div>
-            {miss && (
-              <div className="sc-miss" role="alert">
-                <b>앗!</b> 더 작은 카드: {miss.lost.map((l) => `${l.card}(${names[l.seat]})`).join(', ')}
+                <div className="sc-opp-cards" aria-label={`카드 ${g.handCounts[s]}장`}>
+                  {Array.from({ length: Math.min(g.handCounts[s], 12) }, (_, i) => (
+                    <CardBack key={i} size="sm" />
+                  ))}
+                  {g.handCounts[s] === 0 && <span className="muted small">다 냈어요</span>}
+                </div>
+                {g.starVotes[s] && <span className="tag">수리검 쓰자</span>}
               </div>
             )}
-          </section>
+            center={
+              <>
+                <section className={`sc-felt ${miss ? 'missed' : ''}`} aria-label="가운데 더미" key={miss?.n ?? 'ok'}>
+                  <div className="sc-pile">
+                    {g.pile.slice(-4, -1).map((n, i) => (
+                      <NumCard key={`${n}-${i}`} n={n} size="sm" className="sc-under" />
+                    ))}
+                    {g.top ? <NumCard key={g.top} n={g.top} size="lg" className="sc-top" flip={`h${g.top}`} /> : <span className="sc-empty">첫 카드를 기다려요</span>}
+                  </div>
+                  {miss && (
+                    <div className="sc-miss" role="alert">
+                      <b>앗!</b> 더 작은 카드: {miss.lost.map((l) => `${l.card}(${names[l.seat]})`).join(', ')}
+                    </div>
+                  )}
+                </section>
 
-          {me >= 0 && g.status === 'playing' && (
-            <section className="hand-panel sc-hand-panel" aria-label="내 카드">
-              <div className="hand-panel-head small">
-                <span>
-                  <SeatDot seat={me} size={14} /> 내 카드 {g.hand.length}장
-                </span>
-                {g.stars > 0 && g.hand.length > 0 && (
-                  <button type="button" className={`btn tiny ${myVote ? 'primary' : ''}`} onClick={() => act('move', { move: { type: 'star', on: !myVote } })} aria-pressed={myVote}>
-                    <Stars n={1} /> {myVote ? '수리검 제안 취소' : '수리검 쓰자'}
-                  </button>
+              </>
+            }
+            bottom={
+              <>
+                {me >= 0 && g.status === 'playing' && (
+                  <section className="hand-panel sc-hand-panel" aria-label="내 카드">
+                    <div className="hand-panel-head small">
+                      <span>
+                        <SeatDot seat={me} size={14} /> 내 카드 {g.hand.length}장
+                      </span>
+                      {g.stars > 0 && g.hand.length > 0 && (
+                        <button type="button" className={`btn tiny ${myVote ? 'primary' : ''}`} onClick={() => act('move', { move: { type: 'star', on: !myVote } })} aria-pressed={myVote}>
+                          <Stars n={1} /> {myVote ? '수리검 제안 취소' : '수리검 쓰자'}
+                        </button>
+                      )}
+                    </div>
+                    <div className="sc-hand">
+                      {g.hand.map((n, i) => (
+                        <NumCard key={n} n={n} size="md" className={i === 0 ? 'sc-low' : 'sc-rest'} flip={`h${n}`} />
+                      ))}
+                    </div>
+                    {low !== undefined && (
+                      <button type="button" className="btn primary sc-play" onClick={() => act('move', { move: { type: 'play' } })}>
+                        지금이다! <b>{low}</b> 내기
+                      </button>
+                    )}
+                  </section>
                 )}
-              </div>
-              <div className="sc-hand">
-                {g.hand.map((n, i) => (
-                  <NumCard key={n} n={n} size="md" className={i === 0 ? 'sc-low' : 'sc-rest'} flip={`h${n}`} />
-                ))}
-              </div>
-              {low !== undefined && (
-                <button type="button" className="btn primary sc-play" onClick={() => act('move', { move: { type: 'play' } })}>
-                  지금이다! <b>{low}</b> 내기
-                </button>
-              )}
-            </section>
-          )}
+              </>
+            }
+          />
           <Ticker text={describe(lastLog)} />
         </>
       }

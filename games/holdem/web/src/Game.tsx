@@ -54,7 +54,7 @@ export function Game({ view, act, onLeave, notify, emotes, onEmote }: GameScreen
       });
   }, [lastN]); // eslint-disable-line react-hooks/exhaustive-deps
   // 새 판마다 카드를 섞고 나눠 주는 연출 (@bg/web deal-fx)
-  useDealFx(`${g.round}-${g.handNo}`, { per: 2, seats: '.hd-seat:not(.busted)', hand: null, origin: '.hd-center', initial: g.log.length <= 4 });
+  useDealFx(`${g.round}-${g.handNo}`, { per: 2, seats: '.hd-seat:not(.busted)', hand: null, cards: '.hd-seat.me .hd-cards .pc', origin: '.hd-center', initial: g.log.length <= 4 });
   const names = t.names;
   const me = t.me;
   const myTurn = t.myTurn && !showdown;

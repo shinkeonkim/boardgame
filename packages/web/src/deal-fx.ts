@@ -18,6 +18,8 @@ export interface DealFxOptions {
   seats?: string;
   /** 내 손패 (기본: .hand-panel) — 마지막에 내 쪽으로 몇 장 더 */
   hand?: string | null;
+  /** 내 손의 실제 카드들 (기본: hand 안의 .pc). 나눠 주는 동안 숨겼다가 한 장씩 도착할 때 보인다 */
+  cards?: string;
   /** 처음 화면을 열었을 때도 재생 (예: 게임 시작 직후 첫 판) */
   initial?: boolean;
   /** 섞기 생략 (나눠 주기만) */
@@ -86,31 +88,42 @@ export function playShuffleDeal(o: DealFxOptions = {}): number {
     t = 900;
   }
 
-  // 2) 나눠 주기: 자리를 돌며 한 장씩
-  const targets: Element[] = [];
-  for (let r = 0; r < per; r++) for (const s of seatEls) targets.push(s);
-  if (handEl) for (let r = 0; r < Math.min(per, 2); r++) targets.push(handEl);
+  // 2) 나눠 주기: 자리를 돌며 한 장씩. 내 손으로 오는 카드는 실제 카드 자리에 내려앉고, 그때 그 카드가 보인다
+  //    (이미 손에 다 들어와 있는데 뒷면이 날아오는 어색함을 없앰)
+  const mine = [...document.querySelectorAll<HTMLElement>(o.cards ?? `${o.hand ?? '.hand-panel'} .pc`)].filter((e) => o.hand !== null || o.cards).filter((e) => e.getBoundingClientRect().width > 0).slice(0, 14);
+  mine.forEach((e) => (e.style.visibility = 'hidden'));
+  const targets: { el: Element; reveal?: HTMLElement }[] = [];
+  const rounds = Math.max(per, mine.length);
+  for (let r = 0; r < rounds; r++) {
+    if (r < per) for (const s of seatEls) if (!mine.some((m) => s.contains(m))) targets.push({ el: s });
+    if (r < mine.length) targets.push({ el: mine[r], reveal: mine[r] });
+    else if (r < per && handEl && !mine.length && r < 2) targets.push({ el: handEl });
+  }
   const step = Math.max(45, Math.min(110, 1300 / Math.max(1, targets.length)));
-  targets.forEach((target, i) => {
+  targets.forEach(({ el: target, reveal }, i) => {
     const d = center(target);
     const el = makeCard(c.x, c.y);
     el.style.opacity = '0';
-    const spin = ((i * 47) % 30) - 15;
+    const spin = reveal ? 0 : ((i * 47) % 30) - 15;
     const anim = el.animate(
       [
         { transform: 'translate(0, 0) rotate(0deg) scale(1)', opacity: 1 },
-        { transform: `translate(${(d.x - c.x) * 0.55}px, ${(d.y - c.y) * 0.55 - 26}px) rotate(${spin * 2}deg) scale(1.02)`, opacity: 1, offset: 0.6 },
-        { transform: `translate(${d.x - c.x}px, ${d.y - c.y}px) rotate(${spin}deg) scale(0.55)`, opacity: 0 },
+        { transform: `translate(${(d.x - c.x) * 0.55}px, ${(d.y - c.y) * 0.55 - 14}px) rotate(${spin * 2}deg) scale(1.02)`, opacity: 1, offset: 0.6 },
+        { transform: `translate(${d.x - c.x}px, ${d.y - c.y}px) rotate(${spin}deg) scale(${reveal ? 1 : 0.55})`, opacity: reveal ? 1 : 0 },
       ],
       { duration: 420, delay: t + i * step, easing: 'cubic-bezier(0.25, 0.8, 0.35, 1)', fill: 'both' },
     );
-    anim.onfinish = () => {
+    anim.onfinish = anim.oncancel = () => {
       el.remove();
-      // 받은 자리가 톡
-      (target as HTMLElement).animate?.([{ transform: 'scale(1)' }, { transform: 'scale(1.025)' }, { transform: 'scale(1)' }], { duration: 220 });
+      if (reveal) {
+        reveal.style.visibility = '';
+        reveal.animate([{ transform: 'rotateY(90deg)' }, { transform: 'none' }], { duration: 220, easing: 'ease-out' });
+      }
     };
     if (i % 2 === 0) sound.fx('deal', (t + i * step) / 1000);
   });
+  // 혹시 중간에 화면이 바뀌어도 숨긴 카드는 반드시 다시 보이게
+  setTimeout(() => mine.forEach((e) => (e.style.visibility = '')), t + targets.length * step + 900);
   return t + targets.length * step + 420;
 }
 

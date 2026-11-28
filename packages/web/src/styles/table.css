@@ -629,3 +629,80 @@
     opacity: 0;
   }
 }
+
+/* ── 둘러앉은 자리 (seat-ring.tsx): 나는 아래, 다른 사람은 왼쪽·위·오른쪽 가장자리 ── */
+.seat-ring {
+  flex: 1 0 auto;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  grid-template-areas:
+    'left top right'
+    'left center right'
+    'left bottom right';
+  gap: 10px;
+  min-height: 0;
+}
+.sr-left {
+  grid-area: left;
+}
+.sr-right {
+  grid-area: right;
+}
+.sr-left,
+.sr-right {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 10px;
+}
+.sr-left:empty,
+.sr-right:empty {
+  display: none;
+}
+.sr-top {
+  grid-area: top;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.sr-center {
+  grid-area: center;
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+.sr-bottom {
+  grid-area: bottom;
+  min-width: 0;
+  border-radius: 14px;
+}
+.sr-seat {
+  min-width: 0;
+  border-radius: 12px;
+}
+.seat-ring.narrow {
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-areas:
+    'top'
+    'center'
+    'bottom';
+  gap: 6px;
+}
+.seat-ring.narrow .sr-left,
+.seat-ring.narrow .sr-right {
+  display: none;
+}
+.seat-ring.narrow .sr-top {
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  justify-content: flex-start;
+  gap: 6px;
+}
+/* 판만 크게(focus)에서는 둘러앉은 자리가 판 높이를 다 씀 */
+.table-main-in > .seat-ring {
+  flex: 1 1 auto;
+}

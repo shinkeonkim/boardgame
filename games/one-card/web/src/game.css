@@ -97,15 +97,7 @@
   font-size: 1.2rem;
   text-shadow: 0 0 3px #000, 0 0 1px #000;
 }
-.oc-top {
-  animation: oc-land 0.35s cubic-bezier(0.2, 0.8, 0.3, 1.2);
-}
-@keyframes oc-land {
-  from {
-    transform: translateY(-30px) rotate(-12deg) scale(1.15);
-    opacity: 0;
-  }
-}
+/* 버린 카드는 낸 사람 쪽에서 날아온다 (motion.ts) — 위에서 떨어지는 효과는 누가 냈는지 헷갈려서 없앰 */
 .oc-state {
   display: grid;
   justify-items: center;
@@ -285,4 +277,19 @@
   background-color: #fffaf1;
   border: 1px solid rgb(0 0 0 / 0.18);
   box-shadow: 0 1px 2px rgb(0 0 0 / 0.15);
+}
+/* 둘러앉은 자리: 가운데 테이블이 남는 높이를 채움 */
+.oc-ring .oc-table {
+  flex: 1;
+  align-content: center;
+}
+/* 상대 자리는 크기 고정 — 카드 수가 바뀌어도 판 배치가 출렁이지 않게 */
+.oc-ring .oc-opp {
+  width: 150px;
+  min-height: 92px;
+}
+.oc-ring .oc-opp-hand {
+  max-width: 130px;
+  overflow: hidden;
+  justify-content: center;
 }

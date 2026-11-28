@@ -134,7 +134,7 @@ export function PlayingCard({
   );
 }
 
-export function CardBack({ size = 'md', className = '' }: { size?: 'sm' | 'md' | 'lg'; className?: string }) {
-  return <div className={`oc-card pc back ${size} ${className}`} aria-hidden />;
+export function CardBack({ size = 'md', className = '', flip, flipFrom }: { size?: 'sm' | 'md' | 'lg'; className?: string; flip?: string; flipFrom?: string }) {
+  return <div data-flip={flip} data-flip-from={flipFrom} className={`oc-card pc back ${size} ${className}`} aria-hidden />;
 }
 

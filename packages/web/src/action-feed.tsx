@@ -15,11 +15,16 @@ import { iconize, seatColor } from '@bg/ui';
 const reduced = () => typeof matchMedia !== 'undefined' && matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 // ── 날아오기: 방금 둔 사람 ──
-let pending: { seat: number; at: number } | null = null;
+let pending: { seat: number; at: number; me: number | null } | null = null;
 
 /** 이번 렌더의 변화를 만든 사람 (useLogSounds가 렌더 중에 적어 둠) */
-export function noteActor(seat: number) {
-  pending = { seat, at: typeof performance !== 'undefined' ? performance.now() : Date.now() };
+export function noteActor(seat: number, me: number | null = null) {
+  pending = { seat, me, at: typeof performance !== 'undefined' ? performance.now() : Date.now() };
+}
+
+/** 이번 변화의 「나」 (내 영역에 생긴 카드를 남의 자리에서 날려 보내지 않으려고) */
+export function peekMe(): number | null {
+  return pending?.me ?? null;
 }
 
 /** useFlip이 새로 생긴 요소를 띄울 때 한 번 읽는다 (0.7초 안에 적힌 것만) */

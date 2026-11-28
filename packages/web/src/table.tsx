@@ -477,7 +477,28 @@ function fitMain(main: HTMLElement | null, inner: HTMLElement | null) {
  * layout: 이 게임에 어울리는 기본 배치 (꾸미기에서 사용자가 고르면 그걸 따름).
  *  right(기본) · left · bottom(가로로 긴 판) · focus(판만 화면 가득, 정보는 버튼 — 둘러앉는 카드 게임)
  */
-export function TableLayout({ className = '', top, main, side, mine, splash, overlay, layout = 'right' }: { className?: string; top: ReactNode; main: ReactNode; side: ReactNode; mine?: boolean; splash?: Table['splash']; overlay?: ReactNode; layout?: TableLayoutKind }) {
+export function TableLayout({
+  className = '',
+  top,
+  main,
+  side,
+  mine,
+  splash,
+  overlay,
+  layout = 'right',
+  dealIn = false,
+}: {
+  className?: string;
+  top: ReactNode;
+  main: ReactNode;
+  side: ReactNode;
+  mine?: boolean;
+  splash?: Table['splash'];
+  overlay?: ReactNode;
+  layout?: TableLayoutKind;
+  /** 막 시작한 판: 처음 그릴 때도 더미(data-flip-from)에서 카드를 나눠 주는 움직임 */
+  dealIn?: boolean;
+}) {
   const zoom = useFitZoom();
   const pref = useSkin().layout;
   const kind = pref && pref !== 'auto' ? pref : layout;
@@ -498,7 +519,7 @@ export function TableLayout({ className = '', top, main, side, mine, splash, ove
   // 낮은 가로 화면(휴대폰 눕힘)에서는 정보 패널을 접어 테이블을 넓게 (버튼으로 펼침)
   const [sideOpen, setSideOpen] = useState(false);
   return (
-    <main ref={root} data-layout={kind} className={`page game table-game ${mine ? 'my-turn' : ''} ${sideOpen ? 'side-open' : ''} ${className}`} style={{ '--z': zoom } as CSSProperties}>
+    <main ref={root} data-layout={kind} data-deal-on-mount={dealIn ? '1' : undefined} className={`page game table-game ${mine ? 'my-turn' : ''} ${sideOpen ? 'side-open' : ''} ${className}`} style={{ '--z': zoom } as CSSProperties}>
       {top}
       <div className="table-layout">
         <section className="table-main" ref={mainRef}>
@@ -588,7 +609,7 @@ export function useLogSounds<E extends { n: number }>(log: E[], pick: (e: E) => 
   if (last.current !== null && lastN > last.current) {
     const fresh = log.filter((e) => e.n > last.current!);
     const who = fresh.map(actorOf).filter((s): s is number => s !== null && s !== feed.me);
-    if (who.length) noteActor(who[who.length - 1]);
+    if (who.length) noteActor(who[who.length - 1], feed.me ?? null);
   }
   useEffect(() => {
     const prev = last.current;
